@@ -240,10 +240,10 @@ class MassAnalyzer:
     Sector = 6
 
 class TraceType:
+    MassRange = 0
     TIC = 1
-    MassRange = 2
-    BasePeak = 3
-    # ... for parity, we only need TIC and MassRange for now
+    BasePeak = 2
+    # ... for parity
 
 if not _IS_SPHINX:
     from . import native_fisher_py_backend
