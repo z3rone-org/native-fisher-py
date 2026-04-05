@@ -53,6 +53,40 @@ if os.path.exists(_lib_path) and "THERMO_NATIVE_LIB" not in os.environ:
 
 from .exceptions import RawFileException
 
+class RunHeader(object):
+    """The run header."""
+    def __init__(self, raw_file):
+        self._raw_file = raw_file
+    
+    @property
+    def first_spectrum(self) -> int:
+        return self._raw_file.first_scan
+        
+    @property
+    def last_spectrum(self) -> int:
+        return self._raw_file.last_scan
+        
+    @property
+    def end_time(self) -> float:
+        return self._raw_file.total_time_min
+
+class RunHeaderEx(object):
+    """Information about the file stream."""
+    def __init__(self, raw_file):
+        self._raw_file = raw_file
+    
+    @property
+    def first_spectrum(self) -> int:
+        return self._raw_file.first_scan
+        
+    @property
+    def last_spectrum(self) -> int:
+        return self._raw_file.last_scan
+        
+    @property
+    def spectra_count(self) -> int:
+        return self._raw_file.number_of_scans
+
 class RawFile(object):
     """
     A high-level wrapper to provide a drop-in replacement for fisher_py.RawFile
@@ -114,6 +148,16 @@ class RawFile(object):
     def last_scan(self) -> int:
         """Last scan number."""
         return get_last_scan()
+
+    @property
+    def run_header(self) -> RunHeader:
+        """The run header."""
+        return RunHeader(self)
+
+    @property
+    def run_header_ex(self) -> RunHeaderEx:
+        """Information about the file stream."""
+        return RunHeaderEx(self)
 
     @property
     def is_open(self) -> bool:
@@ -291,8 +335,8 @@ if not _IS_SPHINX:
     from . import native_fisher_py_backend
     __doc__ = native_fisher_py_backend.__doc__
     if hasattr(native_fisher_py_backend, "__all__"):
-        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException"]
+        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
     else:
-        __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException"]
+        __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
 else:
-    __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException"]
+    __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
