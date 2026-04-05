@@ -101,6 +101,66 @@ namespace ThermoNativeReader
             return _rawFile.RunHeader.StartTime;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_file_name")]
+        public static unsafe int GetFileName(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.FileName ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_path")]
+        public static unsafe int GetPath(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.Path ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_creation_date")]
+        public static unsafe int GetCreationDate(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.CreationDate.ToString("o");
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_computer_name")]
+        public static unsafe int GetComputerName(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.ComputerName ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_creator_id")]
+        public static unsafe int GetCreatorID(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.CreatorID ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_ms_order")]
         public static int GetMsOrder(int scanNumber)
         {

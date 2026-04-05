@@ -22,6 +22,11 @@ else:
     def get_last_scan(): return 1
     def get_start_time(): return 0.0
     def get_end_time(): return 0.0
+    def get_file_name(): return ""
+    def get_path(): return ""
+    def get_creation_date(): return ""
+    def get_computer_name(): return ""
+    def get_creator_id(): return ""
     def get_ms_order(scan_number): return 1
     def get_mass_analyzer(scan_number): return 0
     def get_precursor_mass(scan_number): return 0.0
@@ -163,6 +168,31 @@ class RawFile(object):
         return get_last_scan()
 
     @property
+    def file_name(self) -> str:
+        """Get the name of the file."""
+        return get_file_name()
+
+    @property
+    def path(self) -> str:
+        """Get the full path of the file."""
+        return get_path()
+
+    @property
+    def creation_date(self) -> str:
+        """Get the creation date of the file."""
+        return get_creation_date()
+
+    @property
+    def computer_name(self) -> str:
+        """Get the name of the computer used for data acquisition."""
+        return get_computer_name()
+
+    @property
+    def creator_id(self) -> str:
+        """Get the ID of the file creator."""
+        return get_creator_id()
+
+    @property
     def run_header(self) -> RunHeader:
         """The run header."""
         return RunHeader(self)
@@ -216,18 +246,48 @@ class RawFile(object):
         # Return unique precursor masses
         return get_ms2_filter_masses(10000)
 
+    def get_scan_ms1(self, rt: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+        """Gets MS1 spectrum for a given retention time."""
+        scan_number, found_rt = self.get_ms1_scan_number_from_retention_time(rt)
+        masses, intensities, charges, _ = self.get_scan_from_scan_number(scan_number)
+        return masses, intensities, charges, found_rt
+
     def get_scan_ms2(self, rt: float, precursor_mz: float = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
         """
         Find and extract the closest MS2 spectrum for a given RT and precursor.
-        
-        Returns: (masses, intensities, charges, actual_rt)
         """
-        if precursor_mz is None:
-            # Fisher-py logic: if no precursor, find closest MS2
-            # Let's assume a default if not provided, or search all
-            scan_number, _ = self.get_ms2_scan_number_from_retention_time(rt, None)
-        else:
-            scan_number, _ = self.get_ms2_scan_number_from_retention_time(rt, precursor_mz)
+        scan_number, found_rt = self.get_ms2_scan_number_from_retention_time(rt, precursor_mz)
+        masses, intensities, charges, _ = self.get_scan_from_scan_number(scan_number)
+        return masses, intensities, charges, found_rt
+
+    def get_scan(self, rt: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str]:
+        """Gets the scan data for a given retention time."""
+        return self.get_scan_from_scan_number(self.get_scan_number_from_retention_time(rt))
+
+    def get_tic_ms2(self, precursor_mz: float, tolerance: float = 10e-3) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Get total ion current in MS2 for a given precursor mass.
+        """
+        tic_rt, tic_intensities = list(), list()
+        first_scan = self.first_scan
+        last_scan = self.last_scan
+        
+        for n in range(first_scan, last_scan + 1):
+            if get_ms_order(n) != 2:
+                continue
+            
+            p_mass = get_precursor_mass(n)
+            if abs(p_mass - precursor_mz) > tolerance:
+                continue
+
+            # Need to get spectrum to sum intensities
+            # But we can also get RT
+            tic_rt.append(get_scan_rt(n))
+            # Just return sum for now, or use a more efficient TIC query if backend has it
+            _, intensities = get_spectrum(n, 100000)
+            tic_intensities.append(sum(intensities))
+
+        return np.array(tic_rt), np.array(tic_intensities)
             
         if scan_number < 1:
             return np.array([]), np.array([]), np.array([]), 0.0
@@ -350,6 +410,15 @@ if not _IS_SPHINX:
     if hasattr(native_fisher_py_backend, "__all__"):
         __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
     else:
-        __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
+        __all__ = [
+            "RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx",
+            "open_raw_file", "get_num_scans", "get_scan_rt", "get_spectrum", "get_first_scan", "get_last_scan",
+            "get_end_time", "get_start_time", "get_ms_order", "get_mass_analyzer", "get_precursor_mass",
+            "get_scan_event_string", "get_scan_number_from_rt", "get_ms2_filter_masses",
+            "get_ms2_scan_number_from_rt", "get_ms1_scan_number_from_rt", "get_chromatogram",
+            "get_averaged_spectrum", "get_instrument_count", "get_instrument_count_of_type",
+            "is_open", "is_error", "in_acquisition", "has_ms_data", "get_file_name", "get_path",
+            "get_creation_date", "get_computer_name", "get_creator_id", "close_raw_file"
+        ]
 else:
     __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
