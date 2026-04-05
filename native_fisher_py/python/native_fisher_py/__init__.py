@@ -63,6 +63,33 @@ if os.path.exists(_lib_path) and "THERMO_NATIVE_LIB" not in os.environ:
 
 from .exceptions import RawFileException
 
+class MSOrder:
+    Ms = 1
+    Ms2 = 2
+    Ms3 = 3
+
+class MassAnalyzer:
+    Any = 0
+    ITMS = 1
+    TQMS = 2
+    SQMS = 3
+    TOFMS = 4
+    FTMS = 5
+    Sector = 6
+
+class TraceType:
+    MassRange = 0
+    TIC = 1
+    BasePeak = 2
+
+class InstrumentData(object):
+    """Information about the instrument."""
+    def __init__(self):
+        self.name = get_instrument_name()
+        self.model = get_instrument_model()
+        self.serial_number = get_instrument_serial_number()
+        self.software_version = get_instrument_software_version()
+
 class RunHeader(object):
     """The run header."""
     def __init__(self, raw_file):
@@ -128,11 +155,18 @@ class RawFile(object):
         res = open_raw_file(path)
         if res != 0:
             raise RawFileException(f"Could not open RAW file: {path}")
+        
+        self._is_open = True
 
     @staticmethod
     def file_factory(path: str):
         """Legacy initialization method for parity with fisher-py."""
         return RawFile(path)
+
+    @property
+    def _raw_file_access(self):
+        """Hidden property for parity with internal fisher-py calls."""
+        return self
 
     def select_instrument(self, device_type: int, device_number: int):
         """Select an instrument (e.g. MS). For now, we only support the default MS instrument."""
@@ -153,8 +187,8 @@ class RawFile(object):
 
     @property
     def path(self) -> str:
-        """Original file path."""
-        return self._path
+        """Get the full path of the file."""
+        return get_path()
 
     @property
     def number_of_scans(self) -> int:
@@ -175,11 +209,6 @@ class RawFile(object):
     def file_name(self) -> str:
         """Get the name of the file."""
         return get_file_name()
-
-    @property
-    def path(self) -> str:
-        """Get the full path of the file."""
-        return get_path()
 
     @property
     def creation_date(self) -> str:
@@ -272,53 +301,36 @@ class RawFile(object):
         """Gets the scan data for a given retention time."""
         return self.get_scan_from_scan_number(self.get_scan_number_from_retention_time(rt))
 
-    def get_tic_ms2(self, precursor_mz: float, tolerance: float = 10e-3) -> Tuple[np.ndarray, np.ndarray]:
+    def get_tic_ms2(self, precursor_mz: float = None, tolerance: float = 10e-3) -> Tuple[np.ndarray, np.ndarray]:
         """
         Get total ion current in MS2 for a given precursor mass.
         """
-        tic_rt, tic_intensities = list(), list()
-        first_scan = self.first_scan
-        last_scan = self.last_scan
-        
-        for n in range(first_scan, last_scan + 1):
-            if get_ms_order(n) != 2:
-                continue
-            
-            p_mass = get_precursor_mass(n)
-            if abs(p_mass - precursor_mz) > tolerance:
-                continue
+        if precursor_mz is None:
+            # TIC for all MS2
+            tic_rt, tic_intensities = list(), list()
+            for n in range(self.first_scan, self.last_scan + 1):
+                if get_ms_order(n) != 2: continue
+                tic_rt.append(get_scan_rt(n))
+                _, intensities = get_spectrum(n, 100000)
+                tic_intensities.append(sum(intensities))
+            return np.array(tic_rt), np.array(tic_intensities)
 
-            # Need to get spectrum to sum intensities
-            # But we can also get RT
+        tic_rt, tic_intensities = list(), list()
+        for n in range(self.first_scan, self.last_scan + 1):
+            if get_ms_order(n) != 2: continue
+            p_mass = get_precursor_mass(n)
+            if abs(p_mass - precursor_mz) > tolerance: continue
             tic_rt.append(get_scan_rt(n))
-            # Just return sum for now, or use a more efficient TIC query if backend has it
             _, intensities = get_spectrum(n, 100000)
             tic_intensities.append(sum(intensities))
-
         return np.array(tic_rt), np.array(tic_intensities)
-            
-        if scan_number < 1:
-            return np.array([]), np.array([]), np.array([]), 0.0
-            
-        masses, intensities, charges, _ = self.get_scan_from_scan_number(scan_number)
-        actual_rt = self.get_retention_time_from_scan_number(scan_number)
-        return masses, intensities, charges, actual_rt
 
     def get_chromatogram(self, mass: float = 0.0, tolerance: float = 0.0, trace_type: int = 1, ms_filter: str = '') -> Tuple[np.ndarray, np.ndarray]:
         """
         Extract chromatogram data. Default is TIC (Total Ion Chromatogram).
-        
-        Note: Current implementation defaults to TIC (Type 1) regardless of arguments.
-        
-        Returns: (times_min, intensities)
         """
-        # For now, we only support TIC in the backend. 
-        times, intensities = get_chromatogram(1, 1000000)
+        times, intensities = get_chromatogram(trace_type, 1000000)
         return np.array(times), np.array(intensities)
-
-    def get_tic_ms2(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Get Total Ion Chromatogram of MS2 spectra only."""
-        return self.get_chromatogram()
 
     def get_averaged_ms2_scans(self, scan_numbers: List[int]) -> Tuple[np.ndarray, np.ndarray, int]:
         """Average dynamic spectra from a list of scan numbers."""
@@ -362,17 +374,6 @@ class RawFile(object):
         event_str = self.get_scan_event_str_from_scan_number(scan_number)
         return np.array(masses), np.array(intensities), charges, event_str
 
-    def get_scan(self, rt: float):
-        """Extract full spectral data for the scan closest to a given RT."""
-        scan_number = self.get_scan_number_from_retention_time(rt)
-        return self.get_scan_from_scan_number(scan_number)
-
-    def get_scan_ms1(self, rt: float):
-        """Extract MS1 spectral data for the scan closest to a given RT."""
-        scan_number = self.get_scan_number_from_retention_time(rt)
-        masses, intensities, charges, _ = self.get_scan_from_scan_number(scan_number)
-        return masses, intensities, charges, rt
-
     def get_scan_number_from_retention_time(self, rt: float) -> int:
         """Find the scan number closest to a given RT."""
         return get_scan_number_from_rt(rt)
@@ -391,34 +392,6 @@ class RawFile(object):
         """Close the file and release the reader resources."""
         close_raw_file()
         self._is_open = False
-
-class MSOrder:
-    Ms = 1
-    Ms2 = 2
-    Ms3 = 3
-
-class InstrumentData(object):
-    """Information about the instrument."""
-    def __init__(self):
-        self.name = get_instrument_name()
-        self.model = get_instrument_model()
-        self.serial_number = get_instrument_serial_number()
-        self.software_version = get_instrument_software_version()
-
-class MassAnalyzer:
-    Any = 0
-    ITMS = 1
-    TQMS = 2
-    SQMS = 3
-    TOFMS = 4
-    FTMS = 5
-    Sector = 6
-
-class TraceType:
-    MassRange = 0
-    TIC = 1
-    BasePeak = 2
-    # ... for parity
 
 if not _IS_SPHINX:
     from . import native_fisher_py_backend
