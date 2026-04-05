@@ -45,6 +45,8 @@ _lib_path = os.path.join(_lib_dir, f"ThermoNativeReader{_ext}")
 if os.path.exists(_lib_path) and "THERMO_NATIVE_LIB" not in os.environ:
     os.environ["THERMO_NATIVE_LIB"] = _lib_path
 
+from .exceptions import RawFileException
+
 class RawFile(object):
     """
     A high-level wrapper to provide a drop-in replacement for fisher_py.RawFile
@@ -57,9 +59,18 @@ class RawFile(object):
             path: Path to the .raw file.
         """
         self._path = path
+        self._is_open = False
+        self._is_error = False
+
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f'No raw file with path "{path}" found.')
+
         res = open_raw_file(path)
-        if res != 0:
-            raise RuntimeError(f"Could not open RAW file: {path}")
+        if res == 0:
+            self._is_open = True
+        else:
+            self._is_error = True
+            raise RawFileException(f"Could not open RAW file: {path}")
 
     @staticmethod
     def file_factory(path: str):
@@ -102,6 +113,26 @@ class RawFile(object):
     def last_scan(self) -> int:
         """Last scan number."""
         return get_last_scan()
+
+    @property
+    def is_open(self) -> bool:
+        """Check if the file was successfully opened."""
+        return self._is_open
+
+    @property
+    def is_error(self) -> bool:
+        """Check if the last operation caused an error."""
+        return self._is_error
+
+    @property
+    def in_acquisition(self) -> bool:
+        """Check if file is still being acquired."""
+        return False
+
+    @property
+    def has_ms_data(self) -> bool:
+        """Check if file contains MS data."""
+        return True
 
     @property
     def total_time_min(self) -> float:
@@ -224,6 +255,7 @@ class RawFile(object):
     def close(self):
         """Close the file and release the reader resources."""
         close_raw_file()
+        self._is_open = False
 
 class MSOrder:
     Ms = 1
@@ -249,8 +281,8 @@ if not _IS_SPHINX:
     from . import native_fisher_py_backend
     __doc__ = native_fisher_py_backend.__doc__
     if hasattr(native_fisher_py_backend, "__all__"):
-        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType"]
+        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException"]
     else:
-        __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType"]
+        __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException"]
 else:
-    __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType"]
+    __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException"]
