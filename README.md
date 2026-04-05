@@ -1,5 +1,10 @@
 # native-fisher-py
 
+[![PyPI version](https://img.shields.io/pypi/v/native-fisher-py.svg)](https://pypi.org/project/native-fisher-py/)
+[![Tests](https://github.com/z3rone-org/native-fisher-py/actions/workflows/test.yml/badge.svg)](https://github.com/z3rone-org/native-fisher-py/actions/workflows/test.yml)
+[![Documentation Status](https://readthedocs.org/projects/native-fisher-py/badge/?version=latest)](https://native-fisher-py.readthedocs.io/en/latest/?badge=latest)
+<!-- [![Downloads](https://static.pepy.tech/badge/native-fisher-py)](https://pepy.tech/project/native-fisher-py) -->
+
 ## Why native-fisher-py?
 `native-fisher-py` is a high-performance, **drop-in replacement** for the legacy `fisher-py` reader. While the original `fisher-py` relies on `pythonnet` and a local .NET runtime (which often fails in CI/CD or specialized Linux environments), `native-fisher-py` utilizes **.NET NativeAOT** and **Rust** to provide a self-contained, high-speed binary bridge.
 
