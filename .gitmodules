@@ -1,0 +1,3 @@
+[submodule "vendor/RawFileReader"]
+	path = vendor/RawFileReader
+	url = https://github.com/thermofisherlsms/RawFileReader/

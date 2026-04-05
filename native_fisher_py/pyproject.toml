@@ -1,0 +1,27 @@
+[build-system]
+requires = ["maturin>=1.12,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "native-fisher-py"
+requires-python = ">=3.8"
+readme = "../README.md"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+license = { text = "MIT" }
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://native-fisher-py.readthedocs.io/en/latest/"
+Repository = "https://github.com/z3rone-org/native-fisher-py"
+[project.optional-dependencies]
+tests = [
+    "pytest",
+]
+[tool.maturin]
+python-source = "python"
+module-name = "native_fisher_py.native_fisher_py_backend"
+include = ["python/native_fisher_py/ThermoNativeReader.*"]

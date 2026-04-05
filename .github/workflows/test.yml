@@ -1,0 +1,76 @@
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONNET_RUNTIME: coreclr
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest] # Windows needs some more setup for NativeAOT but possible
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Install NativeAOT dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang zlib1g-dev libkrb5-dev
+
+    - name: Publish NativeAOT lib
+      run: |
+        cd native/ThermoNativeReader
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          ARCH=$(uname -m)
+          if [[ "$ARCH" == "arm64" ]]; then RID="osx-arm64"; else RID="osx-x64"; fi
+          LIB_FILE="ThermoNativeReader.dylib"
+        elif [[ "${{ runner.os }}" == "Linux" ]]; then
+          RID="linux-x64"
+          LIB_FILE="ThermoNativeReader.so"
+        else
+          RID="win-x64"
+          LIB_FILE="ThermoNativeReader.dll"
+        fi
+        dotnet publish -r $RID -c Release -p:PublishAot=true
+        echo "DYLIB_PATH=$(pwd)/bin/Release/net8.0/$RID/publish/$LIB_FILE" >> $GITHUB_ENV
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install dependencies
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        pip install maturin pytest numpy
+        pip install fisher-py
+
+    - name: Build and test
+      run: |
+        source .venv/bin/activate
+        # Copy native lib for bundling
+        cp ${{ env.DYLIB_PATH }} native_fisher_py/python/native_fisher_py/
+        
+        # Install the package
+        pip install ./native_fisher_py
+        
+        # Parity tests will automatically fall back to ground_truth.json if fisher-py fails
+        python -m pytest tests

@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set version from tag
+      if: startsWith(github.ref, 'refs/tags/v')
+      shell: bash
+      run: |
+        TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+        echo "Updating version in Cargo.toml to $TAG_VERSION"
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -i '' 's/^version = ".*"/version = "'$TAG_VERSION'"/' native_fisher_py/Cargo.toml
+        else
+          sed -i 's/^version = ".*"/version = "'$TAG_VERSION'"/' native_fisher_py/Cargo.toml
+        fi
+
+    - name: Install NativeAOT Dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang zlib1g-dev libkrb5-dev
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Publish NativeAOT dylib
+      shell: bash
+      run: |
+        cd native/ThermoNativeReader
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          ARCH=$(uname -m)
+          if [[ "$ARCH" == "arm64" ]]; then 
+            RID="osx-arm64"; TARGET="aarch64-apple-darwin"; 
+          else 
+            RID="osx-x64"; TARGET="x86_64-apple-darwin"; 
+          fi
+        elif [[ "${{ runner.os }}" == "Linux" ]]; then
+          RID="linux-x64"; TARGET="x86_64-unknown-linux-gnu";
+        else
+          RID="win-x64"; TARGET="x86_64-pc-windows-msvc";
+        fi
+        
+        dotnet publish -r $RID -c Release -p:PublishAot=true
+        
+        # Copy native lib to package for release bundling
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          LIB="ThermoNativeReader.dylib"
+        elif [[ "${{ runner.os }}" == "Linux" ]]; then
+          LIB="ThermoNativeReader.so"
+        else
+          LIB="ThermoNativeReader.dll"
+        fi
+        cp bin/Release/net8.0/$RID/publish/$LIB ../../native_fisher_py/python/native_fisher_py/
+        
+        echo "TARGET=$TARGET" >> $GITHUB_ENV
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Build wheels
+      uses: PyO3/maturin-action@v1
+      with:
+        command: build
+        args: --release --out dist --manifest-path native_fisher_py/Cargo.toml
+        target: ${{ env.TARGET }}
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheels-${{ runner.os }}
+        path: dist/*.whl
+
+  publish:
+    name: Publish to PyPI
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      id-token: write # Mandatory for trusted publishing
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: wheels-*
+        merge-multiple: true
+        path: dist
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        # Using Trusted Publishing instead of passwords is recommended
+        # Set up a Trusted Publisher on PyPI targeting your repository
+        print-hash: true

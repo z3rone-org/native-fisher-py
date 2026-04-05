@@ -1,0 +1,86 @@
+# native-fisher-py
+
+## Why native-fisher-py?
+`native-fisher-py` is a high-performance, **drop-in replacement** for the legacy `fisher-py` reader. While the original `fisher-py` relies on `pythonnet` and a local .NET runtime (which often fails in CI/CD or specialized Linux environments), `native-fisher-py` utilizes **.NET NativeAOT** and **Rust** to provide a self-contained, high-speed binary bridge.
+
+### Features
+- **Drop-in Replacement**: Designed to match the `fisher_py.RawFile` API for seamless migration.
+- **Zero .NET Dependency**: No local .NET runtime or `pythonnet` required on the host machine. Everything is bundled.
+- **Cross-Platform**: Native binaries for **macOS (ARM64/x64)**, **Linux (x64)**, and **Windows (x64)**.
+- **Turbo-charged Performance**: Significantly faster metadata discovery and spectral extraction than the legacy Python bridge.
+## How it works
+This project is a clean **native bridge** to the official Thermo Fisher libraries. It uses a three-layer architecture to provide cross-platform compatibility:
+
+1. **Official DLLs**: We use the original `.dll` assemblies provided by Thermo Fisher Scientific.
+2. **C# NativeAOT Wrapper**: A thin, compiled layer (`ThermoNativeReader`) interfaces directly with the official DLLs and exports a simple C-compatible API.
+3. **Rust PyO3 Layer**: A high-performance Rust bridge (`native-fisher-py`) provides the Python bindings and handles memory safety and NumPy integration.
+
+This approach ensures that we maintain **binary-level parity** with the official reader while providing a lightweight, dependency-free experience for Python users.
+
+## Quick Start
+```python
+# Just change the import, the rest of your code stays the same!
+from native_fisher_py import RawFile
+
+with RawFile("data.raw") as raw:
+    print(f"Number of scans: {raw.number_of_scans}")
+    
+    # Get spectral data as high-speed NumPy arrays
+    m, i, c, meta = raw.get_scan_from_scan_number(1)
+    print(f"First peak at {m[0]} m/z with intensity {i[0]}")
+```
+
+## Migrating from fisher-py
+If you are currently using `fisher-py`, migration is as simple as:
+1. `pip install native-fisher-py`
+2. Update your imports:
+```diff
+- from fisher_py import RawFile
++ from native_fisher_py import RawFile
+```
+3. (Optional) Uninstall the old package: `pip uninstall fisher-py`
+
+All core methods (`get_scan_from_scan_number`, `get_spectrum`, `get_chromatogram`, `get_ms2_scan_number_from_retention_time`, etc.) are implemented with identical signatures and return types.
+
+### Quick Local Build
+For convenience, you can run the included `build.sh` script to build both parts of the project:
+
+```bash
+./build.sh
+```
+
+---
+
+### Step-by-Step Manual Build
+To build the project from source, you need `.NET 8 SDK`, `Rust (cargo/maturin)`, and `clang`.
+
+### 1. Build the C# NativeAOT Core
+Navigate to the C# project and publish the NativeAOT shared library for your platform:
+
+```bash
+cd native/ThermoNativeReader
+
+# Example for Apple Silicon (macOS arm64)
+dotnet publish -r osx-arm64 -c Release -p:PublishAot=true
+
+# Example for Linux (x64)
+# dotnet publish -r linux-x64 -c Release -p:PublishAot=true
+```
+The output will be in `publish/ThermoNativeReader.dylib` (or `.so` / `.dll`).
+
+### 2. Build the Rust Bridge
+Navigate to the `native_fisher_py` folder and use `maturin` to build and install the Python package. You must point to the location of the C# library.
+
+```bash
+cd native_fisher_py
+
+# Point to your build from Step 1
+export THERMO_NATIVE_LIB=$(pwd)/../native/ThermoNativeReader/bin/Release/net8.0/osx-arm64/publish/ThermoNativeReader.dylib
+
+maturin develop
+```
+
+## Credits & Legal Notice
+This project is powered by the **Thermo Fisher Scientific RawFileReader** (copyright © 2016-2026 Thermo Fisher Scientific, Inc.). All rights reserved.
+
+The `native-fisher-py` package includes the official RawFileReader libraries, which remain the property of Thermo Fisher Scientific. By using this software, you agree to the terms specified in their license.
