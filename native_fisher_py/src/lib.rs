@@ -446,6 +446,11 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_error, m)?)?;
     m.add_function(wrap_pyfunction!(in_acquisition, m)?)?;
     m.add_function(wrap_pyfunction!(has_ms_data, m)?)?;
+    m.add_function(wrap_pyfunction!(get_file_name, m)?)?;
+    m.add_function(wrap_pyfunction!(get_path, m)?)?;
+    m.add_function(wrap_pyfunction!(get_creation_date, m)?)?;
+    m.add_function(wrap_pyfunction!(get_computer_name, m)?)?;
+    m.add_function(wrap_pyfunction!(get_creator_id, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }
