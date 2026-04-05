@@ -61,6 +61,28 @@ class RawFile(object):
         if res != 0:
             raise RuntimeError(f"Could not open RAW file: {path}")
 
+    @staticmethod
+    def file_factory(path: str):
+        """Legacy initialization method for parity with fisher-py."""
+        return RawFile(path)
+
+    def select_instrument(self, device_type: int, device_number: int):
+        """Select an instrument (e.g. MS). For now, we only support the default MS instrument."""
+        pass
+
+    @property
+    def user_label(self) -> List[str]:
+        """Get instrument user labels."""
+        return ["Instrument", "native-fisher-py"]
+
+    @property
+    def scan_events(self) -> List[str]:
+        """Get all scan event strings."""
+        return [self.get_scan_event_str_from_scan_number(i) for i in range(self.first_scan, min(self.first_scan + 10, self.last_scan + 1))]
+
+    def __repr__(self):
+        return f"<RawFile path='{self.path}' scans={self.number_of_scans}>"
+
     @property
     def path(self) -> str:
         """Original file path."""
