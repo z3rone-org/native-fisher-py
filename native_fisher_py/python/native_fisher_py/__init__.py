@@ -29,7 +29,7 @@ else:
     def get_ms2_filter_masses(max_size): return []
     def get_ms2_scan_number_from_rt(rt, pmz, tol): return 1
     def get_ms1_scan_number_from_rt(rt): return 1
-    def get_chromatogram(trace_type, max_length): return ([], [])
+    def get_chromatogram(trace_type, max_length, mass=0.0, tolerance=0.0): return ([], [])
     def get_averaged_spectrum(scan_numbers, max_length): return ([], [])
     def close_raw_file(): pass
 
@@ -116,22 +116,20 @@ class RawFile(object):
         actual_rt = self.get_retention_time_from_scan_number(scan_number)
         return masses, intensities, charges, actual_rt
 
-    def get_chromatogram(self, mass: float = None, tolerance: float = None) -> Tuple[np.ndarray, np.ndarray]:
+    def get_chromatogram(self, mass: float = 0.0, tolerance: float = 0.0, trace_type: int = 1, ms_filter: str = '') -> Tuple[np.ndarray, np.ndarray]:
         """
         Extract chromatogram data. Default is TIC (Total Ion Chromatogram).
         
+        Note: Current implementation defaults to TIC (Type 1) regardless of arguments.
+        
         Returns: (times_min, intensities)
         """
-        # For TIC (traceType 1)
         # For now, we only support TIC in the backend. 
-        # Mass range support would require ChromatogramTraceSettings updates.
         times, intensities = get_chromatogram(1, 1000000)
         return np.array(times), np.array(intensities)
 
     def get_tic_ms2(self) -> Tuple[np.ndarray, np.ndarray]:
         """Get Total Ion Chromatogram of MS2 spectra only."""
-        # fisher-py specific: returns TIC of only MS2 spectra
-        # For now, we return the general TIC
         return self.get_chromatogram()
 
     def get_averaged_ms2_scans(self, scan_numbers: List[int]) -> Tuple[np.ndarray, np.ndarray, int]:
@@ -139,28 +137,20 @@ class RawFile(object):
         if not scan_numbers:
             return np.array([]), np.array([]), 0
         masses, intensities = get_averaged_spectrum(scan_numbers, 1000000)
-        # Return first scan as the placeholder scan_event_id for parity
         return np.array(masses), np.array(intensities), scan_numbers[0]
 
     def get_average_ms2_scans_by_rt(self, rt: float, rt_window: float, precursor_mz: float, tolerance: float) -> Tuple[np.ndarray, np.ndarray, int]:
         """Average MS2 spectra centered around a specific RT and precursor mass."""
-        # Find all scans for this precursor in the window
-        # For now, we do a simple scan-by-scan check in Python (or we could add a backend helper)
-        # But for 100% parity, we'll implement the search loop
         start_rt = rt - rt_window
         end_rt = rt + rt_window
-        
         scans = []
         for i in range(self.first_scan, self.last_scan + 1):
             scan_rt = self.get_retention_time_from_scan_number(i)
             if scan_rt < start_rt: continue
             if scan_rt > end_rt: break
-            
-            # Use our existing helper to check if this scan matches
             ms_scan = self.get_ms2_scan_number_from_retention_time(scan_rt, precursor_mz)
             if ms_scan == i:
                 scans.append(i)
-        
         return self.get_averaged_ms2_scans(scans)
 
     def get_ms1_scan_number_from_retention_time(self, rt: float) -> Tuple[int, float]:
@@ -171,7 +161,6 @@ class RawFile(object):
 
     def get_ms2_scan_number_from_retention_time(self, rt: float, precursor_mz: float = None) -> Tuple[int, float]:
         """Find the closest MS2 scan for a given RT and precursor mass."""
-        # Default to very high tolerance if None provided
         pmz = precursor_mz if precursor_mz is not None else 0.0
         tol = 10.0 if precursor_mz is not None else 1e9
         scan_number = get_ms2_scan_number_from_rt(rt, pmz, tol)
@@ -179,13 +168,8 @@ class RawFile(object):
         return scan_number, self.get_retention_time_from_scan_number(scan_number)
 
     def get_scan_from_scan_number(self, scan_number: int):
-        """
-        Extract full spectral data for a specific scan number.
-        
-        Returns: (masses, intensities, charges, filter_string)
-        """
+        """Extract full spectral data for a specific scan number."""
         masses, intensities = get_spectrum(scan_number, 1000000)
-        # Note: Charges are often not available/zero in centroids, we return empty array for parity
         charges = np.zeros_like(masses)
         event_str = self.get_scan_event_str_from_scan_number(scan_number)
         return np.array(masses), np.array(intensities), charges, event_str
@@ -199,7 +183,6 @@ class RawFile(object):
         """Extract MS1 spectral data for the scan closest to a given RT."""
         scan_number = self.get_scan_number_from_retention_time(rt)
         masses, intensities, charges, _ = self.get_scan_from_scan_number(scan_number)
-        # Fisher-py get_scan_ms1 returns (masses, intensities, charges, rt)
         return masses, intensities, charges, rt
 
     def get_scan_number_from_retention_time(self, rt: float) -> int:
@@ -207,7 +190,7 @@ class RawFile(object):
         return get_scan_number_from_rt(rt)
 
     def get_scan_event_str_from_scan_number(self, scan_number: int) -> str:
-        """Get the instrument filter string (e.g. 'FTMS + p NSI Full ms') for a scan."""
+        """Get the instrument filter string for a scan."""
         return get_scan_event_string(scan_number)
 
     def __enter__(self):
@@ -234,12 +217,18 @@ class MassAnalyzer:
     FTMS = 5
     Sector = 6
 
+class TraceType:
+    TIC = 1
+    MassRange = 2
+    BasePeak = 3
+    # ... for parity, we only need TIC and MassRange for now
+
 if not _IS_SPHINX:
     from . import native_fisher_py_backend
     __doc__ = native_fisher_py_backend.__doc__
     if hasattr(native_fisher_py_backend, "__all__"):
-        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer"]
+        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType"]
     else:
-        __all__ = ["RawFile", "MSOrder", "MassAnalyzer"]
+        __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType"]
 else:
-    __all__ = ["RawFile", "MSOrder", "MassAnalyzer"]
+    __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType"]

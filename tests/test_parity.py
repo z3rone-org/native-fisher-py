@@ -128,8 +128,16 @@ def test_behavior_parity(raw_file_path):
             np.testing.assert_allclose(n_i2, o_i2, rtol=1e-5)
     
         # 6. Chromatogram
-        n_ct, n_ci = native.get_chromatogram(None, None)
-        o_ct, o_ci = orig.get_chromatogram(None, None)
+        import native_fisher_py
+        n_ct, n_ci = native.get_chromatogram(0.0, 0.0, trace_type=native_fisher_py.TraceType.TIC, ms_filter='')
+
+        if isinstance(orig, FisherPyMock):
+            o_trace_type = native_fisher_py.TraceType.TIC
+        else:
+            from fisher_py.data.business import TraceType as OrigTraceType
+            o_trace_type = OrigTraceType.TIC
+
+        o_ct, o_ci = orig.get_chromatogram(0.0, 0.0, trace_type=o_trace_type, ms_filter='')
         
         np.testing.assert_allclose(n_ct, o_ct, rtol=1e-5)
         np.testing.assert_allclose(n_ci, o_ci, rtol=1e-5)
