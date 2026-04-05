@@ -269,6 +269,66 @@ fn get_averaged_spectrum(scan_numbers: Vec<i32>, max_length: i32) -> PyResult<(V
 }
 
 #[pyfunction]
+fn get_instrument_count() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_instrument_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_count: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_count_of_type(device_type: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_instrument_count_of_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_count_of_type: {}", e)))?;
+        Ok(func(device_type))
+    }
+}
+
+#[pyfunction]
+fn is_open() -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"is_open")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function is_open: {}", e)))?;
+        Ok(func() != 0)
+    }
+}
+
+#[pyfunction]
+fn is_error() -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"is_error")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function is_error: {}", e)))?;
+        Ok(func() != 0)
+    }
+}
+
+#[pyfunction]
+fn in_acquisition() -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"in_acquisition")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function in_acquisition: {}", e)))?;
+        Ok(func() != 0)
+    }
+}
+
+#[pyfunction]
+fn has_ms_data() -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"has_ms_data")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function has_ms_data: {}", e)))?;
+        Ok(func() != 0)
+    }
+}
+
+#[pyfunction]
 fn close_raw_file() -> PyResult<()> {
     let lib = get_lib()?;
     unsafe {
@@ -299,6 +359,12 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_ms1_scan_number_from_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_chromatogram, m)?)?;
     m.add_function(wrap_pyfunction!(get_averaged_spectrum, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_count_of_type, m)?)?;
+    m.add_function(wrap_pyfunction!(is_open, m)?)?;
+    m.add_function(wrap_pyfunction!(is_error, m)?)?;
+    m.add_function(wrap_pyfunction!(in_acquisition, m)?)?;
+    m.add_function(wrap_pyfunction!(has_ms_data, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }

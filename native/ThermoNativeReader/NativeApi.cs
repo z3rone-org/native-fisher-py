@@ -353,6 +353,48 @@ namespace ThermoNativeReader
             }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_count")]
+        public static int GetInstrumentCount()
+        {
+            if (_rawFile == null) return -1;
+            return _rawFile.InstrumentCount;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_count_of_type")]
+        public static int GetInstrumentCountOfType(int type)
+        {
+            if (_rawFile == null) return -1;
+            return _rawFile.GetInstrumentCountOfType((Device)type);
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "is_open")]
+        public static int IsOpen()
+        {
+            if (_rawFile == null) return 0;
+            return _rawFile.IsOpen ? 1 : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "is_error")]
+        public static int IsError()
+        {
+            if (_rawFile == null) return 1;
+            return _rawFile.IsError ? 1 : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "in_acquisition")]
+        public static int InAcquisition()
+        {
+            if (_rawFile == null) return 0;
+            return _rawFile.InAcquisition ? 1 : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "has_ms_data")]
+        public static int HasMsData()
+        {
+            if (_rawFile == null) return 0;
+            return _rawFile.HasMsData ? 1 : 0;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "close_raw_file")]
         public static void CloseRawFile()
         {

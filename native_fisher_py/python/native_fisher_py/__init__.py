@@ -31,6 +31,12 @@ else:
     def get_ms1_scan_number_from_rt(rt): return 1
     def get_chromatogram(trace_type, max_length, mass=0.0, tolerance=0.0): return ([], [])
     def get_averaged_spectrum(scan_numbers, max_length): return ([], [])
+    def get_instrument_count(): return 1
+    def get_instrument_count_of_type(device_type): return 1
+    def is_open(): return True
+    def is_error(): return False
+    def in_acquisition(): return False
+    def has_ms_data(): return True
     def close_raw_file(): pass
 
 # Automatic discovery of the NativeAOT library within the package
@@ -59,17 +65,12 @@ class RawFile(object):
             path: Path to the .raw file.
         """
         self._path = path
-        self._is_open = False
-        self._is_error = False
 
         if not os.path.isfile(path):
             raise FileNotFoundError(f'No raw file with path "{path}" found.')
 
         res = open_raw_file(path)
-        if res == 0:
-            self._is_open = True
-        else:
-            self._is_error = True
+        if res != 0:
             raise RawFileException(f"Could not open RAW file: {path}")
 
     @staticmethod
@@ -117,22 +118,31 @@ class RawFile(object):
     @property
     def is_open(self) -> bool:
         """Check if the file was successfully opened."""
-        return self._is_open
+        return is_open()
 
     @property
     def is_error(self) -> bool:
         """Check if the last operation caused an error."""
-        return self._is_error
+        return is_error()
 
     @property
     def in_acquisition(self) -> bool:
         """Check if file is still being acquired."""
-        return False
+        return in_acquisition()
 
     @property
     def has_ms_data(self) -> bool:
         """Check if file contains MS data."""
-        return True
+        return has_ms_data()
+
+    @property
+    def instrument_count(self) -> int:
+        """Get the number of instruments (data streams) in the file."""
+        return get_instrument_count()
+
+    def get_instrument_count_of_type(self, device_type: int) -> int:
+        """Get number of instruments of a certain type."""
+        return get_instrument_count_of_type(device_type)
 
     @property
     def total_time_min(self) -> float:
