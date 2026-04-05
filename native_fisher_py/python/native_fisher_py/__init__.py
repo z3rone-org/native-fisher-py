@@ -20,6 +20,7 @@ else:
     def get_spectrum(scan_number, max_length): return ([], [])
     def get_first_scan(): return 1
     def get_last_scan(): return 1
+    def get_start_time(): return 0.0
     def get_end_time(): return 0.0
     def get_ms_order(scan_number): return 1
     def get_mass_analyzer(scan_number): return 0
@@ -67,6 +68,10 @@ class RunHeader(object):
         return self._raw_file.last_scan
         
     @property
+    def start_time(self) -> float:
+        return get_start_time()
+
+    @property
     def end_time(self) -> float:
         return self._raw_file.total_time_min
 
@@ -86,6 +91,14 @@ class RunHeaderEx(object):
     @property
     def spectra_count(self) -> int:
         return self._raw_file.number_of_scans
+
+    @property
+    def start_time(self) -> float:
+        return get_start_time()
+
+    @property
+    def end_time(self) -> float:
+        return self._raw_file.total_time_min
 
 class RawFile(object):
     """

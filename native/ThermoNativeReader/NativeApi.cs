@@ -94,6 +94,13 @@ namespace ThermoNativeReader
             return _rawFile.RunHeader.EndTime;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_start_time")]
+        public static double GetStartTime()
+        {
+            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            return _rawFile.RunHeader.StartTime;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_ms_order")]
         public static int GetMsOrder(int scanNumber)
         {

@@ -137,6 +137,16 @@ fn get_end_time() -> PyResult<f64> {
 }
 
 #[pyfunction]
+fn get_start_time() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_start_time")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_start_time: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
 fn get_ms_order(scan_number: i32) -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -348,6 +358,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_spectrum, m)?)?;
     m.add_function(wrap_pyfunction!(get_first_scan, m)?)?;
     m.add_function(wrap_pyfunction!(get_last_scan, m)?)?;
+    m.add_function(wrap_pyfunction!(get_start_time, m)?)?;
     m.add_function(wrap_pyfunction!(get_end_time, m)?)?;
     m.add_function(wrap_pyfunction!(get_ms_order, m)?)?;
     m.add_function(wrap_pyfunction!(get_mass_analyzer, m)?)?;
