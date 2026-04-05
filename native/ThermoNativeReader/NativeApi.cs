@@ -153,7 +153,7 @@ namespace ThermoNativeReader
         public static unsafe int GetCreatorID(byte* buffer, int length)
         {
             if (_rawFile == null) return -1;
-            var str = _rawFile.CreatorID ?? "";
+            var str = _rawFile.CreatorId ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
             for (int i = 0; i < count; i++) buffer[i] = bytes[i];
