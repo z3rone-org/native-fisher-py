@@ -217,6 +217,62 @@ fn get_creator_id() -> PyResult<String> {
 }
 
 #[pyfunction]
+fn get_instrument_model() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_instrument_model")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_model: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_model failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_name() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_instrument_name")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_name: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_name failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_serial_number() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_instrument_serial_number")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_serial_number: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_serial_number failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_software_version() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_instrument_software_version")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_software_version: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_software_version failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
 fn get_ms_order(scan_number: i32) -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -451,6 +507,10 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_creation_date, m)?)?;
     m.add_function(wrap_pyfunction!(get_computer_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_creator_id, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_model, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_name, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_serial_number, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_software_version, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }

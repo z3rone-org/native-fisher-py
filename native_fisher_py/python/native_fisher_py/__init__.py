@@ -27,6 +27,10 @@ else:
     def get_creation_date(): return ""
     def get_computer_name(): return ""
     def get_creator_id(): return ""
+    def get_instrument_model(): return ""
+    def get_instrument_name(): return ""
+    def get_instrument_serial_number(): return ""
+    def get_instrument_software_version(): return ""
     def get_ms_order(scan_number): return 1
     def get_mass_analyzer(scan_number): return 0
     def get_precursor_mass(scan_number): return 0.0
@@ -191,6 +195,10 @@ class RawFile(object):
     def creator_id(self) -> str:
         """Get the ID of the file creator."""
         return get_creator_id()
+
+    def get_instrument_data(self) -> InstrumentData:
+        """Get information about the instrument."""
+        return InstrumentData()
 
     @property
     def run_header(self) -> RunHeader:
@@ -389,6 +397,14 @@ class MSOrder:
     Ms2 = 2
     Ms3 = 3
 
+class InstrumentData(object):
+    """Information about the instrument."""
+    def __init__(self):
+        self.name = get_instrument_name()
+        self.model = get_instrument_model()
+        self.serial_number = get_instrument_serial_number()
+        self.software_version = get_instrument_software_version()
+
 class MassAnalyzer:
     Any = 0
     ITMS = 1
@@ -408,17 +424,18 @@ if not _IS_SPHINX:
     from . import native_fisher_py_backend
     __doc__ = native_fisher_py_backend.__doc__
     if hasattr(native_fisher_py_backend, "__all__"):
-        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
+        __all__ = native_fisher_py_backend.__all__ + ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx", "InstrumentData"]
     else:
         __all__ = [
-            "RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx",
+            "RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx", "InstrumentData",
             "open_raw_file", "get_num_scans", "get_scan_rt", "get_spectrum", "get_first_scan", "get_last_scan",
             "get_end_time", "get_start_time", "get_ms_order", "get_mass_analyzer", "get_precursor_mass",
             "get_scan_event_string", "get_scan_number_from_rt", "get_ms2_filter_masses",
             "get_ms2_scan_number_from_rt", "get_ms1_scan_number_from_rt", "get_chromatogram",
             "get_averaged_spectrum", "get_instrument_count", "get_instrument_count_of_type",
             "is_open", "is_error", "in_acquisition", "has_ms_data", "get_file_name", "get_path",
-            "get_creation_date", "get_computer_name", "get_creator_id", "close_raw_file"
+            "get_creation_date", "get_computer_name", "get_creator_id", "close_raw_file",
+            "get_instrument_model", "get_instrument_name", "get_instrument_serial_number", "get_instrument_software_version"
         ]
 else:
-    __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx"]
+    __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx", "InstrumentData"]
