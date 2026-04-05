@@ -128,8 +128,8 @@ def test_behavior_parity(raw_file_path):
             np.testing.assert_allclose(n_i2, o_i2, rtol=1e-5)
     
         # 6. Chromatogram
-        n_ct, n_ci = native.get_chromatogram()
-        o_ct, o_ci = orig.get_chromatogram()
+        n_ct, n_ci = native.get_chromatogram(None, None)
+        o_ct, o_ci = orig.get_chromatogram(None, None)
         
         np.testing.assert_allclose(n_ct, o_ct, rtol=1e-5)
         np.testing.assert_allclose(n_ci, o_ci, rtol=1e-5)
