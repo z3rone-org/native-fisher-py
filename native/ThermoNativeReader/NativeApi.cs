@@ -8,6 +8,7 @@ using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using Range = ThermoFisher.CommonCore.Data.Business.Range;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ThermoNativeReader
 {
@@ -25,6 +26,8 @@ namespace ThermoNativeReader
             var t = typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType);
         }
 
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
         [UnmanagedCallersOnly(EntryPoint = "open_raw_file")]
         public static unsafe int OpenRawFile(byte* pathPtr)
         {
@@ -84,6 +87,8 @@ namespace ThermoNativeReader
             }
         }
 
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
         [UnmanagedCallersOnly(EntryPoint = "get_filters")]
         public static unsafe int GetFilters(IntPtr* filters, int maxCount)
         {
