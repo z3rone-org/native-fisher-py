@@ -148,6 +148,10 @@ class pythonnet(object):
     def set_runtime_from_env(*args, **kwargs): pass
     @staticmethod
     def get_runtime_info(): return None
+    @staticmethod
+    def load(*args, **kwargs): pass
+    @staticmethod
+    def unload(*args, **kwargs): pass
 
 class clr(object):
     @staticmethod
@@ -164,6 +168,8 @@ class clr(object):
     def getPreload(): return False
     @staticmethod
     def setPreload(p): pass
+    @staticmethod
+    def AddReference(p): pass
     loader = None
     Python = None
     System = None
@@ -173,10 +179,12 @@ class ThermoFisher(object):
     class CommonCore(object):
         class MassPrecisionEstimator(object): pass
         class RawFileReader(object): pass
+        class Data(object): pass
 
 class Python(object): pass
 
 import sys
+import os
 this = sys.modules[__name__]
 this.Extensions = Extensions
 this.Environment = Environment
@@ -184,7 +192,49 @@ this.pythonnet = pythonnet
 this.clr = clr
 this.ThermoFisher = ThermoFisher
 this.Python = Python
+this.dotnet_version = "8.0"
+this.dll_base_path = ""
+this.dll_path = ""
+this.net_wrapper_base = NetWrapperBase
+this.os = os
+this.thermo_fisher_data = None
+this.thermo_fisher_data_business = None
+this.thermo_fisher_data_filter_enums = None
+this.thermo_fisher_data_interfaces = object
+this.thermo_fisher_mass_precision_estimator = None
+this.thermo_fisher_raw_file_reader = None
+
+class WrappedNetArray(object):
+    @staticmethod
+    def append(*args, **kwargs): pass
+    @staticmethod
+    def clear(*args, **kwargs): pass
+    @staticmethod
+    def copy(*args, **kwargs): return []
+    @staticmethod
+    def count(*args, **kwargs): return 0
+    @staticmethod
+    def extend(*args, **kwargs): pass
+    @staticmethod
+    def index(*args, **kwargs): return -1
+    @staticmethod
+    def insert(*args, **kwargs): pass
+    @staticmethod
+    def pop(*args, **kwargs): return None
+    @staticmethod
+    def remove(*args, **kwargs): pass
+    @staticmethod
+    def reverse(*args, **kwargs): pass
+    @staticmethod
+    def sort(*args, **kwargs): pass
 
 class wrapped_net_array(object):
-    class WrappedNetArray(object): pass
+    T = object
+    TypeVar = object
+    Union = object
+    Generic = object
+    System = object
+    generic = object
+    clr = object
+    WrappedNetArray = WrappedNetArray
 this.wrapped_net_array = wrapped_net_array
