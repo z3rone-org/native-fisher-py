@@ -635,7 +635,7 @@ class Scan(CommonCoreDataObject):
     @property
     def can_merged_scan(self): return 0
     @property
-    def centroid_scan(self): return None
+    def centroid_scan(self): return getattr(self, '_centroid_stream', None)
     @property
     def centroid_stream_access(self): return None
     def create_scan_reader(self, r): return None
@@ -644,13 +644,24 @@ class Scan(CommonCoreDataObject):
     def from_file(cls, f, s):
         scan = cls()
         segmented_scan = f.get_segmented_scan_from_scan_number(s)
-        scan._preferred_masses = segmented_scan.masses
-        scan._preferred_intensities = segmented_scan.intensities
+        centroid_stream = f.get_centroid_stream(s)
+        scan._centroid_stream = centroid_stream
+        
+        # Original reader preference: if centroids are present (FTMS), use them for preferred data
+        if centroid_stream is not None and centroid_stream.length > 0:
+            scan._preferred_masses = centroid_stream.masses
+            scan._preferred_intensities = centroid_stream.intensities
+        else:
+            scan._preferred_masses = segmented_scan.masses
+            scan._preferred_intensities = segmented_scan.intensities
+            
         return scan
     def generate_frequency_table(self): return None
     def generate_noise_table(self): return None
     @property
-    def has_centroid_stream(self): return 0
+    def has_centroid_stream(self): 
+        cs = getattr(self, '_centroid_stream', None)
+        return 1 if cs is not None and cs.length > 0 else 0
     @property
     def has_noise_table(self): return 0
     @property
@@ -701,12 +712,16 @@ class Scan(CommonCoreDataObject):
     def tolerance_unit(self): return 0
 
 class CentroidStream(CommonCoreDataObject):
+    def __init__(self, masses=None, intensities=None):
+        self._masses = masses if masses is not None else np.array([])
+        self._intensities = intensities if intensities is not None else np.array([])
+
     @property
-    def base_intensity(self): return 0.0
+    def base_intensity(self): return np.max(self._intensities) if self._intensities.size > 0 else 0.0
     @property
-    def base_peak_intensity(self): return 0.0
+    def base_peak_intensity(self): return self.base_intensity
     @property
-    def base_peak_mass(self): return 0.0
+    def base_peak_mass(self): return self._masses[np.argmax(self._intensities)] if self._intensities.size > 0 else 0.0
     @property
     def base_peak_noise(self): return 0.0
     @property
@@ -728,11 +743,11 @@ class CentroidStream(CommonCoreDataObject):
     def get_label_peak(self, i): return None
     def get_label_peaks(self): return []
     @property
-    def intensities(self): return np.array([])
+    def intensities(self): return self._intensities
     @property
-    def length(self): return 0
+    def length(self): return len(self._masses) if self._masses is not None else 0
     @property
-    def masses(self): return np.array([])
+    def masses(self): return self._masses
     @property
     def noises(self): return np.array([])
     def refresh_base_details(self): pass

@@ -193,7 +193,10 @@ class RawFile(object):
         return get_scan_event_string(scan_number)
 
     def get_centroid_stream(self, scan_number: int, include_ref_peaks: bool = False):
-        return CentroidStream()
+        from .native_fisher_py_backend import get_centroid_stream
+        from .data.classes import CentroidStream
+        masses, intensities = get_centroid_stream(scan_number, 1000000)
+        return CentroidStream(masses=masses, intensities=intensities)
 
     def get_segmented_scan_from_scan_number(self, scan_number: int, stats = None):
         from .native_fisher_py_backend import get_spectrum

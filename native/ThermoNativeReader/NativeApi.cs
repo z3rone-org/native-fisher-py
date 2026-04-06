@@ -105,6 +105,31 @@ namespace ThermoNativeReader
             }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_centroid_stream")]
+        public static unsafe int GetCentroidStream(int scanNumber, double* masses, double* intensities, int maxLength)
+        {
+            if (_rawFile == null) return -1;
+            
+            try 
+            {
+                var scan = _rawFile.GetCentroidStream(scanNumber, false);
+                if (scan == null) { return -2; }
+                if (scan.Masses == null || scan.Intensities == null) { return -3; }
+                
+                int count = Math.Min(scan.Length, maxLength);
+                for (int i = 0; i < count; i++)
+                {
+                    masses[i] = scan.Masses[i];
+                    intensities[i] = scan.Intensities[i];
+                }
+                return count;
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+        }
+
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
         [UnmanagedCallersOnly(EntryPoint = "get_filters")]

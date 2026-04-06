@@ -120,6 +120,26 @@ fn get_spectrum(scan_number: i32, max_length: i32) -> PyResult<(Vec<f64>, Vec<f6
 }
 
 #[pyfunction]
+fn get_centroid_stream(scan_number: i32, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>)> {
+    let lib = get_lib()?;
+    let mut masses = vec![0.0f64; max_length as usize];
+    let mut intensities = vec![0.0f64; max_length as usize];
+    
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut f64, *mut f64, i32) -> i32> = lib.get(b"get_centroid_stream")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_centroid_stream: {}", e)))?;
+        let actual_len = func(scan_number, masses.as_mut_ptr(), intensities.as_mut_ptr(), max_length);
+        if actual_len < 0 {
+            return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_centroid_stream failed"));
+        }
+        let final_len = std::cmp::min(actual_len, max_length) as usize;
+        masses.truncate(final_len);
+        intensities.truncate(final_len);
+        Ok((masses, intensities))
+    }
+}
+
+#[pyfunction]
 fn get_first_scan() -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -614,6 +634,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_num_scans, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_spectrum, m)?)?;
+    m.add_function(wrap_pyfunction!(get_centroid_stream, m)?)?;
     m.add_function(wrap_pyfunction!(get_filters, m)?)?;
     m.add_function(wrap_pyfunction!(get_first_scan, m)?)?;
     m.add_function(wrap_pyfunction!(get_last_scan, m)?)?;
