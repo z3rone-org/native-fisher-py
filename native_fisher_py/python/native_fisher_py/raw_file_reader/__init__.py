@@ -1,16 +1,38 @@
-from ..data import data, ScanDependents
+from ..data import (
+    data, ScanDependents, AutoSamplerInformation, CentroidStream, 
+    ChromatogramTraceSettings, Device, ErrorLogEntry, FileError, 
+    FileHeader, FtAverageOptions, HeaderItem, InstrumentData, 
+    InstrumentSelection, LogEntry, MassOptions, RunHeader, 
+    SampleInformation, Scan, ScanEvent, ScanEvents, ScanFilter, 
+    ScanStatistics, SegmentedScan, StatusLogValues, TuneDataValues,
+    Reaction
+)
+from ..exceptions import RawFileException, NoSelectedDeviceException, NoSelectedMsDeviceException
+from ..utils import (
+    datetime_net_to_py, is_number, to_net_list, List, Tuple, datetime
+)
+import os
 
-RawFileAccess = None 
-RawFileReaderAdapter = None 
+NetWrapperBase = object
+WrappedRunHeader = RunHeader
+wrapped_run_header = RunHeader
 data_model = data
 raw_file_access = None 
 raw_file_reader_adapter = None 
 scan_dependents = None 
+RawFileAccess = None 
+RawFileReaderAdapter = None 
 
 def _init_reader_(raw_file_cls):
     global RawFileAccess, RawFileReaderAdapter, raw_file_access, raw_file_reader_adapter, scan_dependents
     RawFileAccess = raw_file_cls
     RawFileReaderAdapter = raw_file_cls
-    raw_file_access = RawFileAccess
-    raw_file_reader_adapter = RawFileReaderAdapter
-    scan_dependents = RawFileAccess
+    raw_file_access = sys.modules[__name__] # Expects all top-level symbols
+    raw_file_reader_adapter = sys.modules[__name__]
+    scan_dependents = sys.modules[__name__]
+
+import sys
+# Make raw_file_access a self-reference for parity
+raw_file_access = sys.modules[__name__]
+raw_file_reader_adapter = sys.modules[__name__]
+scan_dependents = sys.modules[__name__]

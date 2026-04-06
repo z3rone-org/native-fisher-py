@@ -358,8 +358,134 @@ class FileHeader(CommonCoreDataObject):
     def who_created_id(self) -> str: return get_creator_id()
 
 class FileError(CommonCoreDataObject): pass
-class ScanEvent(CommonCoreDataObject): pass
-class ScanEvents(CommonCoreDataObject): pass
+class ScanEvent(CommonCoreDataObject):
+    @property
+    def accurate_mass(self): return False
+    @property
+    def ms_order(self) -> int: return 1
+    @property
+    def mass_analyzer(self) -> int: return 0
+    @property
+    def polarity(self) -> int: return 1
+    @property
+    def scan_mode(self) -> int: return 0
+    @property
+    def ionization_mode(self) -> int: return 0
+    @property
+    def is_valid(self) -> bool: return True
+    @property
+    def compensation_volt_type(self): return 0
+    @property
+    def compensation_voltage(self): return 0.0
+    @property
+    def corona(self): return False
+    @property
+    def dependent(self): return False
+    @property
+    def detector(self): return 0
+    @property
+    def detector_value(self): return 0.0
+    @property
+    def electron_capture_dissociation(self): return False
+    @property
+    def electron_capture_dissociation_value(self): return 0.0
+    @property
+    def electron_transfer_dissociation(self): return False
+    @property
+    def electron_transfer_dissociation_value(self): return 0.0
+    @property
+    def enhanced(self): return False
+    @property
+    def field_free_region(self): return 0
+    @property
+    def higher_energy_ci_d(self): return False
+    @property
+    def higher_energy_ci_d_value(self): return 0.0
+    @property
+    def is_custom(self): return False
+    @property
+    def lock(self): return False
+    @property
+    def mass_calibrator_count(self): return 0
+    @property
+    def mass_count(self): return 0
+    @property
+    def mass_range_count(self): return 0
+    @property
+    def multi_notch(self): return False
+    @property
+    def multi_state_activation(self): return False
+    @property
+    def multiple_photon_dissociation(self): return False
+    @property
+    def multiple_photon_dissociation_value(self): return 0.0
+    @property
+    def multiplex(self): return False
+    @property
+    def name(self): return ""
+    @property
+    def param_a(self): return 0.0
+    @property
+    def param_b(self): return 0.0
+    @property
+    def param_f(self): return 0.0
+    @property
+    def param_r(self): return 0.0
+    @property
+    def param_v(self): return 0.0
+    @property
+    def photo_ionization(self): return False
+    @property
+    def pulsed_q_dissociation(self): return False
+    @property
+    def pulsed_q_dissociation_value(self): return 0.0
+    @property
+    def scan_data(self): return 0
+    @property
+    def scan_type_index(self): return 0
+    @property
+    def sector_scan(self): return 0
+    @property
+    def source_fragmentation(self): return False
+    @property
+    def source_fragmentation_info_count(self): return 0
+    @property
+    def source_fragmentation_mass_range_count(self): return 0
+    @property
+    def source_fragmentation_type(self): return 0
+    @property
+    def supplemental_activation(self): return False
+    @property
+    def turbo_scan(self): return False
+    @property
+    def ultra(self): return False
+    @property
+    def wideband(self): return False
+    
+    def get_activation(self, index): return 0
+    def get_energy(self, index): return 0.0
+    def get_energy_valid(self, index): return False
+    def get_first_precursor_mass(self, index): return 0.0
+    def get_last_precursor_mass(self, index): return 0.0
+    def get_isolation_width(self, index): return 0.0
+    def get_isolation_width_offset(self, index): return 0.0
+    def get_is_multiple_activation(self, index): return False
+    def get_mass(self, index): return 0.0
+    def get_mass_range(self, index): return (0.0, 0.0)
+    def get_mass_calibrator(self, index): return 0.0
+    def get_precursor_range_validity(self, index): return False
+    def get_reaction(self, index): return None
+    def get_source_fragmentation_info(self, index): return None
+    def get_source_fragmentation_mass_range(self, index): return (0.0, 0.0)
+
+class ScanEvents(CommonCoreDataObject):
+    def get_event(self, index): return ScanEvent()
+    def get_event_by_segment(self, segment, event): return ScanEvent()
+    def get_event_count(self, segment): return 0
+    @property
+    def scan_events(self): return []
+    @property
+    def segments(self): return 0
 
 class ScanFilter(CommonCoreDataObject):
     def __init__(self, filter_string=""): 
@@ -389,6 +515,100 @@ class ScanFilter(CommonCoreDataObject):
     def accurate_mass(self): return 0
     @property
     def ionization_mode(self): return 0
+    @property
+    def lock(self): return False
+    @property
+    def meta_filters(self): return []
+    @property
+    def turbo_scan(self): return False
+    @property
+    def ultra(self): return False
+    @property
+    def wideband(self): return False
+    @property
+    def compensation_volt_type(self): return 0
+    @property
+    def compensation_voltage(self): return 0.0
+    @property
+    def compensation_voltage_count(self): return 0
+    @property
+    def compensation_voltage_value(self): return 0.0
+    @property
+    def corona(self): return False
+    @property
+    def dependent(self): return False
+    @property
+    def detector(self): return 0
+    @property
+    def detector_value(self): return 0.0
+    @property
+    def electron_capture_dissociation(self): return False
+    @property
+    def electron_capture_dissociation_value(self): return 0.0
+    @property
+    def electron_transfer_dissociation(self): return False
+    @property
+    def electron_transfer_dissociation_value(self): return 0.0
+    @property
+    def enhanced(self): return False
+    @property
+    def field_free_region(self): return 0
+    @property
+    def higher_energy_ci_d(self): return False
+    @property
+    def higher_energy_ci_d_value(self): return 0.0
+    @property
+    def is_custom(self): return False
+    @property
+    def locale_name(self): return ""
+    @property
+    def mass_precision(self): return 4
+    @property
+    def multi_notch(self): return False
+    @property
+    def multi_state_activation(self): return False
+    @property
+    def multiple_photon_dissociation(self): return False
+    @property
+    def multiple_photon_dissociation_value(self): return 0.0
+    @property
+    def multiplex(self): return False
+    @property
+    def param_a(self): return 0.0
+    @property
+    def param_b(self): return 0.0
+    @property
+    def param_f(self): return 0.0
+    @property
+    def param_r(self): return 0.0
+    @property
+    def param_v(self): return 0.0
+    @property
+    def photo_ionization(self): return False
+    @property
+    def pulsed_q_dissociation(self): return False
+    @property
+    def pulsed_q_dissociation_value(self): return 0.0
+    @property
+    def scan_data(self): return 0
+    @property
+    def sector_scan(self): return 0
+    @property
+    def source_fragmentation(self): return False
+    @property
+    def source_fragmentation_type(self): return 0
+    @property
+    def source_fragmentation_value(self): return 0.0
+    @property
+    def supplemental_activation(self): return False
+    @property
+    def unique_mass_count(self): return 0
+    def get_source_fragmentation_info_valid(self, index): return False
+    def source_fragmentation_info_valid(self, index): return False
+    @property
+    def index_to_multiple_activation_index(self): return []
+    @property
+    def souce_fragmentaion_value_count(self): return 0
 
 class Range(range): pass
 class MassOptions(mass_options): pass

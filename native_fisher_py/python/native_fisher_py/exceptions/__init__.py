@@ -1,10 +1,15 @@
-class RawFileException(Exception):
-    """Base exception for native_fisher_py errors."""
-    pass
+class CoreException(Exception): pass
+class RawFileException(CoreException): pass
+class NoSelectedDeviceException(RawFileException): pass
+class NoSelectedMsDeviceException(RawFileException): pass
 
-class CoreException(RawFileException):
-    """Base exception for core errors."""
-    pass
+# Parity aliases
+core_exception = None 
+raw_file_exception = None 
 
-raw_file_exception = None
-core_exception = None
+def _init_exceptions_():
+    global core_exception, raw_file_exception
+    import sys
+    this = sys.modules[__name__]
+    core_exception = this
+    raw_file_exception = this
