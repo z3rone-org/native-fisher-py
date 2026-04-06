@@ -318,7 +318,7 @@ class LogEntry(CommonCoreDataObject):
     @property
     def length(self): return 0
     @property
-    def values(self): return []
+    def values(self): return [""] * 100
 
 class HeaderItem(CommonCoreDataObject):
     @property
