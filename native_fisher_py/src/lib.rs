@@ -560,9 +560,30 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_filter_mass_analyzer, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_detector, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_scan_data, m)?)?;
-    m.add_function(wrap_pyfunction!(get_scan_filter_compensation_voltage, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_compensation_voltage, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_compensation_voltage_value, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
+}
+
+#[pyfunction]
+fn get_scan_event_compensation_voltage(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_event_compensation_voltage")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_compensation_voltage: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_compensation_voltage_value(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_event_compensation_voltage_value")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_compensation_voltage_value: {}", e)))?;
+        Ok(func(scan_number))
+    }
 }
 
 #[pyfunction]

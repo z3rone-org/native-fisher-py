@@ -705,11 +705,18 @@ namespace ThermoNativeReader
             try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData; } catch { return -1; }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage")]
-        public static double GetScanFilterCompensationVoltage(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage")]
+        public static int GetScanEventCompensationVoltage(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage_value")]
+        public static double GetScanEventCompensationVoltageValue(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltageValue; } catch { return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]

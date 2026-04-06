@@ -21,21 +21,22 @@ if not _IS_SPHINX:
         def get_path(): return ""
         def get_creation_date(): return ""
         def get_creator_id(): return ""
-    def get_ms_order(s): return 0
-    def get_mass_analyzer(s): return 0
-    def get_scan_event_string(s): return ""
-    def get_scan_filter_ultra(s): return 0
-    def get_scan_filter_wideband(s): return 0
-    def get_scan_filter_polarity(s): return 0
-    def get_scan_filter_detector(s): return 0
-    def get_scan_filter_scan_data(s): return 0
-    def get_scan_filter_compensation_voltage(s): return 0.0
-    def get_scan_event_ms_order(s): return 0
-    def get_scan_event_mass_count(s): return 0
-    def get_scan_event_precursor_mass(s, i): return 0.0
-    def get_scan_event_activation_type(s, i): return 0
-    def get_scan_event_collision_energy(s, i): return 0.0
-    def get_scan_stats(s): return [0.0]*7
+        def get_ms_order(s): return 0
+        def get_mass_analyzer(s): return 0
+        def get_scan_event_string(s): return ""
+        def get_scan_filter_ultra(s): return 0
+        def get_scan_filter_wideband(s): return 0
+        def get_scan_filter_polarity(s): return 0
+        def get_scan_filter_detector(s): return 0
+        def get_scan_filter_scan_data(s): return 0
+        def get_scan_event_compensation_voltage(s): return 0
+        def get_scan_event_compensation_voltage_value(s): return 0.0
+        def get_scan_event_ms_order(s): return 0
+        def get_scan_event_mass_count(s): return 0
+        def get_scan_event_precursor_mass(s, i): return 0.0
+        def get_scan_event_activation_type(s, i): return 0
+        def get_scan_event_collision_energy(s, i): return 0.0
+        def get_scan_stats(s): return [0.0]*7
 else:
     def get_instrument_name(): return ""
     def get_instrument_model(): return ""
@@ -54,7 +55,8 @@ else:
     def get_scan_filter_polarity(s): return 0
     def get_scan_filter_detector(s): return 0
     def get_scan_filter_scan_data(s): return 0
-    def get_scan_filter_compensation_voltage(s): return 0.0
+    def get_scan_event_compensation_voltage(s): return 0
+    def get_scan_event_compensation_voltage_value(s): return 0.0
     def get_scan_event_ms_order(s): return 0
     def get_scan_event_mass_count(s): return 0
     def get_scan_event_precursor_mass(s, i): return 0.0
@@ -97,7 +99,10 @@ class ScanFilter(CommonCoreDataObject):
         return DetectorType(get_scan_filter_detector(self._scan_number))
     @property
     def compensation_voltage(self):
-        return get_scan_filter_compensation_voltage(self._scan_number)
+        return TriState(get_scan_event_compensation_voltage(self._scan_number))
+    @property
+    def compensation_voltage_value(self):
+        return get_scan_event_compensation_voltage_value(self._scan_number)
     @property
     def scan_mode(self): return 0
     @property
