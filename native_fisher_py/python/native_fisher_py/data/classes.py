@@ -422,16 +422,7 @@ class ErrorLogEntry(CommonCoreDataObject):
     @property
     def retention_time(self): return 0.0
 
-class range(CommonCoreDataObject):
-    def __init__(self, low=0.0, high=0.0): self.low, self.high = low, high
-    def compare_to(self, other): return 0
-    def create(self, low, high): return range(low, high)
-    def create_from_cetner_and_delta(self, center, delta): return range(center-delta, center+delta)
-    def includes(self, val): return self.low <= val <= self.high
 
-class mass_options(CommonCoreDataObject):
-    def __init__(self, tolerance=0.0, units=0): self.tolerance, self.units = tolerance, units
-MassOptions = mass_options
 
 class InstrumentSelection(CommonCoreDataObject):
     @property
