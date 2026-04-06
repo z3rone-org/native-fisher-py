@@ -18,6 +18,10 @@ if not _IS_SPHINX:
         def get_instrument_hardware_version(): return ""
         def get_start_time(): return 0.0
         def get_end_time(): return 0.0
+        def get_mass_resolution(): return 0.0
+        def get_expected_runtime(): return 0.0
+        def get_max_integrated_intensity(): return 0.0
+        def get_max_intensity(): return 0
         def get_file_name(): return ""
         def get_path(): return ""
         def get_creation_date(): return ""
@@ -54,6 +58,10 @@ else:
     def get_instrument_hardware_version(): return ""
     def get_start_time(): return 0.0
     def get_end_time(): return 0.0
+    def get_mass_resolution(): return 0.0
+    def get_expected_runtime(): return 0.0
+    def get_max_integrated_intensity(): return 0.0
+    def get_max_intensity(): return 0
     def get_file_name(): return ""
     def get_creation_date(): return ""
     def get_creator_id(): return ""
@@ -866,6 +874,14 @@ class RunHeaderEx(CommonCoreDataObject):
     def start_time(self): return get_start_time()
     @property
     def end_time(self): return get_end_time()
+    @property
+    def mass_resolution(self): return get_mass_resolution()
+    @property
+    def expected_runtime(self): return get_expected_runtime()
+    @property
+    def max_integrated_intensity(self): return get_max_integrated_intensity()
+    @property
+    def max_intensity(self): return get_max_intensity()
     @property
     def trailer_extra_count(self): return get_trailer_extra_count()
     @property

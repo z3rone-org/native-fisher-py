@@ -101,6 +101,34 @@ namespace ThermoNativeReader
             return _rawFile.RunHeader.StartTime;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_mass_resolution")]
+        public static double GetMassResolution()
+        {
+            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            return _rawFile.RunHeader.MassResolution;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_expected_runtime")]
+        public static double GetExpectedRuntime()
+        {
+            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            return _rawFile.RunHeader.ExpectedRuntime;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_max_integrated_intensity")]
+        public static double GetMaxIntegratedIntensity()
+        {
+            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            return _rawFile.RunHeader.MaxIntegratedIntensity;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_max_intensity")]
+        public static int GetMaxIntensity()
+        {
+            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+            return _rawFile.RunHeader.MaxIntensity;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_file_name")]
         public static unsafe int GetFileName(byte* buffer, int length)
         {

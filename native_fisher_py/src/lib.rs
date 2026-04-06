@@ -160,6 +160,46 @@ fn get_start_time() -> PyResult<f64> {
 }
 
 #[pyfunction]
+fn get_mass_resolution() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_mass_resolution")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_mass_resolution: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_expected_runtime() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_expected_runtime")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_expected_runtime: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_max_integrated_intensity() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_max_integrated_intensity")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_max_integrated_intensity: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_max_intensity() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_max_intensity")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_max_intensity: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
 fn get_file_name() -> PyResult<String> {
     let lib = get_lib()?;
     let mut buffer = vec![0u8; 1024];
@@ -513,6 +553,11 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_last_scan, m)?)?;
     m.add_function(wrap_pyfunction!(get_start_time, m)?)?;
     m.add_function(wrap_pyfunction!(get_end_time, m)?)?;
+    m.add_function(wrap_pyfunction!(get_mass_resolution, m)?)?;
+    m.add_function(wrap_pyfunction!(get_expected_runtime, m)?)?;
+    m.add_function(wrap_pyfunction!(get_max_integrated_intensity, m)?)?;
+    m.add_function(wrap_pyfunction!(get_max_intensity, m)?)?;
+    m.add_function(wrap_pyfunction!(get_file_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_ms_order, m)?)?;
     m.add_function(wrap_pyfunction!(get_mass_analyzer, m)?)?;
     m.add_function(wrap_pyfunction!(get_precursor_mass, m)?)?;
