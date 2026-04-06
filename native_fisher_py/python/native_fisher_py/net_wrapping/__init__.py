@@ -253,32 +253,13 @@ class clr_loader_stub(object):
         def optional_path_as_string(p): return ""
         @staticmethod
         def path_as_string(p): return ""
-        class re(object):
-            A=0; ASCII=0; DEBUG=0; DOTALL=0; I=0; IGNORECASE=0; L=0; LOCALE=0; M=0; MULTILINE=0; Match=object; NOFLAG=0; Pattern=object; PatternError=object; RegexFlag=0; S=0; Scanner=object; U=0; UNICODE=0; VERBOSE=0; X=0
-            @staticmethod
-            def compile(x): return x
-            copyreg=None; enum=None; error=Exception
-            @staticmethod
-            def escape(x): return x
-            @staticmethod
-            def findall(x): return x
-            @staticmethod
-            def finditer(x): return x
-            @staticmethod
-            def fullmatch(x): return x
-            functools=None
-            @staticmethod
-            def match(x): return x
-            @staticmethod
-            def purge(): pass
-            @staticmethod
-            def search(x): return x
-            @staticmethod
-            def split(x): return x
-            @staticmethod
-            def sub(x,y,z): return x
-            @staticmethod
-            def subn(x,y,z): return x
+        import re as re_real
+        import functools as functools_real
+        import enum as enum_real
+        import copyreg as copyreg_real
+        re = re_real
+        Runtime = Runtime_cls
+        Mono = Mono_cls
 
     class util(object):
         ClrError = Exception
@@ -311,7 +292,9 @@ class clr_loader_stub(object):
             def find_runtimes_in_root(): return []
             @staticmethod
             def find_runtimes_using_cli(): return []
-            os = os; platform = None; shutil = None; sys = sys
+            import platform as platform_real
+            import shutil as shutil_real
+            os = os; platform = platform_real; shutil = shutil_real; sys = sys
         find = find_inner
         @staticmethod
         def find_dotnet_root(): return ""
@@ -329,7 +312,9 @@ class clr_loader_stub(object):
         @staticmethod
         def path_as_string(p): return ""
         class runtime_spec_cls(object):
-            Any = None; Dict = dict; DotnetCoreRuntimeSpec = object; Path = pathlib.Path; TextIO = object; Tuple = tuple; json = None;
+            import json as json_real
+            import typing as typing_real
+            Any = typing_real.Any; Dict = typing_real.Dict; DotnetCoreRuntimeSpec = object; Path = pathlib.Path; TextIO = typing_real.TextIO; Tuple = typing_real.Tuple; json = json_real;
             @staticmethod
             def dataclass(x): return x
         runtime_spec = runtime_spec_cls
@@ -448,6 +433,8 @@ class clr_inner(object):
     @staticmethod
     def AddReference(p): pass
     class loader_stub(object):
+        import importlib as importlib_real
+        import sys as sys_real
         DotNetFinder = object
         class DotNetLoader_cls(object):
             @staticmethod
@@ -463,18 +450,8 @@ class clr_inner(object):
             @staticmethod
             def invalidate_caches(): pass
         DotNetFinder = DotNetFinder_cls
-        class importlib_cls(object):
-            abc = object
-            @staticmethod
-            def import_module(x): return None
-            @staticmethod
-            def invalidate_caches(): pass
-            machinery = object; metadata = object
-            @staticmethod
-            def reload(x): return x
-            resources = object; sys = sys; util = object
-        importlib = importlib_cls
-        sys = sys
+        importlib = importlib_real
+        sys = sys_real
     loader = loader_stub
     Python = None
     System = None

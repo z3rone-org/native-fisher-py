@@ -313,8 +313,13 @@ class clr_stub(object):
     ThermoFisher = None
     @staticmethod
     def clrmethod(*args): return None
+    class clrproperty_inner(object):
+        @staticmethod
+        def getter(): return None
+        @staticmethod
+        def setter(v): pass
     @staticmethod
-    def clrproperty(*args): return None
+    def clrproperty(*args): return clr_stub.clrproperty_inner()
     @staticmethod
     def getPreload(): return False
     loader = None
@@ -325,7 +330,8 @@ class clr_stub(object):
 Any = Any
 Tuple = Tuple
 List = List
-datetime = DateTime
+datetime = dt_factory.datetime
+DateTime = DateTime
 Double = Double
 Array = Array
 clr = clr_stub

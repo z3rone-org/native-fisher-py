@@ -522,7 +522,7 @@ class ChromatogramSignal(CommonCoreDataObject):
     @property
     def valid(self): return 1
 
-class ChromatogramTraceSettings(CommonCoreDataObject): pass
+
 
 class InstrumentData(CommonCoreDataObject):
     @property
@@ -969,7 +969,18 @@ class ScanFilter(CommonCoreDataObject):
     def souce_fragmentaion_value_count(self): return -1
 
 class Range(range): pass
-class MassOptions(mass_options): pass
+class MassOptions(CommonCoreDataObject):
+    def clone(self): return self
+    def get_tolerance_at_mass(self, m): return 0.0
+    def get_tolerance_string(self): return ""
+    @property
+    def precision(self): return 4
+    @property
+    def tolerance(self): return 0.0
+    @property
+    def tolerance_string(self): return ""
+    @property
+    def tolerance_units(self): return 0
 
 class FtAverageOptions(CommonCoreDataObject):
     @property
@@ -1017,6 +1028,30 @@ class business:
 class filter_enums:
     ActivationType = ActivationType; CompensationVoltageType = CompensationVoltageType; DetectorType = DetectorType; EnergyType = EnergyType; EventAccurateMass = EventAccurateMass; FieldFreeRegionType = FieldFreeRegionType; IonizationModeType = IonizationModeType; MassAnalyzerType = MassAnalyzer; MsOrderType = MsOrderType; PolarityType = PolarityType; ScanDataType = ScanDataType; ScanModeType = ScanModeType; SectorScanType = SectorScanType; SourceFragmentationValueType = SourceFragmentationValueType; TriState = TriState
     activation_type = ActivationType; compensation_voltage_type = CompensationVoltageType; detector_type = DetectorType; energy_type = EnergyType; event_accurate_mass = EventAccurateMass; field_free_region_type = FieldFreeRegionType; ionization_mode_type = IonizationModeType; mass_analyzer_type = MassAnalyzer; ms_order_type = MsOrderType; polarity_type = PolarityType; scan_data_type = ScanDataType; scan_mode_type = ScanModeType; sector_scan_type = SectorScanType; source_fragmentation_value_type = SourceFragmentationValueType; tri_state = TriState
+
+
+class ChromatogramTraceSettings(CommonCoreDataObject):
+    def clone(self): return self
+    @property
+    def compound_names(self): return []
+    @property
+    def delay_in_min(self): return 0.0
+    @property
+    def filter(self): return ""
+    @property
+    def fragment_mass(self): return 0.0
+    def get_mass_range(self, index): return None
+    @property
+    def include_reference(self): return False
+    @property
+    def mass_range_count(self): return 0
+    @property
+    def mass_ranges(self): return []
+    def set_mass_range(self, index, start, end): pass
+    @property
+    def trace(self): return 0
+    @property
+    def times(self): return []
 
 
 class ChromatogramData(CommonCoreDataObject):

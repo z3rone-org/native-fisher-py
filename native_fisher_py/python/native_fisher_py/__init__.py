@@ -59,7 +59,8 @@ data = data_mod.data
 utils = utils_mod
 net_wrapping = net_wrapping_mod
 raw_file_reader = raw_file_reader_mod
-raw_file = raw_file_reader_mod
+from . import raw_file as raw_file_mod
+raw_file = raw_file_mod
 
 # Initialize the reader submodules
 raw_file_reader_mod._init_reader_(RawFile)

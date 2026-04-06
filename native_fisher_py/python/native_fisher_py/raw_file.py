@@ -19,6 +19,11 @@ MassAnalyzerType = MassAnalyzerType
 Range = Range
 TraceType = TraceType
 np = np
+MassOptions = MassOptions
+ChromatogramTraceSettings = ChromatogramTraceSettings
+FtAverageOptions = FtAverageOptions
+Device = Device
+RawFileReaderAdapter = None # Placeholder?
 
 __all__ = [
     'RawFile', 'MsOrderType', 'MassAnalyzerType', 'Range', 
