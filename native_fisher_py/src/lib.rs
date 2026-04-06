@@ -598,6 +598,23 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_event_activation_type, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_collision_energy, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_axis_label_x, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_axis_label_y, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_flags, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_units, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_is_valid, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_has_accurate_mass_precursors, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_is_tsq_quantum_file, m)?)?;
+    m.add_function(wrap_pyfunction!(get_file_description, m)?)?;
+    m.add_function(wrap_pyfunction!(get_modified_date, m)?)?;
+    m.add_function(wrap_pyfunction!(get_who_created_logon, m)?)?;
+    m.add_function(wrap_pyfunction!(get_who_modified_id, m)?)?;
+    m.add_function(wrap_pyfunction!(get_who_modified_logon, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_barcode, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_id, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_name, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_vial, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_comment, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_ultra, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_wideband, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_polarity, m)?)?;
@@ -930,5 +947,145 @@ fn get_trailer_extra_header() -> PyResult<Vec<String>> {
         let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
         let s = String::from_utf8_lossy(&buffer[..end]);
         Ok(s.split('|').map(|x| x.to_string()).collect())
+    }
+}
+
+#[pyfunction]
+fn get_file_description() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_file_description")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_file_description: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_file_description failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_modified_date() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 256];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_modified_date")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_modified_date: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 256);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_modified_date failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_who_created_logon() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 256];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_who_created_logon")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_who_created_logon: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 256);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_who_created_logon failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_who_modified_id() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 256];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_who_modified_id")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_who_modified_id: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 256);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_who_modified_id failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_who_modified_logon() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 256];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_who_modified_logon")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_who_modified_logon: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 256);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_who_modified_logon failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_barcode() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_sample_barcode")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_barcode: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_sample_barcode failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_id() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_sample_id")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_id: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_sample_id failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_name() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_sample_name")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_name: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_sample_name failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_vial() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 256];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_sample_vial")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_vial: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 256);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_sample_vial failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_comment() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_sample_comment")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_comment: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_sample_comment failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
     }
 }

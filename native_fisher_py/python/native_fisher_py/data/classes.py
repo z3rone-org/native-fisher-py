@@ -16,6 +16,13 @@ if not _IS_SPHINX:
         def get_instrument_serial_number(): return ""
         def get_instrument_software_version(): return ""
         def get_instrument_hardware_version(): return ""
+        def get_instrument_axis_label_x(): return ""
+        def get_instrument_axis_label_y(): return ""
+        def get_instrument_flags(): return ""
+        def get_instrument_units(): return 0
+        def get_instrument_is_valid(): return False
+        def get_instrument_has_accurate_mass_precursors(): return False
+        def get_instrument_is_tsq_quantum_file(): return False
         def get_start_time(): return 0.0
         def get_end_time(): return 0.0
         def get_mass_resolution(): return 0.0
@@ -24,6 +31,16 @@ if not _IS_SPHINX:
         def get_max_intensity(): return 0
         def get_file_name(): return ""
         def get_path(): return ""
+        def get_file_description(): return ""
+        def get_modified_date(): return ""
+        def get_who_created_logon(): return ""
+        def get_who_modified_id(): return ""
+        def get_who_modified_logon(): return ""
+        def get_sample_barcode(): return ""
+        def get_sample_id(): return ""
+        def get_sample_name(): return ""
+        def get_sample_vial(): return ""
+        def get_sample_comment(): return ""
         def get_creation_date(): return ""
         def get_creator_id(): return ""
         def get_ms_order(s): return 0
@@ -56,6 +73,13 @@ else:
     def get_instrument_serial_number(): return ""
     def get_instrument_software_version(): return ""
     def get_instrument_hardware_version(): return ""
+    def get_instrument_axis_label_x(): return ""
+    def get_instrument_axis_label_y(): return ""
+    def get_instrument_flags(): return ""
+    def get_instrument_units(): return 0
+    def get_instrument_is_valid(): return False
+    def get_instrument_has_accurate_mass_precursors(): return False
+    def get_instrument_is_tsq_quantum_file(): return False
     def get_start_time(): return 0.0
     def get_end_time(): return 0.0
     def get_mass_resolution(): return 0.0
@@ -65,6 +89,16 @@ else:
     def get_file_name(): return ""
     def get_creation_date(): return ""
     def get_creator_id(): return ""
+    def get_file_description(): return ""
+    def get_modified_date(): return ""
+    def get_who_created_logon(): return ""
+    def get_who_modified_id(): return ""
+    def get_who_modified_logon(): return ""
+    def get_sample_barcode(): return ""
+    def get_sample_id(): return ""
+    def get_sample_name(): return ""
+    def get_sample_vial(): return ""
+    def get_sample_comment(): return ""
     def get_ms_order(s): return 0
     def get_mass_analyzer(s): return 0
     def get_scan_event_string(s): return ""
@@ -701,22 +735,22 @@ class ChromatogramSignal(CommonCoreDataObject):
 
 class InstrumentData(CommonCoreDataObject):
     @property
-    def axis_label_x(self): return ""
+    def axis_label_x(self): return get_instrument_axis_label_x()
     @property
-    def axis_label_y(self): return ""
+    def axis_label_y(self): return get_instrument_axis_label_y()
     @property
     def channel_labels(self): return []
     def clone(self): return self
     @property
-    def flags(self): return []
+    def flags(self): return get_instrument_flags()
     @property
-    def has_accurate_mass_precursors(self): return 0
+    def has_accurate_mass_precursors(self): return get_instrument_has_accurate_mass_precursors()
     @property
-    def is_tsq_quantum_file(self): return 0
+    def is_tsq_quantum_file(self): return get_instrument_is_tsq_quantum_file()
     @property
-    def is_valid(self): return True
+    def is_valid(self): return get_instrument_is_valid()
     @property
-    def units(self): return ""
+    def units(self): return DataUnits(get_instrument_units())
     @property
     def name(self) -> str: return get_instrument_name()
     @property
@@ -730,7 +764,7 @@ class InstrumentData(CommonCoreDataObject):
 
 class SampleInformation(CommonCoreDataObject):
     @property
-    def barcode(self): return ""
+    def barcode(self): return get_sample_barcode()
     @property
     def barcode_status(self): return 0
     @property
@@ -738,7 +772,7 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def calibration_level(self): return 0
     @property
-    def comment(self): return ""
+    def comment(self): return get_sample_comment()
     def deep_copy(self): return self
     @property
     def dilution_factor(self): return 1.0
@@ -755,9 +789,11 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def row_number(self): return 0
     @property
-    def sample_id(self): return ""
+    def sample_id(self): return get_sample_id()
     @property
-    def sample_name(self): return ""
+    def sample_name(self): return get_sample_name()
+    @property
+    def vial(self): return get_sample_vial()
     @property
     def sample_type(self): return 0
     @property
@@ -779,11 +815,11 @@ class FileHeader(CommonCoreDataObject):
     @property
     def who_created_id(self) -> str: return get_creator_id()
     @property
-    def file_description(self): return ""
+    def file_description(self): return get_file_description()
     @property
     def file_type(self): return FileType.RawFile
     @property
-    def modified_date(self): return ""
+    def modified_date(self): return get_modified_date()
     @property
     def number_of_times_calibrated(self): return -1
     @property
@@ -791,11 +827,11 @@ class FileHeader(CommonCoreDataObject):
     @property
     def revision(self): return -1
     @property
-    def who_created_logon(self): return ""
+    def who_created_logon(self): return get_who_created_logon()
     @property
-    def who_modified_id(self): return ""
+    def who_modified_id(self): return get_who_modified_id()
     @property
-    def who_modified_logon(self): return ""
+    def who_modified_logon(self): return get_who_modified_logon()
 
 class FileError(CommonCoreDataObject):
     @property

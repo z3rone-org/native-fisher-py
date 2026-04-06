@@ -254,6 +254,197 @@ namespace ThermoNativeReader
             return count;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_axis_label_x")]
+        public static unsafe int GetInstrumentAxisLabelX(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            var str = data?.AxisLabelX ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_axis_label_y")]
+        public static unsafe int GetInstrumentAxisLabelY(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            var str = data?.AxisLabelY ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_flags")]
+        public static unsafe int GetInstrumentFlags(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            var str = data?.Flags ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_units")]
+        public static int GetInstrumentUnits()
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            return data != null ? (int)data.Units : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_is_valid")]
+        public static int GetInstrumentIsValid()
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            return data != null && data.IsValid ? 1 : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_has_accurate_mass_precursors")]
+        public static int GetInstrumentHasAccurateMassPrecursors()
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            return data != null && data.HasAccurateMassPrecursors ? 1 : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_is_tsq_quantum_file")]
+        public static int GetInstrumentIsTsqQuantumFile()
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            return data != null && data.IsTsqQuantumFile() ? 1 : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_file_description")]
+        public static unsafe int GetFileDescription(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.FileHeader.FileDescription ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_modified_date")]
+        public static unsafe int GetModifiedDate(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.FileHeader.ModifiedDate.ToString() ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_who_created_logon")]
+        public static unsafe int GetWhoCreatedLogon(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.FileHeader.WhoCreatedLogon ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_who_modified_id")]
+        public static unsafe int GetWhoModifiedId(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.FileHeader.WhoModifiedId ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_who_modified_logon")]
+        public static unsafe int GetWhoModifiedLogon(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.FileHeader.WhoModifiedLogon ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_barcode")]
+        public static unsafe int GetSampleBarcode(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.SampleInformation.Barcode ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_id")]
+        public static unsafe int GetSampleId(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.SampleInformation.SampleId ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_name")]
+        public static unsafe int GetSampleName(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.SampleInformation.SampleName ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_vial")]
+        public static unsafe int GetSampleVial(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.SampleInformation.Vial ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_comment")]
+        public static unsafe int GetSampleComment(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.SampleInformation.Comment ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_ms_order")]
         public static int GetMsOrder(int scanNumber)
         {
