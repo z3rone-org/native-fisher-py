@@ -82,6 +82,12 @@ class raw_file:
 class raw_file_reader:
     RawFileAccess = None # Set below
 
+class Device:
+    MS = 1
+    PDA = 2
+    UV = 3
+    Analog = 4
+
 class MSOrder:
     Ms = 1
     Ms2 = 2
