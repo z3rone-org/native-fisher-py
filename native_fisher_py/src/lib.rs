@@ -11,48 +11,26 @@ fn get_lib() -> PyResult<&'static Library> {
         return Ok(lib);
     }
     
-    // 1. Environment variable override
-    if let Ok(path) = std::env::var("THERMO_NATIVE_LIB") {
-        if std::path::Path::new(&path).exists() {
-             let lib = unsafe {
-                 Library::new(&path).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load override dylib: {}", e)))?
-             };
-             let _ = LIB.set(lib);
-             return Ok(LIB.get().unwrap());
-        }
+    // We expect the path to be set by the Python wrapper
+    Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Dylib path not set. Call set_dylib_path first or set THERMO_NATIVE_LIB."))
+}
+
+#[pyfunction]
+fn set_dylib_path(path: String) -> PyResult<()> {
+    if LIB.get().is_some() {
+        return Ok(());
+    }
+    
+    if !std::path::Path::new(&path).exists() {
+        return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Dylib not found at: {}", path)));
     }
 
-    // 2. Local development path (hardcoded as fallback)
-    let dev_path = "/Users/falk/workspaces/python/thermo-raw-aot/native/ThermoNativeReader/bin/Release/net8.0/osx-arm64/publish/ThermoNativeReader.dylib";
-    
-    // 3. Runtime discovery (same directory as the shared library)
-    // We try many common locations
-    let lib_name = if cfg!(target_os = "windows") {
-        "ThermoNativeReader.dll"
-    } else if cfg!(target_os = "macos") {
-        "ThermoNativeReader.dylib"
-    } else {
-        "ThermoNativeReader.so"
+    let lib = unsafe {
+        Library::new(&path).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load dylib {}: {}", path, e)))?
     };
-
-    // Use current executable's directory or the parent directory’s publish folder
-    let search_paths = vec![
-        std::path::PathBuf::from(dev_path),
-        std::path::PathBuf::from(lib_name),
-        std::path::PathBuf::from("./").join(lib_name),
-    ];
-
-    for path in search_paths {
-        if path.exists() {
-            let lib = unsafe {
-                 Library::new(&path).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load dylib {}: {}", path.display(), e)))?
-            };
-            let _ = LIB.set(lib);
-            return Ok(LIB.get().unwrap());
-        }
-    }
     
-    Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Dylib not found. Please set THERMO_NATIVE_LIB."))
+    let _ = LIB.set(lib);
+    Ok(())
 }
 
 #[pyfunction]
@@ -519,6 +497,8 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_file_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_path, m)?)?;
     m.add_function(wrap_pyfunction!(get_creation_date, m)?)?;
+    m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
+    m.add_function(wrap_pyfunction!(set_dylib_path, m)?)?;
     m.add_function(wrap_pyfunction!(get_computer_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_creator_id, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_model, m)?)?;
