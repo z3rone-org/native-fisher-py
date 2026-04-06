@@ -601,6 +601,117 @@ namespace ThermoNativeReader
             catch { return -1; }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_ms_order")]
+        public static int GetScanEventMsOrder(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_count")]
+        public static int GetScanEventMassCount(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_mass")]
+        public static double GetScanEventPrecursorMass(int scanNumber, int index)
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetMass(index); } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_activation_type")]
+        public static int GetScanEventActivationType(int scanNumber, int index)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index); } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_collision_energy")]
+        public static double GetScanEventCollisionEnergy(int scanNumber, int index)
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index); } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_stats")]
+        public static unsafe int GetScanStats(int scanNumber, double* data)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var stats = _rawFile.GetScanStatsForScanNumber(scanNumber);
+                if (stats == null) return 0;
+                data[0] = stats.StartTime;
+                data[1] = stats.LowMass;
+                data[2] = stats.HighMass;
+                data[3] = stats.TIC;
+                data[4] = stats.BasePeakMass;
+                data[5] = stats.BasePeakIntensity;
+                data[6] = stats.PacketCount;
+                return 7;
+            }
+            catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ultra")]
+        public static int GetScanFilterUltra(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_wideband")]
+        public static int GetScanFilterWideband(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_polarity")]
+        public static int GetScanFilterPolarity(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ms_order")]
+        public static int GetScanFilterMsOrder(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_analyzer")]
+        public static int GetScanFilterMassAnalyzer(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector")]
+        public static int GetScanFilterDetector(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_data")]
+        public static int GetScanFilterScanData(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage")]
+        public static double GetScanFilterCompensationVoltage(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage; } catch { return -1; }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
         public static unsafe int GetTrailerExtraHeader(byte* buffer, int bufferSize)
         {

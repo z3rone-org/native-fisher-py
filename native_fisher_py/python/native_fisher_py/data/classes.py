@@ -21,9 +21,21 @@ if not _IS_SPHINX:
         def get_path(): return ""
         def get_creation_date(): return ""
         def get_creator_id(): return ""
-        def get_ms_order(s): return 0
-        def get_mass_analyzer(s): return 0
-        def get_scan_event_string(s): return ""
+    def get_ms_order(s): return 0
+    def get_mass_analyzer(s): return 0
+    def get_scan_event_string(s): return ""
+    def get_scan_filter_ultra(s): return 0
+    def get_scan_filter_wideband(s): return 0
+    def get_scan_filter_polarity(s): return 0
+    def get_scan_filter_detector(s): return 0
+    def get_scan_filter_scan_data(s): return 0
+    def get_scan_filter_compensation_voltage(s): return 0.0
+    def get_scan_event_ms_order(s): return 0
+    def get_scan_event_mass_count(s): return 0
+    def get_scan_event_precursor_mass(s, i): return 0.0
+    def get_scan_event_activation_type(s, i): return 0
+    def get_scan_event_collision_energy(s, i): return 0.0
+    def get_scan_stats(s): return [0.0]*7
 else:
     def get_instrument_name(): return ""
     def get_instrument_model(): return ""
@@ -37,6 +49,18 @@ else:
     def get_ms_order(s): return 0
     def get_mass_analyzer(s): return 0
     def get_scan_event_string(s): return ""
+    def get_scan_filter_ultra(s): return 0
+    def get_scan_filter_wideband(s): return 0
+    def get_scan_filter_polarity(s): return 0
+    def get_scan_filter_detector(s): return 0
+    def get_scan_filter_scan_data(s): return 0
+    def get_scan_filter_compensation_voltage(s): return 0.0
+    def get_scan_event_ms_order(s): return 0
+    def get_scan_event_mass_count(s): return 0
+    def get_scan_event_precursor_mass(s, i): return 0.0
+    def get_scan_event_activation_type(s, i): return 0
+    def get_scan_event_collision_energy(s, i): return 0.0
+    def get_scan_stats(s): return [0.0]*7
 
 class CommonCoreDataObject(object):
     def deep_equals(self, other): return True
@@ -58,10 +82,22 @@ class ScanFilter(CommonCoreDataObject):
         return MassAnalyzerType(get_mass_analyzer(self._scan_number))
     @property
     def polarity(self):
-        n = self.name
-        if "+" in n: return PolarityType.Positive
-        if "-" in n: return PolarityType.Negative
-        return PolarityType.Any
+        return PolarityType(get_scan_filter_polarity(self._scan_number))
+    @property
+    def scan_data(self):
+        return ScanDataType(get_scan_filter_scan_data(self._scan_number))
+    @property
+    def ultra(self):
+        return TriState(get_scan_filter_ultra(self._scan_number))
+    @property
+    def wideband(self):
+        return TriState(get_scan_filter_wideband(self._scan_number))
+    @property
+    def detector(self):
+        return DetectorType(get_scan_filter_detector(self._scan_number))
+    @property
+    def compensation_voltage(self):
+        return get_scan_filter_compensation_voltage(self._scan_number)
     @property
     def scan_mode(self): return 0
     @property
@@ -75,23 +111,9 @@ class ScanFilter(CommonCoreDataObject):
     @property
     def turbo_scan(self): return 0
     @property
-    def ultra(self): return 0
-    @property
-    def wideband(self): return 0
-    @property
-    def compensation_volt_type(self): return 0
-    @property
-    def compensation_voltage(self): return 0.0
-    @property
-    def compensation_voltage_count(self): return -1
-    @property
-    def compensation_voltage_value(self): return 0.0
-    @property
     def corona(self): return 0
     @property
     def dependent(self): return 0
-    @property
-    def detector(self): return 0
     @property
     def detector_value(self): return 0.0
 
@@ -431,10 +453,18 @@ class TuneDataValues(CommonCoreDataObject):
     def values(self): return []
 
 class Reaction(CommonCoreDataObject): 
+    def __init__(self, scan_number=0, index=0):
+        self._scan_number = scan_number
+        self._index = index
     @property
-    def activation_type(self): return 0
+    def precursor_mass(self):
+        return get_scan_event_precursor_mass(self._scan_number, self._index)
     @property
-    def collision_energy(self): return 0.0
+    def activation_type(self):
+        return ActivationType(get_scan_event_activation_type(self._scan_number, self._index))
+    @property
+    def collision_energy(self):
+        return get_scan_event_collision_energy(self._scan_number, self._index)
     @property
     def collision_energy_valid(self): return 0
     @property
@@ -447,8 +477,6 @@ class Reaction(CommonCoreDataObject):
     def last_precursor_mass(self): return 0.0
     @property
     def multiple_activation(self): return 0
-    @property
-    def precursor_mass(self): return 0.0
     @property
     def precursor_range_is_valid(self): return 0
 
@@ -773,7 +801,24 @@ class RunHeader(CommonCoreDataObject):
     @property
     def tolerance_unit(self): return 0
 
-class RunHeaderEx(RunHeader): pass
+class RunHeaderEx(CommonCoreDataObject):
+    def __init__(self, raw_file): self._raw_file = raw_file
+    @property
+    def spectra_count(self): return self._raw_file.number_of_scans
+    @property
+    def first_spectrum(self): return self._raw_file.first_scan
+    @property
+    def last_spectrum(self): return self._raw_file.last_scan
+    @property
+    def trailer_extra_count(self): return get_trailer_extra_count()
+    @property
+    def error_message(self): return ""
+    @property
+    def has_error(self): return 0
+    @property
+    def has_warning(self): return 0
+    @property
+    def warning_message(self): return ""
 
 class WrappedRunHeader(CommonCoreDataObject):
     @property
@@ -820,10 +865,27 @@ class WrappedRunHeader(CommonCoreDataObject):
     def tolerance_unit(self): return 0
 
 class ScanEvent(CommonCoreDataObject):
+    def __init__(self, scan_number=0):
+        self._scan_number = scan_number
+    @property
+    def ms_order(self):
+        return MsOrderType(get_scan_event_ms_order(self._scan_number))
+    @property
+    def mass_count(self):
+        return get_scan_event_mass_count(self._scan_number)
+    def get_mass(self, index):
+        return get_scan_event_precursor_mass(self._scan_number, index)
+    def get_activation(self, index):
+        return ActivationType(get_scan_event_activation_type(self._scan_number, index))
+    def get_energy(self, index):
+        return get_scan_event_collision_energy(self._scan_number, index)
+    def get_reaction(self, index):
+        return Reaction(self._scan_number, index)
+    @property
+    def name(self):
+        return get_scan_event_string(self._scan_number)
     @property
     def accurate_mass(self): return 0
-    @property
-    def ms_order(self) -> int: return 1
     @property
     def mass_analyzer(self) -> int: return 0
     @property
@@ -869,8 +931,6 @@ class ScanEvent(CommonCoreDataObject):
     @property
     def mass_calibrator_count(self): return -1
     @property
-    def mass_count(self): return -1
-    @property
     def mass_range_count(self): return -1
     @property
     def multi_notch(self): return 0
@@ -882,8 +942,6 @@ class ScanEvent(CommonCoreDataObject):
     def multiple_photon_dissociation_value(self): return 0.0
     @property
     def multiplex(self): return 0
-    @property
-    def name(self): return "Any"
     @property
     def param_a(self): return 0.0
     @property
@@ -922,19 +980,15 @@ class ScanEvent(CommonCoreDataObject):
     def ultra(self): return 0
     @property
     def wideband(self): return 0
-    def get_activation(self, index): return 0
-    def get_energy(self, index): return 0.0
     def get_energy_valid(self, index): return 0
     def get_first_precursor_mass(self, index): return 0.0
     def get_last_precursor_mass(self, index): return 0.0
     def get_isolation_width(self, index): return 0.0
     def get_isolation_width_offset(self, index): return 0.0
     def get_is_multiple_activation(self, index): return 0
-    def get_mass(self, index): return 0.0
     def get_mass_range(self, index): return (0.0, 0.0)
     def get_mass_calibrator(self, index): return 0.0
     def get_precursor_range_validity(self, index): return 0
-    def get_reaction(self, index): return Reaction()
     def get_source_fragmentation_info(self, index): return None
     def get_source_fragmentation_mass_range(self, index): return (0.0, 0.0)
 

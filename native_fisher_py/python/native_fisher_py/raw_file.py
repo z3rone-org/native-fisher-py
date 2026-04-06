@@ -178,7 +178,7 @@ class RawFile(object):
 
     def get_scan_event_for_scan_number(self, scan_number: int):
         from .data.classes import ScanEvent
-        return ScanEvent()
+        return ScanEvent(scan_number)
 
     def get_status_log_for_retention_time(self, rt: float):
         from .data.classes import LogEntry
@@ -199,7 +199,8 @@ class RawFile(object):
         return SegmentedScan()
 
     def get_scan_stats_for_scan_number(self, scan_number: int):
-        return ScanStatistics()
+        from .data.classes import ScanStatistics
+        return ScanStatistics(scan_number)
 
     def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
         return []
