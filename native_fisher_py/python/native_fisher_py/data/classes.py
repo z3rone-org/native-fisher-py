@@ -528,9 +528,9 @@ class SegmentedScan(CommonCoreDataObject):
     @property
     def mass_ranges(self): return []
     @property
-    def position_count(self): return 0
+    def position_count(self): return len(self._masses) if self._masses is not None else 0
     @property
-    def positions(self): return np.array([])
+    def positions(self): return self._masses
     @property
     def ranges(self): return []
     @property
@@ -644,7 +644,7 @@ class Scan(CommonCoreDataObject):
     def from_file(cls, f, s):
         scan = cls()
         segmented_scan = f.get_segmented_scan_from_scan_number(s)
-        scan._preferred_masses = segmented_scan.positions
+        scan._preferred_masses = segmented_scan.masses
         scan._preferred_intensities = segmented_scan.intensities
         return scan
     def generate_frequency_table(self): return None
