@@ -99,7 +99,7 @@ namespace ThermoNativeReader
                 int count = Math.Min(filterList.Length, maxCount);
                 for (int i = 0; i < count; i++)
                 {
-                    filters[i] = Marshal.StringToCoTaskMemAnsi(filterList[i].ToString());
+                    filters[i] = Marshal.StringToHGlobalAnsi(filterList[i].FilterString);
                 }
                 return filterList.Length;
             }
@@ -553,7 +553,7 @@ namespace ThermoNativeReader
                 
                 try 
                 {
-                    eventStr = scanEvent.ToString();
+                    eventStr = scanEvent.ToAutoFilterString();
                 }
                 catch (Exception ex)
                 {
@@ -563,7 +563,7 @@ namespace ThermoNativeReader
                     
                     // Construct a basic filter string like "FTMS + p NSI Full ms [400.00-2000.00]"
                     // We can pull these parts from the scanEvent properties.
-                    var analyzer = scanEvent.MassAnalyzer.ToString();
+                    var analyzer = ((int)scanEvent.MassAnalyzer).ToString();
                     var polarity = scanEvent.Polarity == ThermoFisher.CommonCore.Data.FilterEnums.PolarityType.Positive ? "+" : "-";
                     var msOrder = (scanEvent.MSOrder == MSOrderType.Ms) ? "ms" : $"ms{(int)scanEvent.MSOrder}";
                     
