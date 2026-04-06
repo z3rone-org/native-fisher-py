@@ -679,6 +679,16 @@ class RunHeader(CommonCoreDataObject):
     @property
     def max_intensity(self): return 0.0
     @property
+    def spectra_count(self): return 0
+    @property
+    def status_log_count(self): return 0
+    @property
+    def trailer_extra_count(self): return 0
+    @property
+    def trailer_scan_event_count(self): return 0
+    @property
+    def tune_data_count(self): return 0
+    @property
     def tolerance_unit(self): return 0
 
 class RunHeaderEx(RunHeader): pass
