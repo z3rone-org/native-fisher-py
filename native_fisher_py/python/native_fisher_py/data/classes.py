@@ -149,12 +149,17 @@ class ScanFilter(CommonCoreDataObject):
 class EnumBase(object):
     def __init__(self, value=0): 
         self.value = value
+        self._name = None
     @property
     def name(self):
+        if self._name: return self._name
         for k, v in self.__class__.__dict__.items():
             if isinstance(v, self.__class__) and v.value == self.value:
                 return k
         return str(self.value)
+    @name.setter
+    def name(self, val):
+        self._name = val
     def __str__(self): 
         n = self.name
         return f"{self.__class__.__name__}.{n}" if n and not n.isdigit() else str(self.value)
@@ -214,6 +219,9 @@ TriState.On = TriState(2); TriState.On.name = "On"
 
 class EventAccurateMass(EnumBase): Off = 0; External = 1; Internal = 2; On = 3
 EventAccurateMass.Off = EventAccurateMass(0); EventAccurateMass.Off.name = "Off"
+EventAccurateMass.External = EventAccurateMass(1); EventAccurateMass.External.name = "External"
+EventAccurateMass.Internal = EventAccurateMass(2); EventAccurateMass.Internal.name = "Internal"
+EventAccurateMass.On = EventAccurateMass(3); EventAccurateMass.On.name = "On"
 EventAccurateMass.External = EventAccurateMass(1); EventAccurateMass.External.name = "External"
 EventAccurateMass.Internal = EventAccurateMass(2); EventAccurateMass.Internal.name = "Internal"
 EventAccurateMass.On = EventAccurateMass(3); EventAccurateMass.On.name = "On"
