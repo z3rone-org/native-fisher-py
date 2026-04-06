@@ -716,28 +716,50 @@ class CentroidStream(CommonCoreDataObject):
     def validate(self): pass
 
 class ChromatogramSignal(CommonCoreDataObject): 
+    def __init__(self, times=None, intensities=None, scans=None, masses=None):
+        self._times = times if times is not None else np.array([])
+        self._intensities = intensities if intensities is not None else np.array([])
+        self._scans = scans if scans is not None else np.array([])
+        self._masses = masses if masses is not None else np.array([])
+
     @property
-    def base_peak_masses(self): return np.array([])
+    def base_peak_masses(self): return self._masses
     def clone(self): return self
     @property
     def delay(self): return 0.0
     @property
-    def end_time(self): return 0.0
-    def from_chromatogram_data(self, data): return self
-    def from_time_and_intensity(self, times, intensities): return self
-    def from_time_intensity_scan(self, times, intensities, scans): return self
-    def from_time_intensity_scan_base_peak(self, times, intensities, scans, masses): return self
+    def end_time(self): return self._times[-1] if len(self._times) > 0 else 0.0
+    
+    @staticmethod
+    def from_chromatogram_data(data):
+        return ChromatogramSignal(data.times, data.intensities, data.scan_numbers_array, data.intensities_array) # intensities_array is dummy
+
+    @staticmethod
+    def from_time_and_intensity(times, intensities):
+        return ChromatogramSignal(times, intensities)
+
+    @staticmethod
+    def from_time_intensity_scan(times, intensities, scans):
+        return ChromatogramSignal(times, intensities, scans)
+
+    @staticmethod
+    def from_time_intensity_scan_base_peak(times, intensities, scans, masses):
+        return ChromatogramSignal(times, intensities, scans, masses)
+
     @property
-    def has_base_peak_data(self): return 0
+    def has_base_peak_data(self): return 1 if len(self._masses) > 0 else 0
     @property
-    def intensities(self): return np.array([])
+    def intensities(self): return self._intensities
     @property
-    def length(self): return 0
+    def length(self): return len(self._times)
     @property
-    def scans(self): return np.array([])
+    def scans(self): return self._scans
     @property
-    def signal_base_peak_masses(self): return np.array([])
+    def signal_base_peak_masses(self): return self._masses
     @property
+    def start_time(self): return self._times[0] if len(self._times) > 0 else 0.0
+    @property
+    def times(self): return self._times
     def signal_intensities(self): return np.array([])
     @property
     def signal_scans(self): return np.array([])
@@ -1286,18 +1308,23 @@ class ChromatogramTraceSettings(CommonCoreDataObject):
 
 
 class ChromatogramData(CommonCoreDataObject):
+    def __init__(self, times=None, intensities=None, scans=None):
+        self._times = times if times is not None else []
+        self._intensities = intensities if intensities is not None else []
+        self._scans = scans if scans is not None else []
+
     @property
-    def intensities(self): return []
+    def intensities(self): return self._intensities
     @property
-    def intensities_array(self): return np.array([])
+    def intensities_array(self): return np.array(self._intensities)
     @property
-    def length(self): return 0
+    def length(self): return len(self._times)
     @property
-    def positions_array(self): return np.array([])
+    def positions_array(self): return np.array(self._times)
     @property
-    def scan_numbers_array(self): return np.array([])
+    def scan_numbers_array(self): return np.array(self._scans)
     @property
-    def times(self): return []
+    def times(self): return self._times
 
 class business:
     InstrumentData = InstrumentData; SampleType = SampleType; ScanStatistics = ScanStatistics; SegmentedScan = SegmentedScan; RunHeader = RunHeader; SampleInformation = SampleInformation; InstrumentSelection = InstrumentSelection; FileHeader = FileHeader; FileError = FileError; CentroidStream = CentroidStream; ChromatogramSignal = ChromatogramSignal; ChromatogramTraceSettings = ChromatogramTraceSettings; HeaderItem = HeaderItem; LogEntry = LogEntry; MassOptions = MassOptions; Range = Range; Reaction = Reaction; Scan = Scan; StatusLogValues = StatusLogValues; TuneDataValues = TuneDataValues; TraceType = TraceType; BarcodeStatusType = EnumBase; BracketType = EnumBase; CachedScanProvider = object; SimpleScan = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; barcode_status_type = EnumBase; bracket_type = EnumBase; cached_scan_provider = object; centroid_stream = CentroidStream; chromatogram_signal = ChromatogramSignal; chromatogram_signal_cls = ChromatogramSignal; chromatogram_trace_settings = ChromatogramTraceSettings; data_units = EnumBase; generic_data_types = EnumBase; header_item = HeaderItem; instrument_data = InstrumentData; instrument_selection = InstrumentSelection; label_peak = object; log_entry = LogEntry; mass_options = MassOptions; mass_to_frequency_converter = object; noise_and_baseline = object; range = Range; reaction = Reaction; run_header = RunHeader; sample_information = SampleInformation; sample_type = SampleType; scan = Scan; scan_statistics = ScanStatistics; segmented_scan = SegmentedScan; simple_scan = object; spectrum_packet_type = object; status_log_values = StatusLogValues; tolerance_mode = EnumBase; trace_type = TraceType; tune_data_values = TuneDataValues; DataUnits = EnumBase; GenericDataTypes = EnumBase; MassToFrequencyConverter = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; SimpleScan = object; BarcodeStatusType = EnumBase; BracketType = EnumBase; SampleType = SampleType; TraceType = TraceType
