@@ -17,6 +17,7 @@ if not _IS_SPHINX:
         def get_instrument_software_version(): return ""
         def get_instrument_hardware_version(): return ""
         def get_start_time(): return 0.0
+        def get_end_time(): return 0.0
         def get_file_name(): return ""
         def get_path(): return ""
         def get_creation_date(): return ""
@@ -52,6 +53,7 @@ else:
     def get_instrument_software_version(): return ""
     def get_instrument_hardware_version(): return ""
     def get_start_time(): return 0.0
+    def get_end_time(): return 0.0
     def get_file_name(): return ""
     def get_creation_date(): return ""
     def get_creator_id(): return ""
@@ -860,6 +862,10 @@ class RunHeaderEx(CommonCoreDataObject):
     def first_spectrum(self): return self._raw_file.first_scan
     @property
     def last_spectrum(self): return self._raw_file.last_scan
+    @property
+    def start_time(self): return get_start_time()
+    @property
+    def end_time(self): return get_end_time()
     @property
     def trailer_extra_count(self): return get_trailer_extra_count()
     @property
