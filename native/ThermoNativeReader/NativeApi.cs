@@ -1168,7 +1168,7 @@ namespace ThermoNativeReader
                 var info = _rawFile.GetTrailerExtraHeaderInformation();
                 if (info == null) return 0;
                 foreach (var i in info.Take(5)) Console.Error.WriteLine($"[AOT] Field Label: '{i.Label}' Type: {(int)i.DataType}");
-                var res = string.Join("|", info.Select(x => x.Label + ":::" + (int)x.DataType));
+                var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType));
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
                 for (int i = 0; i < count; i++) buffer[i] = bytes[i];
