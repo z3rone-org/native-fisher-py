@@ -261,6 +261,13 @@ namespace ThermoNativeReader
             return count;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_tune_data_count")]
+        public static int GetTuneDataCount()
+        {
+            if (_rawFile == null) return -1;
+            return _rawFile.GetTuneDataCount();
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_creation_date")]
         public static unsafe int GetCreationDate(byte* buffer, int length)
         {
@@ -1212,6 +1219,193 @@ namespace ThermoNativeReader
         {
             _rawFile?.Dispose();
             _rawFile = null;
+        }
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_volt_type")]
+        public static int GetScanFilterCompensationVoltType(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltType; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage_count")]
+        public static int GetScanFilterCompensationVoltageCount(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltageCount; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation")]
+        public static int GetScanFilterElectronCaptureDissociation(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation")]
+        public static int GetScanFilterElectronTransferDissociation(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_enhanced")]
+        public static int GetScanFilterEnhanced(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).Enhanced ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid")]
+        public static int GetScanFilterHigherEnergyCID(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCID ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation")]
+        public static int GetScanFilterSourceFragmentation(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_valid")]
+        public static int GetScanFilterSourceFragmentationInfoValid(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_type")]
+        public static int GetScanFilterSourceFragmentationType(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationType; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_value")]
+        public static double GetScanFilterSourceFragmentationValue(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
+        public static int GetScanFilterSupplementalActivation(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation ? 1 : 0; } catch { return 0; }
+        }
+        
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_precision")]
+        public static int GetScanFilterMassPrecision(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MassPrecision; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multi_notch")]
+        public static int GetScanFilterMultiNotch(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).MultiNotch ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiplex")]
+        public static int GetScanFilterMultiplex(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).Multiplex ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_unique_mass_count")]
+        public static int GetScanFilterUniqueMassCount(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).UniqueMassCount; } catch { return 0; }
+        }
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation_value")]
+        public static double GetScanFilterElectronCaptureDissociationValue(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociationValue; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation_value")]
+        public static double GetScanFilterElectronTransferDissociationValue(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociationValue; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid_value")]
+        public static double GetScanFilterHigherEnergyCIDValue(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCIDValue; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation")]
+        public static int GetScanFilterMultiplePhotonDissociation(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).MultiplePhotonDissociation ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation_value")]
+        public static double GetScanFilterMultiplePhotonDissociationValue(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).MultiplePhotonDissociationValue; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation")]
+        public static int GetScanFilterPulsedQDissociation(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).PulsedQDissociation ? 1 : 0; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation_value")]
+        public static double GetScanFilterPulsedQDissociationValue(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).PulsedQDissociationValue; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_a")]
+        public static double GetScanFilterParamA(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamA; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_b")]
+        public static double GetScanFilterParamB(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamB; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_f")]
+        public static double GetScanFilterParamF(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamF; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_r")]
+        public static double GetScanFilterParamR(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamR; } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_v")]
+        public static double GetScanFilterParamV(int scanNumber)
+        {
+            if (_rawFile == null) return 0.0;
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamV; } catch { return 0.0; }
         }
     }
 }

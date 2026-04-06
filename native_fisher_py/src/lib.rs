@@ -90,6 +90,16 @@ fn get_num_scans() -> PyResult<i32> {
 }
 
 #[pyfunction]
+fn get_tune_data_count() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_tune_data_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_tune_data_count: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
 fn get_scan_rt(scan_number: i32) -> PyResult<f64> {
     let lib = get_lib()?;
     unsafe {
@@ -667,11 +677,292 @@ fn close_raw_file() -> PyResult<()> {
     }
 }
 
+#[pyfunction]
+fn get_tune_data_count() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_tune_data_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_tune_data_count: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_compensation_volt_type(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_compensation_volt_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_compensation_volt_type: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_compensation_voltage_count(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_compensation_voltage_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_compensation_voltage_count: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_electron_capture_dissociation(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_electron_capture_dissociation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_electron_capture_dissociation: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_electron_capture_dissociation_value(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_electron_capture_dissociation_value")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_electron_capture_dissociation_value: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_electron_transfer_dissociation(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_electron_transfer_dissociation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_electron_transfer_dissociation: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_electron_transfer_dissociation_value(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_electron_transfer_dissociation_value")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_electron_transfer_dissociation_value: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_enhanced(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_enhanced")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_enhanced: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_higher_energy_cid(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_higher_energy_cid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_higher_energy_cid: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_higher_energy_cid_value(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_higher_energy_cid_value")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_higher_energy_cid_value: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_multiple_photon_dissociation(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_multiple_photon_dissociation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_multiple_photon_dissociation: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_multiple_photon_dissociation_value(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_multiple_photon_dissociation_value")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_multiple_photon_dissociation_value: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_pulsed_q_dissociation(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_pulsed_q_dissociation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_pulsed_q_dissociation: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_pulsed_q_dissociation_value(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_pulsed_q_dissociation_value")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_pulsed_q_dissociation_value: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_source_fragmentation(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_source_fragmentation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_source_fragmentation: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_source_fragmentation_info_valid(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_source_fragmentation_info_valid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_source_fragmentation_info_valid: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_source_fragmentation_type(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_source_fragmentation_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_source_fragmentation_type: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_source_fragmentation_value(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_source_fragmentation_value")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_source_fragmentation_value: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_supplemental_activation(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_supplemental_activation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_supplemental_activation: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_mass_precision(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_mass_precision")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_mass_precision: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_multi_notch(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_multi_notch")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_multi_notch: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_multiplex(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_multiplex")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_multiplex: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_unique_mass_count(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_unique_mass_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_unique_mass_count: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_param_a(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_param_a")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_param_a: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_param_b(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_param_b")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_param_b: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_param_f(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_param_f")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_param_f: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_param_r(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_param_r")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_param_r: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_param_v(scan_number: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_param_v")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_param_v: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
 /// Low-level NativeAOT bridge for Thermo Fisher RAW files.
 #[pymodule]
 fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
     m.add_function(wrap_pyfunction!(get_num_scans, m)?)?;
+    m.add_function(wrap_pyfunction!(get_tune_data_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_spectrum, m)?)?;
     m.add_function(wrap_pyfunction!(is_centroid, m)?)?;
@@ -764,6 +1055,33 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_filter_detector_value, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_compensation_voltage, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_compensation_voltage_value, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_compensation_volt_type, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_compensation_voltage_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_electron_capture_dissociation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_electron_capture_dissociation_value, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_electron_transfer_dissociation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_electron_transfer_dissociation_value, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_enhanced, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_higher_energy_cid, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_higher_energy_cid_value, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_multiple_photon_dissociation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_multiple_photon_dissociation_value, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_pulsed_q_dissociation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_pulsed_q_dissociation_value, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_source_fragmentation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_source_fragmentation_info_valid, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_source_fragmentation_type, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_source_fragmentation_value, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_supplemental_activation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_mass_precision, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_multi_notch, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_multiplex, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_unique_mass_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_param_a, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_param_b, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_param_f, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_param_r, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_param_v, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }

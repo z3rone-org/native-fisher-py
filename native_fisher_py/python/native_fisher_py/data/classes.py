@@ -206,6 +206,106 @@ class ScanFilter(CommonCoreDataObject):
     def detector_value(self):
         return get_scan_filter_detector_value(self._scan_number)
 
+    @property
+    def source_fragmentation(self):
+        return TriState(get_scan_filter_source_fragmentation(self._scan_number))
+    @property
+    def source_fragmentation_info_valid(self):
+        return SourceFragmentationInfoValidType(get_scan_filter_source_fragmentation_info_valid(self._scan_number))
+    @property
+    def source_fragmentation_type(self):
+        return SourceFragmentationValueType(get_scan_filter_source_fragmentation_type(self._scan_number))
+    @property
+    def source_fragmentation_value(self):
+        return get_scan_filter_source_fragmentation_value(self._scan_number)
+    @property
+    def supplemental_activation(self):
+        return TriState(get_scan_filter_supplemental_activation(self._scan_number))
+    @property
+    def higher_energy_ci_d(self):
+        return TriState(get_scan_filter_higher_energy_cid(self._scan_number))
+    @higher_energy_ci_d.setter
+    def higher_energy_ci_d(self, val): pass
+    @property
+    def higher_energy_ci_d_value(self):
+        return get_scan_filter_higher_energy_cid_value(self._scan_number)
+    @property
+    def mass_precision(self):
+        return FilterAccurateMass(get_scan_filter_mass_precision(self._scan_number))
+    @property
+    def multi_notch(self):
+        return TriState(get_scan_filter_multi_notch(self._scan_number))
+    @property
+    def multiplex(self):
+        return TriState(get_scan_filter_multiplex(self._scan_number))
+    @property
+    def unique_mass_count(self):
+        return get_scan_filter_unique_mass_count(self._scan_number)
+    @property
+    def param_a(self): return get_scan_filter_param_a(self._scan_number)
+    @property
+    def param_b(self): return get_scan_filter_param_b(self._scan_number)
+    @property
+    def param_f(self): return get_scan_filter_param_f(self._scan_number)
+    @property
+    def param_r(self): return get_scan_filter_param_r(self._scan_number)
+    @property
+    def param_v(self): return get_scan_filter_param_v(self._scan_number)
+    @property
+    def compensation_volt_type(self):
+        return CompensationVoltageType(get_scan_filter_compensation_volt_type(self._scan_number))
+    @property
+    def compensation_voltage_count(self):
+        return get_scan_filter_compensation_voltage_count(self._scan_number)
+    @property
+    def electron_capture_dissociation(self):
+        return TriState(get_scan_filter_electron_capture_dissociation(self._scan_number))
+    @property
+    def electron_capture_dissociation_value(self):
+        return get_scan_filter_electron_capture_dissociation_value(self._scan_number)
+    @property
+    def electron_transfer_dissociation(self):
+        return TriState(get_scan_filter_electron_transfer_dissociation(self._scan_number))
+    @property
+    def electron_transfer_dissociation_value(self):
+        return get_scan_filter_electron_transfer_dissociation_value(self._scan_number)
+    @property
+    def enhanced(self):
+        return TriState(get_scan_filter_enhanced(self._scan_number))
+    @property
+    def field_free_region(self):
+        return FieldFreeRegionType(get_scan_filter_field_free_region(self._scan_number))
+    @property
+    def get_source_fragmentation_info_valid(self): return True
+    @property
+    def index_to_multiple_activation_index(self): return 0
+    @property
+    def locale_name(self): return "en-US"
+    @property
+    def multi_state_activation(self): return TriState.Off
+    @property
+    def multiple_photon_dissociation(self):
+        return TriState(get_scan_filter_multiple_photon_dissociation(self._scan_number))
+    @property
+    def multiple_photon_dissociation_value(self):
+        return get_scan_filter_multiple_photon_dissociation_value(self._scan_number)
+    @property
+    def photo_ionization(self): return TriState.Off
+    @property
+    def pulsed_q_dissociation(self):
+        return TriState(get_scan_filter_pulsed_q_dissociation(self._scan_number))
+    @property
+    def pulsed_q_dissociation_value(self):
+        return get_scan_filter_pulsed_q_dissociation_value(self._scan_number)
+    @property
+    def sector_scan(self):
+        return SectorScanType(get_scan_filter_sector_scan(self._scan_number))
+    @property
+    def souce_fragmentaion_value_count(self): return 0
+    @property
+    def source_fragmentation_info_valid(self):
+        return SourceFragmentationInfoValidType(get_scan_filter_source_fragmentation_info_valid(self._scan_number))
+
 class EnumBase(object):
     _instances = {}
     def __new__(cls, value):
@@ -615,7 +715,7 @@ class HeaderItem(CommonCoreDataObject):
     @property
     def is_variable_header(self): return 0
     @property
-    def string_length_or_precision(self): return 0
+    def format_value(self): return ""
 
 class StatusLogValues(CommonCoreDataObject):
     def __init__(self, retention_time=0.0, values=None):
@@ -1241,48 +1341,27 @@ class ScanEvents(CommonCoreDataObject):
     @property
     def segments(self): return -1
 
-# ScanFilter consolidated at the top
-    @property
-    def param_a(self): return 0.0
-    @property
-    def param_b(self): return 0.0
-    @property
-    def param_f(self): return 0.0
-    @property
-    def param_r(self): return 0.0
-    @property
-    def param_v(self): return 0.0
-    @property
-    def photo_ionization(self): return 0
-    @property
-    def pulsed_q_dissociation(self): return 0
-    @property
-    def pulsed_q_dissociation_value(self): return 0.0
-    @property
-    def scan_data(self): return 0
-    @property
-    def sector_scan(self): return 0
-    @property
-    def source_fragmentation(self): return 0
-    @property
-    def source_fragmentation_type(self): return 0
-    @property
-    def source_fragmentation_value(self): return 0.0
-    @property
-    def supplemental_activation(self): return 0
-    @property
-    def unique_mass_count(self): return -1
-    def get_source_fragmentation_info_valid(self, index): return 0
-    def source_fragmentation_info_valid(self, index): return 0
-    @property
-    def index_to_multiple_activation_index(self): return []
-    @property
-    def souce_fragmentaion_value_count(self): return -1
 
 class Range(object):
     def __init__(self, low=0.0, high=0.0):
-        self.low = low
-        self.high = high
+        self._low = float(low)
+        self._high = float(high)
+
+    @property
+    def low(self): return self._low
+    @property
+    def high(self): return self._high
+
+    def compare_to(self, other): return 0
+    @staticmethod
+    def create(l, h): return Range(l, h)
+    @staticmethod
+    def create_from_cetner_and_delta(c, d): return Range(c-d, c+d)
+    def equals(self, other):
+        if not isinstance(other, Range): return False
+        return self._low == other._low and self._high == other._high
+    def get_hash_code(self): return hash((self._low, self._high))
+    def includes(self, val): return self._low <= val <= self._high
 class MassOptions(CommonCoreDataObject):
     def clone(self): return self
     def get_tolerance_at_mass(self, m): 
