@@ -20,6 +20,11 @@ Range = Range
 TraceType = TraceType
 np = np
 
+__all__ = [
+    'RawFile', 'MsOrderType', 'MassAnalyzerType', 'Range', 
+    'ToleranceUnits', 'TraceType', 'np', 'RawFileException'
+]
+
 class RawFile(object):
     """
     A high-level wrapper to provide a drop-in replacement for fisher_py.RawFile

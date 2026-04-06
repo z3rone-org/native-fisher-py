@@ -215,16 +215,33 @@ class clr_loader_stub(object):
     class mono(object):
         Any = None
         Dict = dict
-        MethodDesc = object
+        class MethodDesc(object):
+            @staticmethod
+            def search(*args): return None
         Mono = object
         MonoMethod = object
         Optional = None
         Path = pathlib.Path
-        Runtime = object
+        class Runtime(object):
+            @staticmethod
+            def get_assembly(*args): return None
+            info = None
+            @staticmethod
+            def shutdown(): pass
+        class Mono(object):
+            @staticmethod
+            def get_assembly(*args): return None
+            info = None
+            @staticmethod
+            def shutdown(): pass
         RuntimeInfo = object
         Sequence = list
         StrOrPath = str
-        atexit = None
+        class atexit(object):
+            @staticmethod
+            def register(*args): pass
+            @staticmethod
+            def unregister(*args): pass
         ffi = object
         @staticmethod
         def initialize(): pass
@@ -234,7 +251,8 @@ class clr_loader_stub(object):
         def optional_path_as_string(p): return ""
         @staticmethod
         def path_as_string(p): return ""
-        re = None
+        class re(object):
+            A=0; ASCII=0; DEBUG=0; DOTALL=0; I=0; IGNORECASE=0; L=0; LOCALE=0; M=0; MULTILINE=0; Match=object; NOFLAG=0; Pattern=object; PatternError=object; RegexFlag=0; S=0; Scanner=object; U=0; UNICODE=0; VERBOSE=0; X=0; compile=lambda x:x; copyreg=None; enum=None; error=Exception; escape=lambda x:x; findall=lambda x:x; finditer=lambda x:x; fullmatch=lambda x:x; functools=None; match=lambda x:x; purge=lambda:None; search=lambda x:x; split=lambda x:x; sub=lambda x:x; subn=lambda x:x
     class util(object):
         ClrError = Exception
         Optional = None
@@ -242,22 +260,40 @@ class clr_loader_stub(object):
         StrOrPath = str
         @staticmethod
         def check_result(r): pass
-        clr_error = None
+        class clr_error(object):
+            ClrError = Exception; Optional = None
         coreclr_errors = {}
+        class hostfxr_errors(object):
+            ClrError = Exception; HOSTFXR_ERRORS = {}; Optional = None; @staticmethod
+            def get_hostfxr_error(e): return ""
         @staticmethod
         def find(*args): return ""
+        class find_inner(object):
+            DotnetCoreRuntimeSpec = object; Iterator = iter; Optional = None; Path = pathlib.Path; @staticmethod
+            def find_dotnet_cli(): return ""; @staticmethod
+            def find_dotnet_root(): return ""; @staticmethod
+            def find_libmono(): return ""; @staticmethod
+            def find_runtimes(): return []; @staticmethod
+            def find_runtimes_in_root(): return []; @staticmethod
+            def find_runtimes_using_cli(): return []; os = os; platform = None; shutil = None; sys = sys
+        find = find_inner
         @staticmethod
         def find_dotnet_root(): return ""
         @staticmethod
         def get_coreclr_error(e): return ""
         @staticmethod
         def get_hostfxr_error(e): return ""
-        hostfxr_errors = {}
+        class coreclr_errors_inner(object):
+            ClrError = Exception; Comment = ""; Dict = dict; Message = ""; Optional = None; SymbolicName = ""; @staticmethod
+            def get_coreclr_error(e): return ""
+        coreclr_errors = coreclr_errors_inner
         @staticmethod
         def optional_path_as_string(p): return ""
         @staticmethod
         def path_as_string(p): return ""
-        runtime_spec = None
+        class runtime_spec(object):
+            Any = None; Dict = dict; DotnetCoreRuntimeSpec = object; Path = pathlib.Path; TextIO = object; Tuple = tuple; dataclass = lambda x:x; json = None
+        runtime_spec = runtime_spec
     class ffi(object):
         Optional = None
         Path = pathlib.Path
@@ -266,20 +302,35 @@ class clr_loader_stub(object):
         def cdef(s): pass
         cffi = object
         ffi = object
-        hostfxr = object
+        class hostfxr(object):
+            @staticmethod
+            def cdef(s): pass; sys = sys
+        hostfxr = hostfxr
         @staticmethod
         def load_hostfxr(): pass
         @staticmethod
         def load_mono(): pass
         @staticmethod
         def load_netfx(): pass
-        mono = object
-        netfx = object
+        class mono(object):
+            @staticmethod
+            def cdef(s): pass
+        mono = mono
+        class netfx(object):
+            @staticmethod
+            def cdef(s): pass
+        netfx = netfx
         sys = sys
+        class cffi_inner(object):
+            CDefError = Exception; FFI = object; FFIError = Exception; PkgConfigError = Exception; VerificationError = Exception; VerificationMissing = Exception; api = object; commontypes = object; cparser = object; error = Exception; lock = object; model = object
+        cffi = cffi_inner
     class types(object):
         ABCMeta = type
         Any = None
-        Assembly = object
+        class Assembly(object):
+            @staticmethod
+            def get_function(*args): return None
+        Assembly = Assembly
         Callable = object
         ClrFunction = object
         Dict = dict
@@ -365,8 +416,23 @@ class clr_inner(object):
     def AddReference(p): pass
     class loader_stub(object):
         DotNetFinder = object
-        DotNetLoader = object
-        importlib = object
+        class DotNetLoader(object):
+            @staticmethod
+            def create_module(*args): return None
+            @staticmethod
+            def exec_module(*args): pass
+            @staticmethod
+            def load_module(*args): return None
+        DotNetLoader = DotNetLoader
+        class DotNetFinder(object):
+            @staticmethod
+            def find_spec(*args): return None
+            @staticmethod
+            def invalidate_caches(): pass
+        DotNetFinder = DotNetFinder
+        class importlib(object):
+            abc = object; import_module = lambda x:None; invalidate_caches = lambda:None; machinery = object; metadata = object; reload = lambda x:x; resources = object; sys = sys; util = object
+        importlib = importlib
         sys = sys
     loader = loader_stub
     Python = None
