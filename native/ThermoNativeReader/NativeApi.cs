@@ -98,8 +98,9 @@ namespace ThermoNativeReader
                 }
                 return count;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[AOT] Exception in GetSpectrum for scan {scanNumber}: {ex.Message}");
                 return -1;
             }
         }
