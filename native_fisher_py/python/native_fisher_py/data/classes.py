@@ -499,28 +499,6 @@ class ScanStatistics(CommonCoreDataObject):
     def spectrum_packet_type(self): return 0
     @property
     def wavelength_step(self): return 0.0
-    @property
-    def number_of_channels(self): return 0
-    @property
-    def packet_type(self): return 0
-    @property
-    def scan_event_number(self): return 0
-    @property
-    def scan_number(self): return 0
-    @property
-    def scan_type(self): return 0
-    @property
-    def segment_number(self): return 0
-    @property
-    def short_wavelength(self): return 0.0
-    @property
-    def spectrum_packet_type(self): return 0
-    @property
-    def start_time(self): return 0.0
-    @property
-    def tic(self): return 0.0
-    @property
-    def wavelength_step(self): return 0.0
 
 class SegmentedScan(CommonCoreDataObject):
     def __init__(self, masses=None, intensities=None, scan_number=0):
