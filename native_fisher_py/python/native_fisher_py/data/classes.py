@@ -210,21 +210,25 @@ class EnumBase(object):
     @property
     def name(self):
         if self._name: return self._name
+        # Check class dictionary for instances or matching values
         for k, v in self.__class__.__dict__.items():
             if k.startswith("_") or k == "name" or k == "value": continue
             if isinstance(v, self.__class__) and v.value == self.value:
                 return k
-            if not isinstance(v, EnumBase) and v == self.value:
+        # Fallback to literal class members that are integers (un-instantiated)
+        for k, v in self.__class__.__dict__.items():
+            if k.startswith("_") or k == "name" or k == "value": continue
+            if not isinstance(v, EnumBase) and isinstance(v, int) and v == self.value:
                 return k
         return str(self.value)
     @name.setter
     def name(self, val):
         self._name = val
-    def __str__(self): 
-        n = self.name
-        return f"{self.__class__.__name__}.{n}" if n and not n.isdigit() else str(self.value)
+    def __repr__(self): return str(self)
     def __int__(self): return self.value
-    def __repr__(self): return self.__str__()
+    def __str__(self):
+        # We want "GenericDataTypes.FLOAT" or similar
+        return f"{self.__class__.__name__}.{self.name}"
 
 class GenericDataTypes(EnumBase):
     NULL = 0
@@ -243,8 +247,9 @@ class GenericDataTypes(EnumBase):
     WCHAR_STRING = 13
 
 for name in ["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"]:
-    setattr(GenericDataTypes, name, GenericDataTypes(["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"].index(name)))
-    getattr(GenericDataTypes, name).name = name
+    enum_val = GenericDataTypes(["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"].index(name))
+    enum_val.name = name
+    setattr(GenericDataTypes, name, enum_val)
 class SpectrumPacketType(EnumBase):
     Profile = 0
     Centroid = 1
@@ -569,6 +574,7 @@ class HeaderItem(CommonCoreDataObject):
         else:
             self._label = data
             self._data_type = GenericDataTypes.NULL
+    
     @property
     def label(self): return self._label
     @property
@@ -579,8 +585,6 @@ class HeaderItem(CommonCoreDataObject):
     def is_scientific_notation(self): return 0
     @property
     def is_variable_header(self): return 0
-    @property
-    def label(self): return self._label
     @property
     def string_length_or_precision(self): return 0
 
