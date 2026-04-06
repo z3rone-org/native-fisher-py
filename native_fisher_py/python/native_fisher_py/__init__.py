@@ -15,6 +15,7 @@ from . import data as data_mod
 from . import utils as utils_mod
 from . import net_wrapping as net_wrapping_mod
 from . import raw_file_reader as raw_file_reader_mod
+import sys
 
 # Aliases for parity
 data = data_mod.data
