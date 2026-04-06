@@ -663,7 +663,8 @@ class Scan(CommonCoreDataObject):
     def centroid_stream_access(self): return None
     def create_scan_reader(self, r): return None
     def deep_clone(self): return self
-    def from_file(self, f, s): return self
+    @classmethod
+    def from_file(cls, f, s): return cls()
     def generate_frequency_table(self): return None
     def generate_noise_table(self): return None
     @property

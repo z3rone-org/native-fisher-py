@@ -327,8 +327,13 @@ class RawFile(object):
     def get_scan_ms1(self, scan_number: int):
         return self.get_scan_from_scan_number(scan_number)
 
-    def get_scan_ms2(self, scan_number: int):
-        return self.get_scan_from_scan_number(scan_number)
+    def get_scan_ms2(self, *args):
+        if len(args) == 1:
+            return self.get_scan_from_scan_number(args[0])
+        elif len(args) >= 2:
+            scan, _ = self.get_ms2_scan_number_from_retention_time(args[0], args[1])
+            return self.get_scan_from_scan_number(scan)
+        return np.array([]), np.array([]), np.array([]), ""
 
     def get_tic_ms2(self):
         return np.array([]), np.array([])
