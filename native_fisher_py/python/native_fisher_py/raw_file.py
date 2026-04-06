@@ -239,6 +239,30 @@ class RawFile(object):
         if scan_number < 1: return 0, 0.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
+    def get_scan_event_str_from_scan_number(self, scan_number: int) -> str:
+        return self.get_scan_event_string_for_scan_number(scan_number)
+
+    def get_retention_time_from_scan_number(self, scan_number: int) -> float:
+        return self.retention_time_from_scan_number(scan_number)
+
+    def get_scan(self, scan_number: int):
+        return self.get_scan_from_scan_number(scan_number)
+
+    def get_scan_ms1(self, scan_number: int):
+        return self.get_scan_from_scan_number(scan_number)
+
+    def get_scan_ms2(self, scan_number: int):
+        return self.get_scan_from_scan_number(scan_number)
+
+    def get_tic_ms2(self):
+        return np.array([]), np.array([])
+
+    def get_average_ms2_scans_by_rt(self, rt_start, rt_end):
+        return np.array([]), np.array([]), 0
+
+    def ms2_filter_masses(self, scan_number):
+        return []
+
     def get_scan_from_scan_number(self, scan_number: int):
         masses, intensities = get_spectrum(scan_number, 1000000)
         charges = np.zeros_like(masses)
