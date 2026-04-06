@@ -640,6 +640,34 @@ namespace ThermoNativeReader
             }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_string")]
+        public static unsafe int GetScanFilterString(int scanNumber, byte* buffer, int bufferSize)
+        {
+            if (_rawFile == null) return 0;
+            try
+            {
+                var filter = _rawFile.GetFilterForScanNumber(scanNumber);
+                if (filter == null) return 0;
+
+                string filterStr = SafeGetFilterString(filter);
+
+                if (string.IsNullOrEmpty(filterStr)) return 0;
+                
+                var bytes = System.Text.Encoding.UTF8.GetBytes(filterStr);
+                int count = Math.Min(bytes.Length, bufferSize - 1);
+                for (int i = 0; i < count; i++)
+                {
+                    buffer[i] = bytes[i];
+                }
+                buffer[count] = 0;
+                return count;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_scan_number_from_rt")]
         public static int GetScanNumberFromRT(double rt)
         {
