@@ -1256,12 +1256,6 @@ namespace ThermoNativeReader
             try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced; } catch { return 0; }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid")]
-        public static int GetScanFilterHigherEnergyCID(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCid; } catch { return 0; }
-        }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation")]
         public static int GetScanFilterSourceFragmentation(int scanNumber)
