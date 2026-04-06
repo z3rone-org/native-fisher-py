@@ -454,13 +454,12 @@ fn get_ms1_scan_number_from_rt(rt: f64) -> PyResult<i32> {
 }
 
 #[pyfunction]
-#[pyfunction]
 fn get_chromatogram(trace_type: i32, filter: String, mass_ranges_start: Vec<f64>, mass_ranges_end: Vec<f64>, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>)> {
     let lib = get_lib()?;
     let mut times = vec![0.0f64; max_length as usize];
     let mut intensities = vec![0.0f64; max_length as usize];
-    let mut start_ptr = mass_ranges_start.as_ptr();
-    let mut end_ptr = mass_ranges_end.as_ptr();
+    let start_ptr = mass_ranges_start.as_ptr();
+    let end_ptr = mass_ranges_end.as_ptr();
     let count = mass_ranges_start.len() as i32;
     
     let c_filter = std::ffi::CString::new(filter).unwrap();
@@ -603,10 +602,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_error, m)?)?;
     m.add_function(wrap_pyfunction!(in_acquisition, m)?)?;
     m.add_function(wrap_pyfunction!(has_ms_data, m)?)?;
-    m.add_function(wrap_pyfunction!(get_file_name, m)?)?;
-    m.add_function(wrap_pyfunction!(get_path, m)?)?;
     m.add_function(wrap_pyfunction!(get_creation_date, m)?)?;
-    m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
     m.add_function(wrap_pyfunction!(set_dylib_path, m)?)?;
     m.add_function(wrap_pyfunction!(get_computer_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_creator_id, m)?)?;
