@@ -245,14 +245,26 @@ class ChromatogramSignal(object): pass
 class Device:
     MS = 1; PDA = 2; UV = 3; Analog = 4; MSAnalog = 4; Other = 5; none = 0; Pda = 2; name = "MS"; value = 1
 
-class TraceType: 
-    MassRange = 0; TIC = 1; BasePeak = 2; Fragment = 3; SpectrumMax = 4; name = "TIC"; value = 1
+class TraceType(EnumBase):
+    MassRange = 0; TIC = 1; BasePeak = 2; Fragment = 3; SpectrumMax = 4
     A2DChannel1 = 5; A2DChannel2 = 6; A2DChannel3 = 7; A2DChannel4 = 8; A2DChannel5 = 9; A2DChannel6 = 10; A2DChannel7 = 11; A2DChannel8 = 12
     Analog1 = 13; Analog2 = 14; Analog3 = 15; Analog4 = 16; Analog5 = 17; Analog6 = 18; Analog7 = 19; Analog8 = 20
     ChannelA = 21; ChannelB = 22; ChannelC = 23; ChannelD = 24; ChannelE = 25; ChannelF = 26; ChannelG = 27; ChannelH = 28
     EndAllChromatogramTraces = 29; EndAnalogChromatogramTraces = 30; EndMSChromatogramTraces = 31; EndPCA2DChromatogramTraces = 32; EndPDAChromatogramTraces = 33; EndUVChromatogramTraces = 34
     StartAnalogChromatogramTraces = 35; StartMSChromatogramTraces = 36; StartPCA2DChromatogramTraces = 37; StartPDAChromatogramTraces = 38; StartUVChromatogramTraces = 39
     TotalAbsorbance = 40; WavelengthRange = 41
+
+trace_type_names = ["MassRange", "TIC", "BasePeak", "Fragment", "SpectrumMax", 
+                   "A2DChannel1", "A2DChannel2", "A2DChannel3", "A2DChannel4", "A2DChannel5", "A2DChannel6", "A2DChannel7", "A2DChannel8",
+                   "Analog1", "Analog2", "Analog3", "Analog4", "Analog5", "Analog6", "Analog7", "Analog8",
+                   "ChannelA", "ChannelB", "ChannelC", "ChannelD", "ChannelE", "ChannelF", "ChannelG", "ChannelH",
+                   "EndAllChromatogramTraces", "EndAnalogChromatogramTraces", "EndMSChromatogramTraces", "EndPCA2DChromatogramTraces", "EndPDAChromatogramTraces", "EndUVChromatogramTraces",
+                   "StartAnalogChromatogramTraces", "StartMSChromatogramTraces", "StartPCA2DChromatogramTraces", "StartPDAChromatogramTraces", "StartUVChromatogramTraces",
+                   "TotalAbsorbance", "WavelengthRange"]
+
+for i, name in enumerate(trace_type_names):
+    setattr(TraceType, name, TraceType(i))
+    getattr(TraceType, name).name = name
 
 class MsOrderType(EnumBase):
     Any = 0; Ms1 = 1; Ms2 = 2; Ms3 = 3; Ms4 = 4; Ms5 = 5; Ms6 = 6; Ms7 = 7; Ms8 = 8; Ms9 = 9; Ms10 = 10; Ng = 11; Nl = 12; Par = 13
@@ -1222,25 +1234,53 @@ class SequenceFileWriter(CommonCoreDataObject):
 
 
 class ChromatogramTraceSettings(CommonCoreDataObject):
+    def __init__(self, *args):
+        self._trace = TraceType.TIC
+        self._filter = ""
+        self._mass_ranges = []
+        if len(args) == 1:
+            if isinstance(args[0], TraceType):
+                self._trace = args[0]
+            elif isinstance(args[0], int):
+                self._trace = TraceType(args[0])
+        elif len(args) == 2:
+            self._filter = args[0]
+            if isinstance(args[1], Range):
+                self._mass_ranges = [args[1]]
+
     def clone(self): return self
     @property
     def compound_names(self): return []
     @property
     def delay_in_min(self): return 0.0
     @property
-    def filter(self): return ""
+    def filter(self): return self._filter
+    @filter.setter
+    def filter(self, value): self._filter = value
     @property
     def fragment_mass(self): return 0.0
-    def get_mass_range(self, index): return None
+    def get_mass_range(self, index): return self._mass_ranges[index] if index < len(self._mass_ranges) else None
     @property
     def include_reference(self): return False
     @property
-    def mass_range_count(self): return 0
+    def mass_range_count(self): return len(self._mass_ranges)
     @property
-    def mass_ranges(self): return []
-    def set_mass_range(self, index, start, end): pass
+    def mass_ranges(self): return self._mass_ranges
+    @mass_ranges.setter
+    def mass_ranges(self, value): self._mass_ranges = value
+    def set_mass_range(self, index, start, end=None):
+        if end is None and isinstance(start, Range):
+            r = start
+        else:
+            r = Range(start, end)
+        if index < len(self._mass_ranges):
+            self._mass_ranges[index] = r
+        else:
+            self._mass_ranges.append(r)
     @property
-    def trace(self): return 0
+    def trace(self): return self._trace
+    @trace.setter
+    def trace(self, value): self._trace = value
     @property
     def times(self): return []
 
