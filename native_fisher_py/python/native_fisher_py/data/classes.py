@@ -21,6 +21,7 @@ if not _IS_SPHINX:
         def get_path(): return ""
         def get_creation_date(): return ""
         def get_creator_id(): return ""
+        def get_ms_order(s): return 0
 else:
     def get_instrument_name(): return ""
     def get_instrument_model(): return ""
@@ -32,6 +33,14 @@ else:
     def get_path(): return ""
     def get_creation_date(): return ""
     def get_creator_id(): return ""
+    def get_ms_order(s): return 0
+
+class ScanFilter(CommonCoreDataObject):
+    def __init__(self, scan_number=0):
+        self._scan_number = scan_number
+    @property
+    def ms_order(self):
+        return MsOrderType(get_ms_order(self._scan_number))
 
 class CommonCoreDataObject(object):
     def deep_equals(self, other): return True
@@ -81,9 +90,13 @@ class TraceType:
     StartAnalogChromatogramTraces = 35; StartMSChromatogramTraces = 36; StartPCA2DChromatogramTraces = 37; StartPDAChromatogramTraces = 38; StartUVChromatogramTraces = 39
     TotalAbsorbance = 40; WavelengthRange = 41
 
-class MSOrder: 
-    Ms = 1; Ms1 = 1; Ms2 = 2; Ms3 = 3; Ms4 = 4; Ms5 = 5; Ms6 = 6; Ms7 = 7; Ms8 = 8; Ms9 = 9; Ms10 = 10; Any = 0; Ng = 11; Nl = 12; Par = 13; name = "Ms"; value = 1
-MsOrderType = MSOrder
+class MsOrderType(EnumBase):
+    Any = 0; Ms1 = 1; Ms2 = 2; Ms3 = 3; Ms4 = 4; Ms5 = 5; Ms6 = 6; Ms7 = 7; Ms8 = 8; Ms9 = 9; Ms10 = 10; Ng = 11; Nl = 12; Par = 13
+
+for name in ["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9", "Ms10", "Ng", "Nl", "Par"]:
+    setattr(MsOrderType, name, MsOrderType(["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9", "Ms10", "Ng", "Nl", "Par"].index(name)))
+    getattr(MsOrderType, name).name = name
+MSOrder = MsOrderType
 
 class MassAnalyzer:
     Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2; name = "Any"; value = 0

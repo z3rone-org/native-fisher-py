@@ -226,7 +226,9 @@ class RawFile(object):
     def get_tune_data(self, index): return None
     def get_filters(self): return []
     def get_auto_filters(self): return []
-    def get_filter_for_scan_number(self, scan_number): return ""
+    def get_filter_for_scan_number(self, scan_number):
+        from .data.classes import ScanFilter
+        return ScanFilter(scan_number)
     def get_scan_events(self, start, end): return []
     def get_scan_dependents(self, scan_number, precision): return ScanDependents()
 
