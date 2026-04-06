@@ -1,5 +1,5 @@
-from ... import MSOrder as MsOrderType
-from ... import MassAnalyzer as MassAnalyzerType
+from .._base import MSOrder as MsOrderType
+from .._base import MassAnalyzer as MassAnalyzerType
 
 class PolarityType:
     Positive = 1

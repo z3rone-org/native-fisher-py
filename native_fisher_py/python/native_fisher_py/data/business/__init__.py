@@ -1,4 +1,4 @@
-from ... import TraceType
+from .._base import TraceType
 
 class GenericDataTypes:
     NULL = 0
