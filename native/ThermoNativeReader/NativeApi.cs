@@ -7,6 +7,7 @@ using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoFisher.CommonCore.Data.FilterEnums;
+using Range = ThermoFisher.CommonCore.Data.Business.Range;
 
 namespace ThermoNativeReader
 {
