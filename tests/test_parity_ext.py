@@ -20,7 +20,8 @@ class TestAPIParity(unittest.TestCase):
             print(f"FAILED: {name} is missing: {sorted(list(missing_in_native))}")
             assert False
         else:
-            print(f"OK: {name} API parity matches.")
+            pass
+            # print(f"OK: {name} API parity matches.")
 
         # Recurse if it's a class or module
         if inspect.isclass(orig_obj) or inspect.ismodule(orig_obj):
