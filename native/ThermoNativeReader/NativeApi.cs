@@ -1328,21 +1328,21 @@ namespace ThermoNativeReader
         public static double GetScanFilterElectronCaptureDissociationValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociationValue; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociationValue; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation_value")]
         public static double GetScanFilterElectronTransferDissociationValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociationValue; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociationValue; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid_value")]
         public static double GetScanFilterHigherEnergyCIDValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCIDValue; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCIDValue; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation")]
@@ -1356,7 +1356,7 @@ namespace ThermoNativeReader
         public static double GetScanFilterMultiplePhotonDissociationValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).MultiplePhotonDissociationValue; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).MultiplePhotonDissociationValue; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation")]
@@ -1370,42 +1370,42 @@ namespace ThermoNativeReader
         public static double GetScanFilterPulsedQDissociationValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).PulsedQDissociationValue; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).PulsedQDissociationValue; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_a")]
         public static double GetScanFilterParamA(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamA; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).ParamA; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_b")]
         public static double GetScanFilterParamB(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamB; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).ParamB; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_f")]
         public static double GetScanFilterParamF(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamF; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).ParamF; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_r")]
         public static double GetScanFilterParamR(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamR; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).ParamR; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_v")]
         public static double GetScanFilterParamV(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ParamV; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).ParamV; } catch { return 0.0; }
         }
     }
 }
