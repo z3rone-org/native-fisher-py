@@ -190,28 +190,40 @@ class Environment(object):
     def set_CurrentDirectory(self, v): pass
     def set_ExitCode(self, v): pass
 
+# Helper classes to avoid NameErrors
+class Assembly_cls(object):
+    @staticmethod
+    def get_function(*args): return None
+class Runtime_cls(object):
+    @staticmethod
+    def get_assembly(*args): return None
+    info = None
+    @staticmethod
+    def shutdown(): pass
+class Mono_cls(object):
+    @staticmethod
+    def get_assembly(*args): return None
+    info = None
+    @staticmethod
+    def shutdown(): pass
+class TemporaryDirectory_cls(object):
+    @staticmethod
+    def cleanup(): pass
+class DotnetCoreRuntimeSpec_cls(object):
+    floor_version = "8.0"
+    runtime_config = ""
+    tfm = ""
+    version_info = ""
+    @staticmethod
+    def write_config(): pass
+
 class clr_loader_stub(object):
-    class Runtime(object):
-        @staticmethod
-        def get_assembly(*args): return None
-        info = None
-        @staticmethod
-        def shutdown(): pass
-    class Assembly(object):
-        @staticmethod
-        def get_function(*args): return None
-    class TemporaryDirectory(object):
-        @staticmethod
-        def cleanup(): pass
+    Runtime = Runtime_cls
+    Assembly = Assembly_cls
+    TemporaryDirectory = TemporaryDirectory_cls
     class RuntimeInfo(object): 
         pass
-    class DotnetCoreRuntimeSpec(object):
-        floor_version = "8.0"
-        runtime_config = ""
-        tfm = ""
-        version_info = ""
-        @staticmethod
-        def write_config(): pass
+    DotnetCoreRuntimeSpec = DotnetCoreRuntimeSpec_cls
     class mono(object):
         Any = None
         Dict = dict
@@ -222,18 +234,8 @@ class clr_loader_stub(object):
         MonoMethod = object
         Optional = None
         Path = pathlib.Path
-        class Runtime_cls(object):
-            @staticmethod
-            def get_assembly(*args): return None
-            info = None
-            @staticmethod
-            def shutdown(): pass
-        class Mono_cls2(object):
-            @staticmethod
-            def get_assembly(*args): return None
-            info = None
-            @staticmethod
-            def shutdown(): pass
+        Runtime = Runtime_cls
+        Mono = Mono_cls
         RuntimeInfo = object
         Sequence = list
         StrOrPath = str
@@ -277,8 +279,6 @@ class clr_loader_stub(object):
             def sub(x,y,z): return x
             @staticmethod
             def subn(x,y,z): return x
-        Runtime = Runtime_cls
-        Mono = Mono_cls2
 
     class util(object):
         ClrError = Exception
@@ -333,7 +333,7 @@ class clr_loader_stub(object):
             @staticmethod
             def dataclass(x): return x
         runtime_spec = runtime_spec_cls
-    class ffi(object):
+    class ffi_sub(object):
         Optional = None
         Path = pathlib.Path
         Tuple = tuple
@@ -352,10 +352,10 @@ class clr_loader_stub(object):
         def load_mono(): pass
         @staticmethod
         def load_netfx(): pass
-        class mono_cls(object):
+        class mono_cls2(object):
             @staticmethod
             def cdef(s): pass
-        mono = mono_cls
+        mono = mono_cls2
         class netfx_cls(object):
             @staticmethod
             def cdef(s): pass
@@ -364,19 +364,18 @@ class clr_loader_stub(object):
         class cffi_inner(object):
             CDefError = Exception; FFI = object; FFIError = Exception; PkgConfigError = Exception; VerificationError = Exception; VerificationMissing = Exception; api = object; commontypes = object; cparser = object; error = Exception; lock = object; model = object
         cffi = cffi_inner
+    ffi = ffi_sub
+
     class types(object):
         ABCMeta = type
         Any = None
-        class Assembly_cls(object):
-            @staticmethod
-            def get_function(*args): return None
         Assembly = Assembly_cls
         Callable = object
         ClrFunction = object
         Dict = dict
         Optional = None
         PathLike = object
-        Runtime = object
+        Runtime = Runtime_cls
         RuntimeInfo = object
         StrOrPath = str
         Union = object
@@ -387,17 +386,10 @@ class clr_loader_stub(object):
         @staticmethod
         def field(x): return x
 
-    Assembly = Assembly_cls
     Dict = dict
-    DotnetCoreRuntimeSpec = DotnetCoreRuntimeSpec
     Optional = None
-    Path = pathlib.Path
-    Runtime = Runtime
-    RuntimeInfo = RuntimeInfo
     Sequence = list
     StrOrPath = str
-    TemporaryDirectory = TemporaryDirectory
-    ffi = ffi
     @staticmethod
     def find_dotnet_root(*args): return None
     @staticmethod
@@ -410,8 +402,6 @@ class clr_loader_stub(object):
     def get_mono(*args): return None
     @staticmethod
     def get_netfx(*args): return None
-    mono = mono
-    types = types
     util = util
 
 class pythonnet(object):
