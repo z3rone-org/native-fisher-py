@@ -51,13 +51,20 @@ class Device:
     MS = 1; PDA = 2; UV = 3; Analog = 4; MSAnalog = 4; Other = 5; none = 0; Pda = 2; name = "MS"; value = 1
 
 class TraceType: 
-    MassRange = 0; TIC = 1; BasePeak = 2
+    MassRange = 0; TIC = 1; BasePeak = 2; Fragment = 3; SpectrumMax = 4; name = "TIC"; value = 1
+    A2DChannel1 = 5; A2DChannel2 = 6; A2DChannel3 = 7; A2DChannel4 = 8; A2DChannel5 = 9; A2DChannel6 = 10; A2DChannel7 = 11; A2DChannel8 = 12
+    Analog1 = 13; Analog2 = 14; Analog3 = 15; Analog4 = 16; Analog5 = 17; Analog6 = 18; Analog7 = 19; Analog8 = 20
+    ChannelA = 21; ChannelB = 22; ChannelC = 23; ChannelD = 24; ChannelE = 25; ChannelF = 26; ChannelG = 27; ChannelH = 28
+    EndAllChromatogramTraces = 29; EndAnalogChromatogramTraces = 30; EndMSChromatogramTraces = 31; EndPCA2DChromatogramTraces = 32; EndPDAChromatogramTraces = 33; EndUVChromatogramTraces = 34
+    StartAnalogChromatogramTraces = 35; StartMSChromatogramTraces = 36; StartPCA2DChromatogramTraces = 37; StartPDAChromatogramTraces = 38; StartUVChromatogramTraces = 39
+    TotalAbsorbance = 40; WavelengthRange = 41
 
-class MSOrder: Ms = 1; Ms2 = 2; Ms3 = 3
+class MSOrder: 
+    Ms = 1; Ms1 = 1; Ms2 = 2; Ms3 = 3; Ms4 = 4; Ms5 = 5; Ms6 = 6; Ms7 = 7; Ms8 = 8; Ms9 = 9; Ms10 = 10; Any = 0; Ng = 11; Nl = 12; Par = 13; name = "Ms"; value = 1
 MsOrderType = MSOrder
 
 class MassAnalyzer:
-    Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2
+    Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2; name = "Any"; value = 0
 MassAnalyzerType = MassAnalyzer
 
 class TriState(EnumBase): Any = 0; Off = 1; On = 2
@@ -120,6 +127,11 @@ class ActivationType(EnumBase):
     Any = 0; CollisionInducedDissociation = 1; ElectronCaptureDissociation = 2; ElectronTransferDissociation = 3; HigherEnergyCollisionalDissociation = 4; MultiPhotonDissociation = 5; PQD = 6; SAactivation = 7; UltraVioletPhotoDissociation = 8
     NegativeElectronTransferDissociation = 9; NegativeProtonTransferReaction = 10; ProtonTransferReaction = 11; LastActivation = 12
 ActivationType.Any = ActivationType(0); ActivationType.Any.name = "Any"
+# Add ModeA-Z
+import string
+for char in string.ascii_uppercase:
+    setattr(ActivationType, f"Mode{char}", ActivationType(13 + ord(char) - ord('A')))
+    getattr(ActivationType, f"Mode{char}").name = f"Mode{char}"
 
 class DetectorType(EnumBase): Any = 0; Detector1 = 1; NotValid = 0; Valid = 1
 DetectorType.Any = DetectorType(0); DetectorType.Any.name = "Any"
@@ -145,19 +157,26 @@ SourceFragmentationInfoValidType.Any = SourceFragmentationInfoValidType(0); Sour
 class FilterAccurateMass(EnumBase): Off = 0; On = 1; Any = 0; External = 1; Internal = 2
 FilterAccurateMass.Off = FilterAccurateMass(0); FilterAccurateMass.Off.name = "Off"
 
-class ToleranceUnits(EnumBase):
-    amu = 0
-    mmu = 1
-    ppm = 2
+class ToleranceUnits(EnumBase): amu = 0; mmu = 1; ppm = 2
 ToleranceUnits.amu = ToleranceUnits(0); ToleranceUnits.amu.name = "amu"
 ToleranceUnits.mmu = ToleranceUnits(1); ToleranceUnits.mmu.name = "mmu"
 ToleranceUnits.ppm = ToleranceUnits(2); ToleranceUnits.ppm.name = "ppm"
 
 class TrayShape(EnumBase): Circular = 0; Invalid = 1; Rectangular = 2; StaggeredEven = 3; StaggeredOdd = 4; Unknown = 5
 TrayShape.Unknown = TrayShape(5); TrayShape.Unknown.name = "Unknown"
+TrayShape.Circular = TrayShape(0); TrayShape.Circular.name = "Circular"
+TrayShape.Invalid = TrayShape(1); TrayShape.Invalid.name = "Invalid"
+TrayShape.Rectangular = TrayShape(2); TrayShape.Rectangular.name = "Rectangular"
+TrayShape.StaggeredEven = TrayShape(3); TrayShape.StaggeredEven.name = "StaggeredEven"
+TrayShape.StaggeredOdd = TrayShape(4); TrayShape.StaggeredOdd.name = "StaggeredOdd"
 
-class FileType(EnumBase): RawFile = 0; ExperimentMethod = 1; ProcessingMethod = 2; ResultsFile = 3; CalibrationFile = 4; LayoutFile = 5; MethodFile = 6; QuanFile = 7; SampleList = 8; TuneMethod = 9; XqnFile = 10; NotSupported = 11
+class FileType(EnumBase): 
+    RawFile = 0; ExperimentMethod = 1; ProcessingMethod = 2; ResultsFile = 3; CalibrationFile = 4; LayoutFile = 5; MethodFile = 6; QuanFile = 7; SampleList = 8; TuneMethod = 9; XqnFile = 10; NotSupported = 11
+    MethodEditorLayout = 12; ProcessingMethodEditLayout = 13; QualBrowserLayout = 14; ResultsLayout = 15; SampleListEditorLayout = 16; TuneLayout = 17
 FileType.RawFile = FileType(0); FileType.RawFile.name = "RawFile"
+for name in ["MethodEditorLayout", "ProcessingMethodEditLayout", "QualBrowserLayout", "ResultsLayout", "SampleListEditorLayout", "TuneLayout"]:
+    setattr(FileType, name, FileType(12 + ["MethodEditorLayout", "ProcessingMethodEditLayout", "QualBrowserLayout", "ResultsLayout", "SampleListEditorLayout", "TuneLayout"].index(name)))
+    getattr(FileType, name).name = name
 
 class ScanDependentDetails(CommonCoreDataObject):
     @property
@@ -168,12 +187,6 @@ class ScanDependentDetails(CommonCoreDataObject):
     def precursor_mass_array(self): return []
     @property
     def scan_index(self): return 0
-
-class ScanDependents(CommonCoreDataObject):
-    @property
-    def raw_file_instrument_type(self): return 0
-    @property
-    def scan_dependent_detail_array(self): return []
 
 class SequenceInfo(CommonCoreDataObject):
     @property
@@ -197,6 +210,10 @@ class ErrorLogEntry(CommonCoreDataObject):
 
 class range(CommonCoreDataObject):
     def __init__(self, low=0.0, high=0.0): self.low, self.high = low, high
+    def compare_to(self, other): return 0
+    def create(self, low, high): return range(low, high)
+    def create_from_cetner_and_delta(self, center, delta): return range(center-delta, center+delta)
+    def includes(self, val): return self.low <= val <= self.high
 
 class mass_options(CommonCoreDataObject):
     def __init__(self, tolerance=0.0, units=0): self.tolerance, self.units = tolerance, units
@@ -208,10 +225,70 @@ class LogEntry(CommonCoreDataObject): pass
 class HeaderItem(CommonCoreDataObject): pass
 class StatusLogValues(CommonCoreDataObject): pass
 class TuneDataValues(CommonCoreDataObject): pass
-class Reaction(CommonCoreDataObject): pass
+
+class Reaction(CommonCoreDataObject): 
+    @property
+    def activation_type(self): return 0
+    @property
+    def collision_energy(self): return 0.0
+    @property
+    def collision_energy_valid(self): return 0
+    @property
+    def first_precursor_mass(self): return 0.0
+    @property
+    def isolation_width(self): return 0.0
+    @property
+    def isolation_width_offset(self): return 0.0
+    @property
+    def last_precursor_mass(self): return 0.0
+    @property
+    def multiple_activation(self): return 0
+    @property
+    def precursor_mass(self): return 0.0
+    @property
+    def precursor_range_is_valid(self): return 0
+
 class Scan(CommonCoreDataObject): pass
 class CentroidStream(CommonCoreDataObject): pass
-class ChromatogramSignal(CommonCoreDataObject): pass
+
+class ChromatogramSignal(CommonCoreDataObject): 
+    @property
+    def base_peak_masses(self): return np.array([])
+    def clone(self): return self
+    @property
+    def delay(self): return 0.0
+    @property
+    def end_time(self): return 0.0
+    def from_chromatogram_data(self, data): return self
+    def from_time_and_intensity(self, times, intensities): return self
+    def from_time_intensity_scan(self, times, intensities, scans): return self
+    def from_time_intensity_scan_base_peak(self, times, intensities, scans, masses): return self
+    @property
+    def has_base_peak_data(self): return 0
+    @property
+    def intensities(self): return np.array([])
+    @property
+    def length(self): return 0
+    @property
+    def scans(self): return np.array([])
+    @property
+    def signal_base_peak_masses(self): return np.array([])
+    @property
+    def signal_intensities(self): return np.array([])
+    @property
+    def signal_scans(self): return np.array([])
+    @property
+    def signal_times(self): return np.array([])
+    @property
+    def start_time(self): return 0.0
+    @property
+    def time_range(self): return range(0.0, 0.0)
+    @property
+    def times(self): return np.array([])
+    def to_chromatogram_data(self): return None
+    @property
+    def valid(self): return 1
+
 class ChromatogramTraceSettings(CommonCoreDataObject): pass
 
 class InstrumentData(CommonCoreDataObject):
@@ -392,7 +469,7 @@ class ScanEvent(CommonCoreDataObject):
     def get_mass_range(self, index): return (0.0, 0.0)
     def get_mass_calibrator(self, index): return 0.0
     def get_precursor_range_validity(self, index): return 0
-    def get_reaction(self, index): return None
+    def get_reaction(self, index): return Reaction()
     def get_source_fragmentation_info(self, index): return None
     def get_source_fragmentation_mass_range(self, index): return (0.0, 0.0)
 
@@ -565,11 +642,18 @@ class SequenceFileWriter(CommonCoreDataObject):
     @property
     def tray_configuration(self): return ""
 
+class ScanDependents(CommonCoreDataObject):
+    @property
+    def raw_file_instrument_type(self): return 0
+    @property
+    def scan_dependent_detail_array(self): return []
+
 class business:
-    InstrumentData = InstrumentData; SampleType = SampleType; ScanStatistics = ScanStatistics; SegmentedScan = SegmentedScan; RunHeader = RunHeader; SampleInformation = SampleInformation; InstrumentSelection = InstrumentSelection; FileHeader = FileHeader; FileError = FileError; CentroidStream = CentroidStream; ChromatogramSignal = ChromatogramSignal; ChromatogramTraceSettings = ChromatogramTraceSettings; HeaderItem = HeaderItem; LogEntry = LogEntry; MassOptions = MassOptions; Range = Range; Reaction = Reaction; Scan = Scan; StatusLogValues = StatusLogValues; TuneDataValues = TuneDataValues; TraceType = TraceType; BarcodeStatusType = EnumBase; BracketType = EnumBase; CachedScanProvider = object; SimpleScan = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object
+    InstrumentData = InstrumentData; SampleType = SampleType; ScanStatistics = ScanStatistics; SegmentedScan = SegmentedScan; RunHeader = RunHeader; SampleInformation = SampleInformation; InstrumentSelection = InstrumentSelection; FileHeader = FileHeader; FileError = FileError; CentroidStream = CentroidStream; ChromatogramSignal = ChromatogramSignal; ChromatogramTraceSettings = ChromatogramTraceSettings; HeaderItem = HeaderItem; LogEntry = LogEntry; MassOptions = MassOptions; Range = Range; Reaction = Reaction; Scan = Scan; StatusLogValues = StatusLogValues; TuneDataValues = TuneDataValues; TraceType = TraceType; BarcodeStatusType = EnumBase; BracketType = EnumBase; CachedScanProvider = object; SimpleScan = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; barcode_status_type = EnumBase; bracket_type = EnumBase; cached_scan_provider = object; centroid_stream = CentroidStream; chromatogram_signal = ChromatogramSignal; chromatogram_signal_cls = ChromatogramSignal; chromatogram_trace_settings = ChromatogramTraceSettings; data_units = EnumBase; generic_data_types = EnumBase; header_item = HeaderItem; instrument_data = InstrumentData; instrument_selection = InstrumentSelection; label_peak = object; log_entry = LogEntry; mass_options = MassOptions; mass_to_frequency_converter = object; noise_and_baseline = object; range = Range; reaction = Reaction; run_header = RunHeader; sample_information = SampleInformation; sample_type = SampleType; scan = Scan; scan_statistics = ScanStatistics; segmented_scan = SegmentedScan; simple_scan = object; spectrum_packet_type = object; status_log_values = StatusLogValues; tolerance_mode = EnumBase; trace_type = TraceType; tune_data_values = TuneDataValues; DataUnits = EnumBase; GenericDataTypes = EnumBase; MassToFrequencyConverter = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; SimpleScan = object; BarcodeStatusType = EnumBase; BracketType = EnumBase; SampleType = SampleType; TraceType = TraceType
 
 class filter_enums:
     ActivationType = ActivationType; CompensationVoltageType = CompensationVoltageType; DetectorType = DetectorType; EnergyType = EnergyType; EventAccurateMass = EventAccurateMass; FieldFreeRegionType = FieldFreeRegionType; IonizationModeType = IonizationModeType; MassAnalyzerType = MassAnalyzer; MsOrderType = MsOrderType; PolarityType = PolarityType; ScanDataType = ScanDataType; ScanModeType = ScanModeType; SectorScanType = SectorScanType; SourceFragmentationValueType = SourceFragmentationValueType; TriState = TriState
+    activation_type = ActivationType; compensation_voltage_type = CompensationVoltageType; detector_type = DetectorType; energy_type = EnergyType; event_accurate_mass = EventAccurateMass; field_free_region_type = FieldFreeRegionType; ionization_mode_type = IonizationModeType; mass_analyzer_type = MassAnalyzer; ms_order_type = MsOrderType; polarity_type = PolarityType; scan_data_type = ScanDataType; scan_mode_type = ScanModeType; sector_scan_type = SectorScanType; source_fragmentation_value_type = SourceFragmentationValueType; tri_state = TriState
 
 class data:
-    Device = Device; MSOrder = MSOrder; MassAnalyzer = MassAnalyzer; TraceType = TraceType; ScanFilter = ScanFilter; ScanEvent = ScanEvent; ScanEvents = ScanEvents; FileHeader = FileHeader; FileError = FileError; AutoSamplerInformation = AutoSamplerInformation; CommonCoreDataObject = CommonCoreDataObject; FileType = FileType; RawFileClassification = RawFileClassification; ScanDependentDetails = ScanDependentDetails; SequenceFileWriter = SequenceFileWriter; SequenceInfo = SequenceInfo; SourceFragmentationInfoValidType = SourceFragmentationInfoValidType; ToleranceUnits = ToleranceUnits; TrayShape = TrayShape; FilterAccurateMass = FilterAccurateMass; PeakOptions = PeakOptions; FtAverageOptions = FtAverageOptions; ErrorLogEntry = ErrorLogEntry; business = business; filter_enums = filter_enums
+    Device = Device; MSOrder = MSOrder; MassAnalyzer = MassAnalyzer; TraceType = TraceType; ScanFilter = ScanFilter; ScanEvent = ScanEvent; ScanEvents = ScanEvents; FileHeader = FileHeader; FileError = FileError; AutoSamplerInformation = AutoSamplerInformation; CommonCoreDataObject = CommonCoreDataObject; FileType = FileType; RawFileClassification = RawFileClassification; ScanDependentDetails = ScanDependentDetails; SequenceFileWriter = SequenceFileWriter; SequenceInfo = SequenceInfo; SourceFragmentationInfoValidType = SourceFragmentationInfoValidType; ToleranceUnits = ToleranceUnits; TrayShape = TrayShape; FilterAccurateMass = FilterAccurateMass; PeakOptions = PeakOptions; FtAverageOptions = FtAverageOptions; ErrorLogEntry = ErrorLogEntry; business = business; filter_enums = filter_enums; auto_sampler_information = AutoSamplerInformation; common_core_data_object = CommonCoreDataObject; device = Device; error_log_entry = ErrorLogEntry; file_error = FileError; file_header = FileHeader; file_type = FileType; filter_accurate_mass = FilterAccurateMass; ft_average_options = FtAverageOptions; peak_options = PeakOptions; raw_file_classification = RawFileClassification; scan_dependent_details = ScanDependentDetails; scan_event = ScanEvent; scan_events = ScanEvents; scan_filter = ScanFilter; sequence_file_writer = SequenceFileWriter; sequence_info = SequenceInfo; source_fragmentation_info_valid_type = SourceFragmentationInfoValidType; tolerance_units = ToleranceUnits; tray_shape = TrayShape

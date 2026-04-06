@@ -1,41 +1,190 @@
-import os
-from ..data import CommonCoreDataObject
+class NetWrapperBase(object): pass
 
-class NetWrapperBase(CommonCoreDataObject):
-    def __init__(self, wrapped_object=None):
-        self._wrapped_object = wrapped_object
-    def _get_wrapped_object_(self):
-        return self._wrapped_object
+class Extensions(object):
+    @staticmethod
+    def AverageScans(*args, **kwargs): return None
+    @staticmethod
+    def SubtractScans(*args, **kwargs): return None
+    @staticmethod
+    def AverageAndSubtractScans(*args, **kwargs): return None
+    @staticmethod
+    def AverageAndSubtractScansForCompound(*args, **kwargs): return None
+    @staticmethod
+    def AverageCompoundScansInScanRange(*args, **kwargs): return None
+    @staticmethod
+    def AverageCompoundScansInTimeRange(*args, **kwargs): return None
+    @staticmethod
+    def AverageScansInScanRange(*args, **kwargs): return None
+    @staticmethod
+    def AverageScansInTimeRange(*args, **kwargs): return None
+    @staticmethod
+    def BinarySearch(*args, **kwargs): return -1
+    @staticmethod
+    def BuildFilterHelper(*args, **kwargs): return ""
+    @staticmethod
+    def Contains(*args, **kwargs): return False
+    @staticmethod
+    def DefaultMassOptions(*args, **kwargs): return None
+    @staticmethod
+    def FastBinarySearch(*args, **kwargs): return -1
+    @staticmethod
+    def FormatActivationType(*args, **kwargs): return ""
+    @staticmethod
+    def FormatIonizationMode(*args, **kwargs): return ""
+    @staticmethod
+    def FormatMassAnalyzer(*args, **kwargs): return ""
+    @staticmethod
+    def GetCompoundNamesForTimeRange(*args, **kwargs): return []
+    @staticmethod
+    def GetCompoundScanEnumerator(*args, **kwargs): return None
+    @staticmethod
+    def GetCompoundScanEnumeratorOverTime(*args, **kwargs): return None
+    @staticmethod
+    def GetCompoundScanListByTimeRange(*args, **kwargs): return []
+    @staticmethod
+    def GetCompoundScansListByScanRange(*args, **kwargs): return []
+    @staticmethod
+    def GetFilteredScanEnumerator(*args, **kwargs): return None
+    @staticmethod
+    def GetFilteredScanEnumeratorOverTime(*args, **kwargs): return None
+    @staticmethod
+    def GetFilteredScansListByScanRange(*args, **kwargs): return []
+    @staticmethod
+    def GetFilteredScansListByTimeRange(*args, **kwargs): return []
+    @staticmethod
+    def GetFilteredScansListWithinTimeRange(*args, **kwargs): return []
+    @staticmethod
+    def GetFiltersForTimeRange(*args, **kwargs): return []
+    @staticmethod
+    def GetScans(*args, **kwargs): return []
+    @staticmethod
+    def GetTrailerExtraDataForScanWithValidation(*args, **kwargs): return None
+    @property
+    def HasMsData(self): return True
+    @property
+    def HasVariableRecords(self): return False
+    @property
+    def HasVariableTrailers(self): return False
+    @staticmethod
+    def IntensitySum(*args, **kwargs): return 0.0
+    @staticmethod
+    def IsNullOrEmpty(*args, **kwargs): return True
+    @staticmethod
+    def LargestIntensity(*args, **kwargs): return 0.0
+    @staticmethod
+    def MassAndIntensityAtLargestIntensity(*args, **kwargs): return (0.0, 0.0)
+    @staticmethod
+    def MassAtLargestIntensity(*args, **kwargs): return 0.0
+    @staticmethod
+    def Overloads(*args, **kwargs): return None
+    @staticmethod
+    def ScanRangeFromTimeRange(*args, **kwargs): return (0, 0)
+    @staticmethod
+    def ScanRangeWithinTimeRange(*args, **kwargs): return (0, 0)
+    @staticmethod
+    def SelectMsData(*args, **kwargs): return None
+    @staticmethod
+    def TestScan(*args, **kwargs): return True
 
-class ThermoFisher:
-    class CommonCore:
-        class Data:
-            class Business:
-                class ScanFilterHelper: pass
-            class Extensions: pass
+class Environment(object):
+    CurrentManagedThreadId = 1
+    ExitCode = 0
+    HasShutdownStarted = False
+    Is64BitOperatingSystem = True
+    Is64BitProcess = True
+    MachineName = "Local"
+    NewLine = "\n"
+    ProcessorCount = 1
+    StackTrace = ""
+    SystemDirectory = ""
+    SystemPageSize = 4096
+    TickCount = 0
+    UserDomainName = ""
+    UserInteractive = True
+    UserName = "User"
+    Version = "8.0"
+    WorkingSet = 0
+    @staticmethod
+    def Equals(*args, **kwargs): return True
+    @staticmethod
+    def Exit(code): pass
+    @staticmethod
+    def ExpandEnvironmentVariables(s): return s
+    @staticmethod
+    def FailFast(*args, **kwargs): pass
+    @staticmethod
+    def GetCommandLineArgs(): return []
+    @staticmethod
+    def GetEnvironmentVariable(name): return None
+    @staticmethod
+    def GetEnvironmentVariables(): return {}
+    @staticmethod
+    def GetFolderPath(folder): return ""
+    @staticmethod
+    def GetHashCode(): return 0
+    @staticmethod
+    def GetLogicalDrives(): return []
+    @staticmethod
+    def GetType(): return None
+    @staticmethod
+    def MemberwiseClone(): return None
+    @staticmethod
+    def ReferenceEquals(*args, **kwargs): return True
+    @staticmethod
+    def SetEnvironmentVariable(name, val): pass
+    class SpecialFolder: pass
+    class SpecialFolderOption: pass
+    @property
+    def CommandLine(self): return ""
+    @property
+    def CurrentDirectory(self): return "."
+    @property
+    def OSVersion(self): return "Unix"
 
-class pythonnet:
-    def load(self): pass
-    def unload(self): pass
+class pythonnet(object):
+    @staticmethod
+    def set_runtime(*args, **kwargs): pass
+    @staticmethod
+    def set_runtime_from_env(*args, **kwargs): pass
+    @staticmethod
+    def get_runtime_info(): return None
 
-class clr:
-    def AddReference(self, name): pass
+class clr(object):
+    @staticmethod
+    def FindAssembly(name): return None
+    @staticmethod
+    def GetClrType(t): return None
+    @staticmethod
+    def ListAssemblies(verbose): return []
+    @staticmethod
+    def clrmethod(*args, **kwargs): return None
+    @staticmethod
+    def clrproperty(*args, **kwargs): return None
+    @staticmethod
+    def getPreload(): return False
+    @staticmethod
+    def setPreload(p): pass
+    loader = None
+    Python = None
+    System = None
+    ThermoFisher = None
 
-class Environment:
-    CommandLine = ""
-    CurrentDirectory = os.getcwd()
-    OSVersion = os.uname().sysname if hasattr(os, 'uname') else "Windows"
+class ThermoFisher(object):
+    class CommonCore(object):
+        class MassPrecisionEstimator(object): pass
+        class RawFileReader(object): pass
 
-class Extensions: pass
-class wrapped_net_array: pass
+class Python(object): pass
 
-dotnet_version = "8.0"
-dll_base_path = ""
-dll_path = ""
-net_wrapper_base = NetWrapperBase
-thermo_fisher_data = ThermoFisher.CommonCore.Data
-thermo_fisher_data_business = ThermoFisher.CommonCore.Data.Business
-thermo_fisher_data_filter_enums = object
-thermo_fisher_data_interfaces = object
-thermo_fisher_mass_precision_estimator = object
-thermo_fisher_raw_file_reader = object
+import sys
+this = sys.modules[__name__]
+this.Extensions = Extensions
+this.Environment = Environment
+this.pythonnet = pythonnet
+this.clr = clr
+this.ThermoFisher = ThermoFisher
+this.Python = Python
+
+class wrapped_net_array(object):
+    class WrappedNetArray(object): pass
+this.wrapped_net_array = wrapped_net_array

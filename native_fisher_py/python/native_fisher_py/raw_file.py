@@ -7,9 +7,18 @@ from .data import (
     InstrumentSelection, FileHeader, FileError, AutoSamplerInformation, ScanEvent, 
     ScanEvents, ScanStatistics, SegmentedScan, CentroidStream, ScanDependents, 
     MassOptions, Range, TraceType, Device, MassAnalyzerType, MsOrderType,
-    ChromatogramTraceSettings, FtAverageOptions
+    ChromatogramTraceSettings, FtAverageOptions, ToleranceUnits
 )
 from .exceptions import RawFileException
+
+# Aliases for parity
+ToleranceUnits = ToleranceUnits
+MSOrder = MsOrderType
+MsOrderType = MsOrderType
+MassAnalyzerType = MassAnalyzerType
+Range = Range
+TraceType = TraceType
+np = np
 
 class RawFile(object):
     """
