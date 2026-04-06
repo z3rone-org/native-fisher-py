@@ -807,15 +807,6 @@ fn get_scan_filter_scan_data(scan_number: i32) -> PyResult<i32> {
     }
 }
 
-#[pyfunction]
-fn get_scan_filter_compensation_voltage(scan_number: i32) -> PyResult<f64> {
-    let lib = get_lib()?;
-    unsafe {
-        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_scan_filter_compensation_voltage")
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_compensation_voltage: {}", e)))?;
-        Ok(func(scan_number))
-    }
-}
 
 #[pyfunction]
 fn get_trailer_extra_count() -> PyResult<i32> {
