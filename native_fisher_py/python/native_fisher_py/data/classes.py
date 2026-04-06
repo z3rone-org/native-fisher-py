@@ -709,13 +709,19 @@ class WrappedRunHeader(CommonCoreDataObject):
     @property
     def status_log_count(self): return 0
     @property
-    def tolerance_unit(self): return 0
-    @property
     def trailer_extra_count(self): return 0
     @property
     def trailer_scan_event_count(self): return 0
     @property
     def tune_data_count(self): return 0
+    @property
+    def first_spectrum(self): return 0
+    @property
+    def last_spectrum(self): return 0
+    @property
+    def start_time(self): return 0.0
+    @property
+    def tolerance_unit(self): return 0
 
 class ScanEvent(CommonCoreDataObject):
     @property

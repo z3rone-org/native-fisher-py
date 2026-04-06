@@ -49,7 +49,7 @@ class DataClass(object):
     RawFileClassification = RawFileClassification; ScanDependentDetails = ScanDependentDetails; SequenceFileWriter = SequenceFileWriter
     SequenceInfo = SequenceInfo; SourceFragmentationInfoValidType = SourceFragmentationInfoValidType; ToleranceUnits = ToleranceUnits
     TrayShape = TrayShape; FilterAccurateMass = FilterAccurateMass; PeakOptions = PeakOptions; FtAverageOptions = FtAverageOptions
-    ErrorLogEntry = ErrorLogEntry; WrappedRunHeader = WrappedRunHeader; wrapped_run_header = WrappedRunHeader
+    ErrorLogEntry = ErrorLogEntry; WrappedRunHeader = WrappedRunHeader; wrapped_run_header = WrappedRunHeader; ChromatogramData = ChromatogramData
 
     @property
     def business(self): from . import business as b; return b
