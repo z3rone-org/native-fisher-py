@@ -212,7 +212,12 @@ class RawFile(object):
         all_scans = []
         for s in settings:
             trace_type = s.trace.value if hasattr(s.trace, 'value') else int(s.trace)
-            times, intensities = get_chromatogram(trace_type, 1000000)
+            filter_str = s.filter if s.filter else ""
+            
+            starts = [float(r.low) for r in s.mass_ranges]
+            ends = [float(r.high) for r in s.mass_ranges]
+            
+            times, intensities = get_chromatogram(trace_type, filter_str, starts, ends, 1000000)
             all_times.append(times)
             all_intensities.append(intensities)
             all_scans.append([]) # Empty scans for now
@@ -277,8 +282,10 @@ class RawFile(object):
     def total_time_min(self) -> float:
         return get_end_time()
 
-    def get_chromatogram(self, mass: float = 0.0, tolerance: float = 0.0, trace_type: int = 1, ms_filter: str = '') -> Tuple[np.ndarray, np.ndarray]:
-        times, intensities = get_chromatogram(trace_type, 1000000)
+    def get_chromatogram(self, mass: float = 0.0, tolerance: float = 0.0, trace_type: int = 1, ms_filter: str = 'ms') -> Tuple[np.ndarray, np.ndarray]:
+        starts = [mass - tolerance] if mass > 0 else []
+        ends = [mass + tolerance] if mass > 0 else []
+        times, intensities = get_chromatogram(trace_type, ms_filter, starts, ends, 1000000)
         return np.array(times), np.array(intensities)
 
     def get_averaged_ms2_scans(self, scan_numbers: List[int]) -> Tuple[np.ndarray, np.ndarray, int]:

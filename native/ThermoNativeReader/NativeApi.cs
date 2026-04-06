@@ -632,15 +632,26 @@ namespace ThermoNativeReader
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_chromatogram")]
-        public static unsafe int GetChromatogram(int traceType, double* times, double* intensities, int maxLength)
+        public static unsafe int GetChromatogram(int traceType, IntPtr filterPtr, double* massRangesStart, double* massRangesEnd, int massRangeCount, double* times, double* intensities, int maxLength)
         {
             if (_rawFile == null) return -1;
             try
             {
-                var settings = new ChromatogramTraceSettings((TraceType)traceType) { Filter = "" };
+                string filter = Marshal.PtrToStringAnsi(filterPtr) ?? "";
+                var settings = new ChromatogramTraceSettings((TraceType)traceType) { Filter = filter };
+                
+                if (massRangeCount > 0)
+                {
+                    settings.MassRangeCount = massRangeCount;
+                    for (int i = 0; i < massRangeCount; i++)
+                    {
+                        settings.SetMassRange(i, new Range(massRangesStart[i], massRangesEnd[i]));
+                    }
+                }
+
                 var data = _rawFile.GetChromatogramData(new[] { settings }, -1, -1);
                 
-                if (data == null) return 0;
+                if (data == null || data.PositionsArray == null || data.PositionsArray.Length == 0) return 0;
                 
                 int count = Math.Min(data.PositionsArray[0].Length, maxLength);
                 for (int i = 0; i < count; i++)
