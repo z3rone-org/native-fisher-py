@@ -207,15 +207,17 @@ class RawFile(object):
     def get_instrument_count_of_type(self, device_type):
         return get_instrument_count_of_type(device_type)
 
-    def get_trailer_extra_header_information(self): 
-        return get_trailer_extra_header()
     def get_trailer_extra_information(self, scan_number): 
         from .data.classes import LogEntry
         return LogEntry(get_trailer_extra_values(scan_number))
+    def get_trailer_extra_header_information(self): 
+        from .data.classes import HeaderItem
+        return [HeaderItem(h) for h in get_trailer_extra_header()]
     def get_trailer_extra_values(self, scan_number, formatted): 
         return get_trailer_extra_values(scan_number)
     def get_status_log_header_information(self): 
-        return get_status_log_header()
+        from .data.classes import HeaderItem
+        return [HeaderItem(h) for h in get_status_log_header()]
     def get_status_log_values(self, scan_number, formatted):
         from .data.classes import LogEntry
         return LogEntry(get_status_log_values(scan_number))

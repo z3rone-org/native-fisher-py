@@ -323,6 +323,8 @@ class LogEntry(CommonCoreDataObject):
     def values(self): return self._values
 
 class HeaderItem(CommonCoreDataObject):
+    def __init__(self, label=""):
+        self._label = label
     @property
     def data_type(self): return 0
     @property
@@ -334,7 +336,7 @@ class HeaderItem(CommonCoreDataObject):
     @property
     def is_variable_header(self): return 0
     @property
-    def label(self): return ""
+    def label(self): return self._label
     @property
     def string_length_or_precision(self): return 0
 
