@@ -1238,42 +1238,42 @@ namespace ThermoNativeReader
         public static int GetScanFilterElectronCaptureDissociation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation")]
         public static int GetScanFilterElectronTransferDissociation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_enhanced")]
         public static int GetScanFilterEnhanced(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).Enhanced ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid")]
         public static int GetScanFilterHigherEnergyCID(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCID ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCid; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation")]
         public static int GetScanFilterSourceFragmentation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_valid")]
         public static int GetScanFilterSourceFragmentationInfoValid(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid[0]; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_type")]
@@ -1287,14 +1287,14 @@ namespace ThermoNativeReader
         public static double GetScanFilterSourceFragmentationValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue; } catch { return 0.0; }
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(); } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
         public static int GetScanFilterSupplementalActivation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation; } catch { return 0; }
         }
         
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_precision")]
@@ -1308,14 +1308,14 @@ namespace ThermoNativeReader
         public static int GetScanFilterMultiNotch(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).MultiNotch ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiNotch; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiplex")]
         public static int GetScanFilterMultiplex(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).Multiplex ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Multiplex; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_unique_mass_count")]
@@ -1342,14 +1342,14 @@ namespace ThermoNativeReader
         public static double GetScanFilterHigherEnergyCIDValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCIDValue; } catch { return 0.0; }
+            try { return (double)_rawFile.GetFilterForScanNumber(scanNumber).HigherEnergyCidValue; } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation")]
         public static int GetScanFilterMultiplePhotonDissociation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).MultiplePhotonDissociation ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiplePhotonDissociation; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation_value")]
@@ -1363,7 +1363,7 @@ namespace ThermoNativeReader
         public static int GetScanFilterPulsedQDissociation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).PulsedQDissociation ? 1 : 0; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).PulsedQDissociation; } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation_value")]
