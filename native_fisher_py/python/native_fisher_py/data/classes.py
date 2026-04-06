@@ -846,18 +846,20 @@ class ScanEvents(CommonCoreDataObject):
     def segments(self): return -1
 
 class ScanFilter(CommonCoreDataObject):
-    def __init__(self, filter_string=""): self.name = filter_string
+    def __init__(self, filter_string=""): self._name = filter_string
+    @property
+    def name(self): return self._name
     @property
     def ms_order(self):
-        if "ms2" in self.name.lower(): return 2
+        if "ms2" in self._name.lower(): return 2
         return 1
     @property
     def mass_analyzer(self):
-        if "ftms" in self.name.lower(): return MassAnalyzer.FTMS
+        if "ftms" in self._name.lower(): return MassAnalyzer.FTMS
         return MassAnalyzer.Any
     @property
     def polarity(self):
-        if "+" in self.name: return PolarityType.Positive
+        if "+" in self._name: return PolarityType.Positive
         return PolarityType.Any
     @property
     def scan_mode(self): return 0
@@ -975,15 +977,6 @@ class FtAverageOptions(CommonCoreDataObject):
     @property
     def use_noise_table_when_available(self): return 0
 
-class RunHeader(CommonCoreDataObject):
-    def __init__(self, raw_file): self._raw_file = raw_file
-    @property
-    def start_time(self) -> float: return get_start_time()
-    @property
-    def first_spectrum(self) -> int: return self._raw_file.first_scan
-    @property
-    def last_spectrum(self) -> int: return self._raw_file.last_scan
-class RunHeaderEx(RunHeader): pass
 
 class SequenceFileWriter(CommonCoreDataObject):
     def __init__(self): self.samples = []
@@ -1005,11 +998,6 @@ class SequenceFileWriter(CommonCoreDataObject):
     @property
     def tray_configuration(self): return ""
 
-class ScanDependents(CommonCoreDataObject):
-    @property
-    def raw_file_instrument_type(self): return 0
-    @property
-    def scan_dependent_detail_array(self): return []
 
 class business:
     InstrumentData = InstrumentData; SampleType = SampleType; ScanStatistics = ScanStatistics; SegmentedScan = SegmentedScan; RunHeader = RunHeader; SampleInformation = SampleInformation; InstrumentSelection = InstrumentSelection; FileHeader = FileHeader; FileError = FileError; CentroidStream = CentroidStream; ChromatogramSignal = ChromatogramSignal; ChromatogramTraceSettings = ChromatogramTraceSettings; HeaderItem = HeaderItem; LogEntry = LogEntry; MassOptions = MassOptions; Range = Range; Reaction = Reaction; Scan = Scan; StatusLogValues = StatusLogValues; TuneDataValues = TuneDataValues; TraceType = TraceType; BarcodeStatusType = EnumBase; BracketType = EnumBase; CachedScanProvider = object; SimpleScan = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; barcode_status_type = EnumBase; bracket_type = EnumBase; cached_scan_provider = object; centroid_stream = CentroidStream; chromatogram_signal = ChromatogramSignal; chromatogram_signal_cls = ChromatogramSignal; chromatogram_trace_settings = ChromatogramTraceSettings; data_units = EnumBase; generic_data_types = EnumBase; header_item = HeaderItem; instrument_data = InstrumentData; instrument_selection = InstrumentSelection; label_peak = object; log_entry = LogEntry; mass_options = MassOptions; mass_to_frequency_converter = object; noise_and_baseline = object; range = Range; reaction = Reaction; run_header = RunHeader; sample_information = SampleInformation; sample_type = SampleType; scan = Scan; scan_statistics = ScanStatistics; segmented_scan = SegmentedScan; simple_scan = object; spectrum_packet_type = object; status_log_values = StatusLogValues; tolerance_mode = EnumBase; trace_type = TraceType; tune_data_values = TuneDataValues; DataUnits = EnumBase; GenericDataTypes = EnumBase; MassToFrequencyConverter = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; SimpleScan = object; BarcodeStatusType = EnumBase; BracketType = EnumBase; SampleType = SampleType; TraceType = TraceType

@@ -1,6 +1,22 @@
-class NetWrapperBase(object): pass
+import sys
+import os
+
+class NetWrapperBase(object):
+    Any = None
+    CoreException = Exception
+    NetWrapperBase = object
+    annotations = None
 
 class Extensions(object):
+    def Equals(self, *args): return True
+    def Finalize(self): pass
+    def GetHashCode(self): return 0
+    def GetType(self): return None
+    def MemberwiseClone(self): return self
+    @staticmethod
+    def ReferenceEquals(*args): return True
+    def ToString(self): return "Extensions"
+
     @staticmethod
     def AverageScans(*args, **kwargs): return None
     @staticmethod
@@ -104,8 +120,10 @@ class Environment(object):
     UserName = "User"
     Version = "8.0"
     WorkingSet = 0
+    
     @staticmethod
     def Equals(*args, **kwargs): return True
+    def Finalize(self): pass
     @staticmethod
     def Exit(code): pass
     @staticmethod
@@ -126,22 +144,57 @@ class Environment(object):
     def GetLogicalDrives(): return []
     @staticmethod
     def GetType(): return None
+    def MemberwiseClone(self): return self
     @staticmethod
-    def MemberwiseClone(): return None
+    def Overloads(*args, **kwargs): return None
     @staticmethod
     def ReferenceEquals(*args, **kwargs): return True
     @staticmethod
     def SetEnvironmentVariable(name, val): pass
+    def ToString(self): return "Environment"
+    
     class SpecialFolder: pass
     class SpecialFolderOption: pass
+    
     @property
     def CommandLine(self): return ""
     @property
     def CurrentDirectory(self): return "."
     @property
     def OSVersion(self): return "Unix"
+    
+    def get_CommandLine(self): return ""
+    def get_CurrentDirectory(self): return "."
+    def get_CurrentManagedThreadId(self): return 1
+    def get_ExitCode(self): return 0
+    def get_HasShutdownStarted(self): return False
+    def get_Is64BitOperatingSystem(self): return True
+    def get_Is64BitProcess(self): return True
+    def get_MachineName(self): return "Local"
+    def get_NewLine(self): return "\n"
+    def get_OSVersion(self): return "Unix"
+    def get_ProcessorCount(self): return 1
+    def get_StackTrace(self): return ""
+    def get_SystemDirectory(self): return ""
+    def get_SystemPageSize(self): return 4096
+    def get_TickCount(self): return 0
+    def get_UserDomainName(self): return ""
+    def get_UserInteractive(self): return True
+    def get_UserName(self): return "User"
+    def get_Version(self): return "8.0"
+    def get_WorkingSet(self): return 0
+    
+    def set_CurrentDirectory(self, v): pass
+    def set_ExitCode(self, v): pass
 
 class pythonnet(object):
+    Any = None
+    Dict = None
+    Optional = None
+    Path = None
+    Union = None
+    clr_loader = None
+    sys = sys
     @staticmethod
     def set_runtime(*args, **kwargs): pass
     @staticmethod
@@ -183,8 +236,6 @@ class ThermoFisher(object):
 
 class Python(object): pass
 
-import sys
-import os
 this = sys.modules[__name__]
 this.Extensions = Extensions
 this.Environment = Environment
@@ -197,12 +248,6 @@ this.dll_base_path = ""
 this.dll_path = ""
 this.net_wrapper_base = NetWrapperBase
 this.os = os
-this.thermo_fisher_data = None
-this.thermo_fisher_data_business = None
-this.thermo_fisher_data_filter_enums = None
-this.thermo_fisher_data_interfaces = object
-this.thermo_fisher_mass_precision_estimator = None
-this.thermo_fisher_raw_file_reader = None
 
 class WrappedNetArray(object):
     @staticmethod
@@ -228,9 +273,12 @@ class WrappedNetArray(object):
     @staticmethod
     def sort(*args, **kwargs): pass
 
+class TypeVar_stub(object):
+    has_default = False
+
 class wrapped_net_array(object):
     T = object
-    TypeVar = object
+    TypeVar = TypeVar_stub
     Union = object
     Generic = object
     System = object

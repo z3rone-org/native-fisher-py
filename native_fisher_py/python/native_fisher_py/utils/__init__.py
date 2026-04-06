@@ -1,13 +1,109 @@
 from typing import List, Tuple, Any
-from datetime import datetime
+import datetime
+from datetime import datetime as dt_factory, timezone
 
 class DateTime(object):
-    Now = datetime.now()
-    Today = datetime.now().date()
-    UtcNow = datetime.utcnow()
-    UnixEpoch = datetime(1970, 1, 1)
-    MaxValue = datetime(9999, 12, 31)
-    MinValue = datetime(1, 1, 1)
+    Now = dt_factory.now()
+    Today = dt_factory.now().date()
+    UtcNow = dt_factory.now(timezone.utc)
+    UnixEpoch = dt_factory(1970, 1, 1)
+    MaxValue = dt_factory(9999, 12, 31)
+    MinValue = dt_factory(1, 1, 1)
+    @property
+    def Date(self): return self
+    @property
+    def Day(self): return 1
+    @property
+    def DayOfWeek(self): return 0
+    @property
+    def DayOfYear(self): return 1
+    @property
+    def Hour(self): return 0
+    @property
+    def Kind(self): return 0
+    @property
+    def Millisecond(self): return 0
+    @property
+    def Minute(self): return 0
+    @property
+    def Month(self): return 1
+    @property
+    def Second(self): return 0
+    @property
+    def Ticks(self): return 0
+    @property
+    def TimeOfDay(self): return self
+    @property
+    def Year(self): return 2024
+    @property
+    def Now(self): return dt_factory.now()
+    @property
+    def UtcNow(self): return dt_factory.now(timezone.utc)
+    @property
+    def Today(self): return dt_factory.now().date()
+    
+    # Methods
+    def Add(self, *args): return self
+    def AddDays(self, *args): return self
+    def AddHours(self, *args): return self
+    def AddMilliseconds(self, *args): return self
+    def AddMinutes(self, *args): return self
+    def AddMonths(self, *args): return self
+    def AddSeconds(self, *args): return self
+    def AddTicks(self, *args): return self
+    def AddYears(self, *args): return self
+    def CompareTo(self, *args): return 0
+    def Equals(self, *args): return True
+    def Finalize(self, *args): pass
+    def GetDateTimeFormats(self, *args): return []
+    def GetHashCode(self, *args): return 0
+    def GetType(self, *args): return None
+    def GetTypeCode(self, *args): return 0
+    def MemberwiseClone(self, *args): return self
+    @staticmethod
+    def ReferenceEquals(*args): return True
+    def Subtract(self, *args): return self
+    def ToBinary(self, *args): return 0
+    def ToFileTime(self, *args): return 0
+    def ToFileTimeUtc(self, *args): return 0
+    def ToLocalTime(self, *args): return self
+    def ToLongDateString(self, *args): return ""
+    def ToLongTimeString(self, *args): return ""
+    def ToOADate(self, *args): return 0.0
+    def ToShortDateString(self, *args): return ""
+    def ToShortTimeString(self, *args): return ""
+    def ToString(self, *args): return ""
+    def ToUniversalTime(self, *args): return self
+    def TryFormat(self, *args): return True
+    
+    # Properties with 'get_' prefix for parity
+    def get_Date(self): return self
+    def get_Day(self): return 1
+    def get_DayOfWeek(self): return 0
+    def get_DayOfYear(self): return 1
+    def get_Hour(self): return 0
+    def get_Kind(self): return 0
+    def get_Millisecond(self): return 0
+    def get_Minute(self): return 0
+    def get_Month(self): return 1
+    def get_Now(self): return self
+    def get_Second(self): return 0
+    def get_Ticks(self): return 0
+    def get_TimeOfDay(self): return self
+    def get_Today(self): return self
+    def get_UtcNow(self): return self
+    def get_Year(self): return 2024
+    
+    # Operators
+    def op_Addition(self, *args): return self
+    def op_Equality(self, *args): return True
+    def op_GreaterThan(self, *args): return False
+    def op_GreaterThanOrEqual(self, *args): return True
+    def op_Inequality(self, *args): return False
+    def op_LessThan(self, *args): return False
+    def op_LessThanOrEqual(self, *args): return True
+    def op_Subtraction(self, *args): return self
+
     @staticmethod
     def Compare(*args, **kwargs): return 0
     @staticmethod
@@ -36,6 +132,58 @@ class DateTime(object):
     def TryParseExact(*args, **kwargs): return True, DateTime()
 
 class Array(object):
+    @property
+    def IsFixedSize(self): return True
+    @property
+    def IsReadOnly(self): return True
+    @property
+    def IsSynchronized(self): return False
+    @property
+    def Length(self): return 0
+    @property
+    def LongLength(self): return 0
+    @property
+    def Rank(self): return 1
+    @property
+    def SyncRoot(self): return self
+    
+    def Equals(self, *args): return True
+    def Finalize(self): pass
+    def GetEnumerator(self): return None
+    def GetHashCode(self): return 0
+    def GetLength(self, r): return 0
+    def GetLongLength(self, r): return 0
+    def GetLowerBound(self, r): return 0
+    def GetType(self): return None
+    def GetUpperBound(self, r): return 0
+    def GetValue(self, *args): return None
+    def Initialize(self): pass
+    def MemberwiseClone(self): return self
+    @staticmethod
+    def Overloads(*args): return None
+    @staticmethod
+    def ReferenceEquals(*args): return True
+    def SetValue(self, *args): pass
+    def ToString(self): return "Array"
+    
+    def append(self, x): pass
+    def clear(self): pass
+    def count(self): return 0
+    def extend(self, x): pass
+    def index(self, x): return -1
+    def insert(self, i, x): pass
+    def pop(self, i=-1): return None
+    def remove(self, x): pass
+    def reverse(self): pass
+    
+    def get_IsFixedSize(self): return True
+    def get_IsReadOnly(self): return True
+    def get_IsSynchronized(self): return False
+    def get_Length(self): return 0
+    def get_LongLength(self): return 0
+    def get_Rank(self): return 1
+    def get_SyncRoot(self): return self
+
     @staticmethod
     def AsReadOnly(*args, **kwargs): return []
     @staticmethod
@@ -92,6 +240,27 @@ class Double(object):
     NaN = float('nan')
     NegativeInfinity = float('-inf')
     PositiveInfinity = float('inf')
+    
+    def CompareTo(self, *args): return 0
+    def Equals(self, *args): return True
+    def Finalize(self): pass
+    def GetHashCode(self): return 0
+    def GetType(self): return None
+    def GetTypeCode(self): return 0
+    def MemberwiseClone(self): return self
+    @staticmethod
+    def Overloads(*args): return None
+    @staticmethod
+    def ReferenceEquals(*args): return True
+    def ToString(self): return "0.0"
+    def TryFormat(self, *args): return True
+    def op_Equality(self, *args): return True
+    def op_GreaterThan(self, *args): return False
+    def op_GreaterThanOrEqual(self, *args): return True
+    def op_Inequality(self, *args): return False
+    def op_LessThan(self, *args): return False
+    def op_LessThanOrEqual(self, *args): return True
+
     @staticmethod
     def IsFinite(v): return True
     @staticmethod
@@ -113,8 +282,8 @@ class Double(object):
     @staticmethod
     def TryParse(s): return True, float(s)
 
-def datetime_net_to_py(dt_val: int) -> datetime:
-    return datetime.fromtimestamp(dt_val)
+def datetime_net_to_py(dt_val: int) -> datetime.datetime:
+    return dt_factory.fromtimestamp(dt_val)
 
 def is_number(s: Any) -> bool:
     try:
@@ -126,6 +295,29 @@ def is_number(s: Any) -> bool:
 def to_net_list(py_list: list) -> list:
     return py_list
 
+# clr stubs
+class clr_stub(object):
+    @staticmethod
+    def AddReference(p): pass
+    @staticmethod
+    def FindAssembly(name): return None
+    @staticmethod
+    def GetClrType(t): return None
+    @staticmethod
+    def ListAssemblies(v): return []
+    Python = None
+    System = None
+    ThermoFisher = None
+    @staticmethod
+    def clrmethod(*args): return None
+    @staticmethod
+    def clrproperty(*args): return None
+    @staticmethod
+    def getPreload(): return False
+    loader = None
+    @staticmethod
+    def setPreload(p): pass
+
 # Parity aliases
 Any = Any
 Tuple = Tuple
@@ -133,7 +325,7 @@ List = List
 datetime = DateTime
 Double = Double
 Array = Array
-clr = object
+clr = clr_stub
 datetime_py_to_net = lambda x: 0
 generic = object
 to_net_array = lambda x: x
