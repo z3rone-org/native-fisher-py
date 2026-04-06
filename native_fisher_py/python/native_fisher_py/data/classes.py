@@ -1,6 +1,7 @@
 import os
 import sys
-from typing import List, Tuple
+from typing import List, Tuple, Union
+import enum
 import numpy as np
 
 # Detect if we are running inside Sphinx or Read the Docs
@@ -123,6 +124,15 @@ else:
     def get_scan_event_activation_type(s, i): return 0
     def get_scan_event_collision_energy(s, i): return 0.0
     def get_scan_stats(s): return [0.0]*7
+
+class DataUnits(enum.Enum):
+    none = 0
+    AbsorbanceUnits = 1
+    MilliAbsorbanceUnits = 2
+    MicroAbsorbanceUnits = 3
+    Volts = 4
+    MilliVolts = 5
+    MicroVolts = 6
 
 class CommonCoreDataObject(object):
     def deep_equals(self, other): return True
