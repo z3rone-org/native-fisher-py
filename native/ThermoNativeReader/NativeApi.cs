@@ -718,13 +718,8 @@ namespace ThermoNativeReader
             if (_rawFile == null) return -1;
             try 
             { 
-#if NET8_0_OR_GREATER
-                var filterStr = _rawFile.GetFilterForScanNumber(scanNumber);
-                var filter = new ThermoFisher.CommonCore.Data.FilterEnums.ScanFilter(filterStr);
-                return filter.CompensationVoltage;
-#else
+                // TODO: ScanFilter class namespace investigation
                 return 0.0;
-#endif
             } 
             catch { return -1; }
         }
