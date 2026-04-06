@@ -147,12 +147,19 @@ class ScanFilter(CommonCoreDataObject):
         return get_scan_filter_detector_value(self._scan_number)
 
 class EnumBase(object):
-    name = ""
-    value = 0
-    def __init__(self, value=0): self.value = value
-    def __str__(self): return self.name
+    def __init__(self, value=0): 
+        self.value = value
+    @property
+    def name(self):
+        for k, v in self.__class__.__dict__.items():
+            if isinstance(v, self.__class__) and v.value == self.value:
+                return k
+        return str(self.value)
+    def __str__(self): 
+        n = self.name
+        return f"{self.__class__.__name__}.{n}" if n and not n.isdigit() else str(self.value)
     def __int__(self): return self.value
-    def __repr__(self): return f"<{self.__class__.__name__}.{self.name if self.name else self.value}>"
+    def __repr__(self): return self.__str__()
 
 class GenericDataTypes(EnumBase):
     NULL = 0
