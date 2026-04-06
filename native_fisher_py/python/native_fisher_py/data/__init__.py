@@ -164,6 +164,12 @@ class ScanDependentDetails(CommonCoreDataObject):
     @property
     def scan_index(self): return 0
 
+class ScanDependents(CommonCoreDataObject):
+    @property
+    def raw_file_instrument_type(self): return 0
+    @property
+    def scan_dependent_detail_array(self): return []
+
 class SequenceInfo(CommonCoreDataObject):
     @property
     def bracket(self): return 0
