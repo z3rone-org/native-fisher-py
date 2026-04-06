@@ -500,11 +500,7 @@ class ScanStatistics(CommonCoreDataObject):
     @property
     def wavelength_step(self): return 0.0
     @property
-    def low_mass(self): return 0.0
-    @property
     def number_of_channels(self): return 0
-    @property
-    def packet_count(self): return 0
     @property
     def packet_type(self): return 0
     @property
