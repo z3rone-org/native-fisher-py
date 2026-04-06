@@ -982,7 +982,10 @@ class ScanFilter(CommonCoreDataObject):
     @property
     def souce_fragmentaion_value_count(self): return -1
 
-class Range(range): pass
+class Range(object):
+    def __init__(self, low=0.0, high=0.0):
+        self.low = low
+        self.high = high
 class MassOptions(CommonCoreDataObject):
     def clone(self): return self
     def get_tolerance_at_mass(self, m): return 0.0
