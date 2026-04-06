@@ -11,8 +11,43 @@ fn get_lib() -> PyResult<&'static Library> {
         return Ok(lib);
     }
     
-    // We expect the path to be set by the Python wrapper
-    Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Dylib path not set. Call set_dylib_path first or set THERMO_NATIVE_LIB."))
+    // Automatic discovery as fallback
+    let lib_name = if cfg!(target_os = "windows") {
+        "ThermoNativeReader.dll"
+    } else if cfg!(target_os = "macos") {
+        "ThermoNativeReader.dylib"
+    } else {
+        "ThermoNativeReader.so"
+    };
+
+    // 1. Environment variable override
+    if let Ok(env_path) = std::env::var("THERMO_NATIVE_LIB") {
+        if std::path::Path::new(&env_path).exists() {
+            let lib = unsafe {
+                Library::new(&env_path).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load override dylib {}: {}", env_path, e)))?
+            };
+            let _ = LIB.set(lib);
+            return Ok(LIB.get().unwrap());
+        }
+    }
+
+    // 2. Local search (./ThermoNativeReader.so etc)
+    let search_paths = vec![
+        std::path::PathBuf::from(lib_name),
+        std::path::PathBuf::from("./").join(lib_name),
+    ];
+
+    for path in search_paths {
+        if path.exists() {
+            let lib = unsafe {
+                Library::new(&path).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load dylib {}: {}", path.display(), e)))?
+            };
+            let _ = LIB.set(lib);
+            return Ok(LIB.get().unwrap());
+        }
+    }
+
+    Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Dylib not found and THERMO_NATIVE_LIB not set."))
 }
 
 #[pyfunction]
