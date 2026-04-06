@@ -978,6 +978,12 @@ class FtAverageOptions(CommonCoreDataObject):
     def use_noise_table_when_available(self): return 0
 
 
+class ScanDependents(CommonCoreDataObject):
+    @property
+    def raw_file_instrument_type(self): return 0
+    @property
+    def scan_dependent_detail_array(self): return []
+
 class SequenceFileWriter(CommonCoreDataObject):
     def __init__(self): self.samples = []
     @property
