@@ -596,7 +596,7 @@ namespace ThermoNativeReader
             if (_rawFile == null) return -1;
             try { 
                 var header = _rawFile.GetTrailerExtraHeaderInformation();
-                return header != null ? header.Count : 0;
+                return header != null ? header.Count() : 0;
             }
             catch { return -1; }
         }
