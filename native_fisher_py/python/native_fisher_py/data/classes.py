@@ -239,7 +239,11 @@ class GenericDataTypes(EnumBase):
 for name in ["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"]:
     setattr(GenericDataTypes, name, GenericDataTypes(["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"].index(name)))
     getattr(GenericDataTypes, name).name = name
-class SpectrumPacketType(object): pass
+class SpectrumPacketType(EnumBase):
+    Profile = 0
+    Centroid = 1
+    FtProfile = 2
+    FtCentroid = 3
 class Scan(object): pass
 # ChromatogramSignal was here
 class Device:

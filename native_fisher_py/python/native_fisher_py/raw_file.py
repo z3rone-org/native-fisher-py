@@ -339,11 +339,11 @@ class RawFile(object):
     @property
     def ms2_filter_masses(self) -> List[float]:
         if not hasattr(self, "_ms2_filter_masses_cache"):
-            masses = []
+            mass_set = set()
             for i in range(self.first_scan, self.last_scan + 1):
                 if get_ms_order(i) == 2:
-                    masses.append(get_precursor_mass(i))
-            self._ms2_filter_masses_cache = masses
+                    mass_set.add(get_precursor_mass(i))
+            self._ms2_filter_masses_cache = sorted(list(mass_set))
         return self._ms2_filter_masses_cache
 
     def get_precursor_mz(self, scan_number: int) -> float:
