@@ -164,6 +164,68 @@ class RunHeader(object):
     def _get_wrapper_(obj): return RunHeader(obj)
     _wrapped_type = None
 
+class SampleInformation(object):
+    """Information about the sample."""
+    @property
+    def sample_volume(self) -> float: return 0.0
+    @property
+    def sample_name(self) -> str: return ""
+    @property
+    def sample_id(self) -> str: return ""
+    @property
+    def row_number(self) -> int: return 1
+    @property
+    def vial(self) -> str: return ""
+    @property
+    def raw_file_name(self) -> str: return get_file_name()
+    @property
+    def path(self) -> str: return get_path()
+    @property
+    def comment(self) -> str: return ""
+    @property
+    def barcode(self) -> str: return ""
+    @property
+    def injection_volume(self) -> float: return 0.0
+    @property
+    def istd_amount(self) -> float: return 0.0
+    @property
+    def calibration_file(self) -> str: return ""
+    @property
+    def instrument_method_file(self) -> str: return ""
+    @property
+    def processing_method_file(self) -> str: return ""
+    @property
+    def dilution_factor(self) -> float: return 1.0
+    @property
+    def sample_weight(self) -> float: return 0.0
+    @property
+    def user_text(self) -> List[str]: return []
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return SampleInformation()
+    _wrapped_type = None
+
+class InstrumentSelection(object):
+    """Information about selected instruments."""
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return InstrumentSelection()
+    _wrapped_type = None
+
+class FileHeader(object):
+    """Information about the file header."""
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return FileHeader()
+    _wrapped_type = None
+
+class FileError(object):
+    """Information about file errors."""
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return FileError()
+    _wrapped_type = None
+
 class RunHeaderEx(object):
     """Information about the file stream."""
     def __init__(self, raw_file):
@@ -338,6 +400,26 @@ class RawFile(object):
     def run_header_ex(self) -> RunHeaderEx:
         """Information about the file stream."""
         return RunHeaderEx(self)
+
+    @property
+    def sample_information(self) -> SampleInformation:
+        """Get information about the sample."""
+        return SampleInformation()
+
+    @property
+    def instrument_selection(self) -> InstrumentSelection:
+        """Get information about selected instruments."""
+        return InstrumentSelection()
+
+    @property
+    def file_header(self) -> FileHeader:
+        """Get information about the file header."""
+        return FileHeader()
+
+    @property
+    def file_error(self) -> FileError:
+        """Get information about file errors."""
+        return FileError()
 
     @property
     def is_open(self) -> bool:
