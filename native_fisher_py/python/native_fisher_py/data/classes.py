@@ -207,7 +207,16 @@ class ScanFilter(CommonCoreDataObject):
         return get_scan_filter_detector_value(self._scan_number)
 
 class EnumBase(object):
+    _instances = {}
+    def __new__(cls, value):
+        key = (cls, value)
+        if key not in EnumBase._instances:
+            inst = super(EnumBase, cls).__new__(cls)
+            EnumBase._instances[key] = inst
+            return inst
+        return EnumBase._instances[key]
     def __init__(self, value=0): 
+        if hasattr(self, "value"): return
         self.value = value
         self._name = None
     @property
