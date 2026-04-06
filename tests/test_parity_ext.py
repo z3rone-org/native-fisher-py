@@ -15,6 +15,8 @@ class TestAPIParity(unittest.TestCase):
         orig_members = set(n for n, _ in inspect.getmembers(orig_obj) if not n.startswith("_") or n == "_raw_file_access")
         native_members = set(n for n, _ in inspect.getmembers(native_obj) if not n.startswith("_") or n == "_raw_file_access")
         
+        print(f"Members to compare: {sorted(list(orig_members))}")
+        
         missing_in_native = orig_members - native_members
         if missing_in_native:
             print(f"FAILED: {name} is missing: {sorted(list(missing_in_native))}")
