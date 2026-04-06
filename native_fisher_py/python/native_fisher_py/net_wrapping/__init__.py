@@ -1,5 +1,6 @@
 import sys
 import os
+import pathlib
 
 class NetWrapperBase(object):
     Any = None
@@ -187,14 +188,24 @@ class Environment(object):
     def set_CurrentDirectory(self, v): pass
     def set_ExitCode(self, v): pass
 
+class clr_loader_stub(object):
+    Assembly = object; Dict = dict; DotnetCoreRuntimeSpec = object; Optional = None; Path = pathlib.Path; Runtime = object; RuntimeInfo = object; Sequence = list; StrOrPath = str; TemporaryDirectory = object; ffi = object
+    @staticmethod
+    def find_dotnet_root(*args): return None
+    @staticmethod
+    def find_libmono(*args): return None
+    @staticmethod
+    def find_runtimes(*args): return []
+    @staticmethod
+    def get_coreclr(*args): return None
+    @staticmethod
+    def get_mono(*args): return None
+    @staticmethod
+    def get_netfx(*args): return None
+    mono = object; types = object; util = object
+
 class pythonnet(object):
-    Any = None
-    Dict = None
-    Optional = None
-    Path = None
-    Union = None
-    clr_loader = None
-    sys = sys
+    Any = None; Dict = dict; Optional = None; Path = pathlib.Path; Union = None; clr_loader = clr_loader_stub; sys = sys
     @staticmethod
     def set_runtime(*args, **kwargs): pass
     @staticmethod
@@ -248,6 +259,12 @@ this.dll_base_path = ""
 this.dll_path = ""
 this.net_wrapper_base = NetWrapperBase
 this.os = os
+thermo_fisher_data = None
+thermo_fisher_data_business = None
+thermo_fisher_data_filter_enums = None
+thermo_fisher_data_interfaces = object
+thermo_fisher_mass_precision_estimator = None
+thermo_fisher_raw_file_reader = None
 
 class WrappedNetArray(object):
     @staticmethod
@@ -283,6 +300,6 @@ class wrapped_net_array(object):
     Generic = object
     System = object
     generic = object
-    clr = object
+    clr = clr
     WrappedNetArray = WrappedNetArray
 this.wrapped_net_array = wrapped_net_array

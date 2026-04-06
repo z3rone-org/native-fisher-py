@@ -1,48 +1,26 @@
 from typing import List, Tuple, Any
-import datetime
-from datetime import datetime as dt_factory, timezone
+import datetime as dt_factory
+from datetime import timezone
 
-class DateTime(object):
-    Now = dt_factory.now()
-    Today = dt_factory.now().date()
-    UtcNow = dt_factory.now(timezone.utc)
-    UnixEpoch = dt_factory(1970, 1, 1)
-    MaxValue = dt_factory(9999, 12, 31)
-    MinValue = dt_factory(1, 1, 1)
+class DateTime(dt_factory.datetime):
     @property
     def Date(self): return self
     @property
-    def Day(self): return 1
+    def DayOfWeek(self): return self.weekday()
     @property
-    def DayOfWeek(self): return 0
+    def DayOfYear(self): return self.timetuple().tm_yday
     @property
-    def DayOfYear(self): return 1
+    def Ticks(self): return int(self.timestamp() * 10000000)
     @property
-    def Hour(self): return 0
-    @property
-    def Kind(self): return 0
-    @property
-    def Millisecond(self): return 0
-    @property
-    def Minute(self): return 0
-    @property
-    def Month(self): return 1
-    @property
-    def Second(self): return 0
-    @property
-    def Ticks(self): return 0
-    @property
-    def TimeOfDay(self): return self
-    @property
-    def Year(self): return 2024
-    @property
-    def Now(self): return dt_factory.now()
-    @property
-    def UtcNow(self): return dt_factory.now(timezone.utc)
-    @property
-    def Today(self): return dt_factory.now().date()
+    def TimeOfDay(self): return self.time()
     
-    # Methods
+    UnixEpoch = dt_factory.datetime(1970, 1, 1)
+    MaxValue = dt_factory.datetime(9999, 12, 31)
+    MinValue = dt_factory.datetime(1, 1, 1)
+    
+    @staticmethod
+    def Overloads(*args): return None
+    
     def Add(self, *args): return self
     def AddDays(self, *args): return self
     def AddHours(self, *args): return self
@@ -52,49 +30,55 @@ class DateTime(object):
     def AddSeconds(self, *args): return self
     def AddTicks(self, *args): return self
     def AddYears(self, *args): return self
-    def CompareTo(self, *args): return 0
-    def Equals(self, *args): return True
-    def Finalize(self, *args): pass
     def GetDateTimeFormats(self, *args): return []
-    def GetHashCode(self, *args): return 0
-    def GetType(self, *args): return None
-    def GetTypeCode(self, *args): return 0
-    def MemberwiseClone(self, *args): return self
-    @staticmethod
-    def ReferenceEquals(*args): return True
-    def Subtract(self, *args): return self
     def ToBinary(self, *args): return 0
     def ToFileTime(self, *args): return 0
     def ToFileTimeUtc(self, *args): return 0
-    def ToLocalTime(self, *args): return self
-    def ToLongDateString(self, *args): return ""
-    def ToLongTimeString(self, *args): return ""
     def ToOADate(self, *args): return 0.0
-    def ToShortDateString(self, *args): return ""
-    def ToShortTimeString(self, *args): return ""
-    def ToString(self, *args): return ""
-    def ToUniversalTime(self, *args): return self
-    def TryFormat(self, *args): return True
     
-    # Properties with 'get_' prefix for parity
+    # get_ prefix for properties
     def get_Date(self): return self
-    def get_Day(self): return 1
-    def get_DayOfWeek(self): return 0
-    def get_DayOfYear(self): return 1
-    def get_Hour(self): return 0
+    def get_Day(self): return self.day
+    def get_DayOfWeek(self): return self.DayOfWeek
+    def get_DayOfYear(self): return self.DayOfYear
+    def get_Hour(self): return self.hour
     def get_Kind(self): return 0
-    def get_Millisecond(self): return 0
-    def get_Minute(self): return 0
-    def get_Month(self): return 1
-    def get_Now(self): return self
-    def get_Second(self): return 0
-    def get_Ticks(self): return 0
-    def get_TimeOfDay(self): return self
-    def get_Today(self): return self
-    def get_UtcNow(self): return self
-    def get_Year(self): return 2024
+    def get_Millisecond(self): return self.microsecond // 1000
+    def get_Minute(self): return self.minute
+    def get_Month(self): return self.month
+    def get_Now(self): return dt_factory.datetime.now()
+    def get_Second(self): return self.second
+    def get_Ticks(self): return self.Ticks
+    def get_TimeOfDay(self): return self.time()
+    def get_Today(self): return self.today()
+    def get_UtcNow(self): return dt_factory.datetime.now(timezone.utc)
+    def get_Year(self): return self.year
+
+    @staticmethod
+    def get_Now(): return dt_factory.datetime.now()
+    @staticmethod
+    def get_UtcNow(): return dt_factory.datetime.now(timezone.utc)
+    @staticmethod
+    def get_Today(): return dt_factory.datetime.now()
+
+    @staticmethod
+    def FromBinary(v): return DateTime.now()
+    @staticmethod
+    def FromFileTime(v): return DateTime.now()
+    @staticmethod
+    def FromFileTimeUtc(v): return DateTime.now()
+    @staticmethod
+    def FromOADate(v): return DateTime.now()
+    @staticmethod
+    def SpecifyKind(v, k): return v
     
-    # Operators
+    def CompareTo(self, other): return 0
+    def GetHashCode(self): return 0
+    def GetTypeCode(self): return 0
+    def MemberwiseClone(self): return self
+    @staticmethod
+    def ReferenceEquals(a, b): return a is b
+
     def op_Addition(self, *args): return self
     def op_Equality(self, *args): return True
     def op_GreaterThan(self, *args): return False
@@ -103,33 +87,6 @@ class DateTime(object):
     def op_LessThan(self, *args): return False
     def op_LessThanOrEqual(self, *args): return True
     def op_Subtraction(self, *args): return self
-
-    @staticmethod
-    def Compare(*args, **kwargs): return 0
-    @staticmethod
-    def DaysInMonth(*args, **kwargs): return 30
-    @staticmethod
-    def FromBinary(*args, **kwargs): return DateTime()
-    @staticmethod
-    def FromFileTime(*args, **kwargs): return DateTime()
-    @staticmethod
-    def FromFileTimeUtc(*args, **kwargs): return DateTime()
-    @staticmethod
-    def FromOADate(*args, **kwargs): return DateTime()
-    @staticmethod
-    def IsDaylightSavingTime(*args, **kwargs): return False
-    @staticmethod
-    def IsLeapYear(*args, **kwargs): return False
-    @staticmethod
-    def Parse(*args, **kwargs): return DateTime()
-    @staticmethod
-    def ParseExact(*args, **kwargs): return DateTime()
-    @staticmethod
-    def SpecifyKind(*args, **kwargs): return DateTime()
-    @staticmethod
-    def TryParse(*args, **kwargs): return True, DateTime()
-    @staticmethod
-    def TryParseExact(*args, **kwargs): return True, DateTime()
 
 class Array(object):
     @property
@@ -282,8 +239,8 @@ class Double(object):
     @staticmethod
     def TryParse(s): return True, float(s)
 
-def datetime_net_to_py(dt_val: int) -> datetime.datetime:
-    return dt_factory.fromtimestamp(dt_val)
+def datetime_net_to_py(dt_val: int) -> dt_factory.datetime:
+    return dt_factory.datetime.fromtimestamp(dt_val)
 
 def is_number(s: Any) -> bool:
     try:
