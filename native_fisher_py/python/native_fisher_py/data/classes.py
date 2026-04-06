@@ -47,7 +47,25 @@ class EnumBase(object):
     def __int__(self): return self.value
     def __repr__(self): return f"<{self.__class__.__name__}.{self.name if self.name else self.value}>"
 
-class GenericDataTypes(EnumBase): pass
+class GenericDataTypes(EnumBase):
+    NULL = 0
+    CHAR = 1
+    TRUEFALSE = 2
+    YESNO = 3
+    ONOFF = 4
+    UCHAR = 5
+    SHORT = 6
+    USHORT = 7
+    LONG = 8
+    ULONG = 9
+    FLOAT = 10
+    DOUBLE = 11
+    CHAR_STRING = 12
+    WCHAR_STRING = 13
+
+for name in ["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"]:
+    setattr(GenericDataTypes, name, GenericDataTypes(["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"].index(name)))
+    getattr(GenericDataTypes, name).name = name
 class SpectrumPacketType(object): pass
 class Scan(object): pass
 class ChromatogramSignal(object): pass
