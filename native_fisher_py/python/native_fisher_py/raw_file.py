@@ -177,7 +177,16 @@ class RawFile(object):
         return get_scan_number_from_rt(rt)
 
     def get_scan_event_for_scan_number(self, scan_number: int):
+        from .data.classes import ScanEvent
         return ScanEvent()
+
+    def get_status_log_for_retention_time(self, rt: float):
+        from .data.classes import LogEntry
+        return LogEntry()
+
+    def get_status_log_for_scan_number(self, scan_number: int):
+        from .data.classes import LogEntry
+        return LogEntry()
 
     def get_scan_event_string_for_scan_number(self, scan_number: int):
         return get_scan_event_string(scan_number)
@@ -201,9 +210,10 @@ class RawFile(object):
     def get_trailer_extra_information(self, scan_number): return None
     def get_trailer_extra_values(self, scan_number, formatted): return []
     def get_status_log_header_information(self): return []
-    def get_status_log_values(self, index, formatted): return None
+    def get_status_log_values(self, index, formatted):
+        from .data.classes import LogEntry
+        return LogEntry()
     def get_status_log_entries_count(self): return 0
-    def get_status_log_for_retention_time(self, rt): return None
     def get_tune_data_count(self): return 0
     def get_tune_data(self, index): return None
     def get_filters(self): return []
@@ -220,13 +230,15 @@ class RawFile(object):
         return ""
 
     def get_error_log_item(self, index: int):
-        return None
+        from .data.classes import ErrorLogEntry
+        return ErrorLogEntry()
 
     def get_tune_data_header_information(self, index: int):
         return []
 
     def get_tune_data_values(self, index: int):
-        return None
+        from .data.classes import TuneDataValues
+        return TuneDataValues()
     
     @property
     def instrument_methods_count(self) -> int:
@@ -282,8 +294,11 @@ class RawFile(object):
     def get_average_ms2_scans_by_rt(self, rt_start, rt_end):
         return np.array([]), np.array([]), 0
 
-    def ms2_filter_masses(self, scan_number):
-        return []
+    def ms2_filter_masses(self, scan_number: int) -> List[float]:
+        return get_ms2_filter_masses(scan_number)
+
+    def get_precursor_mz(self, scan_number: int) -> float:
+        return get_precursor_mass(scan_number)
 
     def get_scan_from_scan_number(self, scan_number: int):
         masses, intensities = get_spectrum(scan_number, 1000000)
