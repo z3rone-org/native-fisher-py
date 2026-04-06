@@ -705,6 +705,62 @@ namespace ThermoNativeReader
             try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData; } catch { return -1; }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_mode")]
+        public static int GetScanFilterScanMode(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_accurate_mass")]
+        public static int GetScanFilterAccurateMass(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ionization_mode")]
+        public static int GetScanFilterIonizationMode(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_lock")]
+        public static int GetScanFilterLock(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_turbo_scan")]
+        public static int GetScanFilterTurboScan(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_corona")]
+        public static int GetScanFilterCorona(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_dependent")]
+        public static int GetScanFilterDependent(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector_value")]
+        public static double GetScanFilterDetectorValue(int scanNumber)
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue; } catch { return -1; }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage")]
         public static int GetScanEventCompensationVoltage(int scanNumber)
         {

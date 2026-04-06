@@ -29,6 +29,14 @@ if not _IS_SPHINX:
         def get_scan_filter_polarity(s): return 0
         def get_scan_filter_detector(s): return 0
         def get_scan_filter_scan_data(s): return 0
+        def get_scan_filter_scan_mode(s): return 0
+        def get_scan_filter_accurate_mass(s): return 0
+        def get_scan_filter_ionization_mode(s): return 0
+        def get_scan_filter_lock(s): return 0
+        def get_scan_filter_turbo_scan(s): return 0
+        def get_scan_filter_corona(s): return 0
+        def get_scan_filter_dependent(s): return 0
+        def get_scan_filter_detector_value(s): return 0.0
         def get_scan_event_compensation_voltage(s): return 0
         def get_scan_event_compensation_voltage_value(s): return 0.0
         def get_scan_event_ms_order(s): return 0
@@ -55,6 +63,14 @@ else:
     def get_scan_filter_polarity(s): return 0
     def get_scan_filter_detector(s): return 0
     def get_scan_filter_scan_data(s): return 0
+    def get_scan_filter_scan_mode(s): return 0
+    def get_scan_filter_accurate_mass(s): return 0
+    def get_scan_filter_ionization_mode(s): return 0
+    def get_scan_filter_lock(s): return 0
+    def get_scan_filter_turbo_scan(s): return 0
+    def get_scan_filter_corona(s): return 0
+    def get_scan_filter_dependent(s): return 0
+    def get_scan_filter_detector_value(s): return 0.0
     def get_scan_event_compensation_voltage(s): return 0
     def get_scan_event_compensation_voltage_value(s): return 0.0
     def get_scan_event_ms_order(s): return 0
@@ -104,23 +120,31 @@ class ScanFilter(CommonCoreDataObject):
     def compensation_voltage_value(self):
         return get_scan_event_compensation_voltage_value(self._scan_number)
     @property
-    def scan_mode(self): return 0
+    def scan_mode(self):
+        return ScanModeType(get_scan_filter_scan_mode(self._scan_number))
     @property
-    def accurate_mass(self): return 0
+    def accurate_mass(self):
+        return EventAccurateMass(get_scan_filter_accurate_mass(self._scan_number))
     @property
-    def ionization_mode(self): return 0
+    def ionization_mode(self):
+        return IonizationModeType(get_scan_filter_ionization_mode(self._scan_number))
     @property
-    def lock(self): return 0
+    def lock(self):
+        return TriState(get_scan_filter_lock(self._scan_number))
     @property
     def meta_filters(self): return []
     @property
-    def turbo_scan(self): return 0
+    def turbo_scan(self):
+        return TriState(get_scan_filter_turbo_scan(self._scan_number))
     @property
-    def corona(self): return 0
+    def corona(self):
+        return TriState(get_scan_filter_corona(self._scan_number))
     @property
-    def dependent(self): return 0
+    def dependent(self):
+        return TriState(get_scan_filter_dependent(self._scan_number))
     @property
-    def detector_value(self): return 0.0
+    def detector_value(self):
+        return get_scan_filter_detector_value(self._scan_number)
 
 class EnumBase(object):
     name = ""
