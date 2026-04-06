@@ -431,12 +431,38 @@ class InstrumentSelection(CommonCoreDataObject):
     def instrument_index(self): return 0
 
 class ScanStatistics(CommonCoreDataObject):
+    def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0):
+        self._start_time = start_time
+        self._low_mass = low_mass
+        self._high_mass = high_mass
+        self._tic = tic
+        self._base_peak_mass = base_peak_mass
+        self._base_peak_intensity = base_peak_intensity
+        self._packet_count = packet_count
+        self._scan_number = scan_number
+        self._ms_order = ms_order
+
+    @property
+    def start_time(self): return self._start_time
+    @property
+    def low_mass(self): return self._low_mass
+    @property
+    def high_mass(self): return self._high_mass
+    @property
+    def tic(self): return self._tic
+    @property
+    def base_peak_mass(self): return self._base_peak_mass
+    @property
+    def base_peak_intensity(self): return self._base_peak_intensity
+    @property
+    def packet_count(self): return self._packet_count
+    @property
+    def scan_number(self): return self._scan_number
+    @property
+    def ms_order(self): return self._ms_order
+
     @property
     def absorbance_unit_scale(self): return 0.0
-    @property
-    def base_peak_intensity(self): return 0.0
-    @property
-    def base_peak_mass(self): return 0.0
     def clone(self): return self
     def copy_to(self, other): pass
     @property
@@ -445,13 +471,27 @@ class ScanStatistics(CommonCoreDataObject):
     @property
     def frequency(self): return 0.0
     @property
-    def high_mass(self): return 0.0
-    @property
     def is_centroid_scan(self): return 1
     @property
     def is_uniform_time(self): return 1
     @property
     def long_wavelength(self): return 0.0
+    @property
+    def number_of_channels(self): return 0
+    @property
+    def packet_type(self): return 0
+    @property
+    def scan_event_number(self): return 0
+    @property
+    def scan_type(self): return 0
+    @property
+    def segment_number(self): return 0
+    @property
+    def short_wavelength(self): return 0.0
+    @property
+    def spectrum_packet_type(self): return 0
+    @property
+    def wavelength_step(self): return 0.0
     @property
     def low_mass(self): return 0.0
     @property
@@ -480,17 +520,30 @@ class ScanStatistics(CommonCoreDataObject):
     def wavelength_step(self): return 0.0
 
 class SegmentedScan(CommonCoreDataObject):
+    def __init__(self, masses=None, intensities=None, scan_number=0):
+        self._masses = masses if masses is not None else np.array([])
+        self._intensities = intensities if intensities is not None else np.array([])
+        self._scan_number = scan_number
+
     @property
-    def base_intensity(self): return 0.0
+    def masses(self): return self._masses
+    @property
+    def intensities(self): return self._intensities
+    @property
+    def scan_number(self): return self._scan_number
+
+    @property
+    def base_intensity(self): return np.max(self._intensities) if self._intensities.size > 0 else 0.0
     def clone(self): return self
     def deep_clone(self): return self
     @property
     def flags(self): return []
-    def from_mass_and_intensities(self, m, i): return self
+    def from_mass_and_intensities(self, m, i): 
+        self._masses = m
+        self._intensities = i
+        return self
     @property
     def index_of_segment_start(self): return []
-    @property
-    def intensities(self): return np.array([])
     @property
     def mass_ranges(self): return []
     @property
@@ -500,24 +553,23 @@ class SegmentedScan(CommonCoreDataObject):
     @property
     def ranges(self): return []
     @property
-    def scan_number(self): return 0
+    def segment_count(self): return 1
     @property
-    def segment_count(self): return 0
+    def segment_lengths(self): return [self._masses.size]
     @property
-    def segment_lengths(self): return []
+    def segment_sizes(self): return [self._masses.size]
     @property
-    def segment_sizes(self): return []
-    @property
-    def sum_intensities(self): return 0.0
+    def sum_intensities(self): return np.sum(self._intensities)
     def to_simple_scan(self): return None
     def try_validate(self): return True
     def validate(self): pass
 
 class LogEntry(CommonCoreDataObject):
-    def __init__(self, values=None):
+    def __init__(self, values=None, labels=None):
         self._values = values or []
+        self._labels = labels or []
     @property
-    def labels(self): return []
+    def labels(self): return self._labels
     @property
     def length(self): return len(self._values)
     @property
@@ -549,16 +601,22 @@ class HeaderItem(CommonCoreDataObject):
     def string_length_or_precision(self): return 0
 
 class StatusLogValues(CommonCoreDataObject):
+    def __init__(self, retention_time=0.0, values=None):
+        self._retention_time = retention_time
+        self._values = values or []
     @property
-    def retention_time(self): return 0.0
+    def retention_time(self): return self._retention_time
     @property
-    def values(self): return []
+    def values(self): return self._values
 
 class TuneDataValues(CommonCoreDataObject):
+    def __init__(self, id=0, values=None):
+        self._id = id
+        self._values = values or []
     @property
-    def id(self): return 0
+    def id(self): return self._id
     @property
-    def values(self): return []
+    def values(self): return self._values
 
 class Reaction(CommonCoreDataObject): 
     def __init__(self, scan_number=0, index=0):

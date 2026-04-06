@@ -200,7 +200,17 @@ class RawFile(object):
 
     def get_scan_stats_for_scan_number(self, scan_number: int):
         from .data.classes import ScanStatistics
-        return ScanStatistics(scan_number)
+        from .native_fisher_py_backend import get_scan_stats
+        data = get_scan_stats(scan_number)
+        return ScanStatistics(
+            start_time=data[0],
+            low_mass=data[1],
+            high_mass=data[2],
+            tic=data[3],
+            base_peak_mass=data[4],
+            base_peak_intensity=data[5],
+            packet_count=int(data[6])
+        )
 
     def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
         from .data.classes import ChromatogramData
@@ -326,8 +336,15 @@ class RawFile(object):
     def get_average_ms2_scans_by_rt(self, rt_start, rt_end):
         return np.array([]), np.array([]), 0
 
-    def ms2_filter_masses(self, scan_number: int) -> List[float]:
-        return get_ms2_filter_masses(scan_number)
+    @property
+    def ms2_filter_masses(self) -> List[float]:
+        if not hasattr(self, "_ms2_filter_masses_cache"):
+            masses = []
+            for i in range(self.first_scan, self.last_scan + 1):
+                if get_ms_order(i) == 2:
+                    masses.append(get_precursor_mass(i))
+            self._ms2_filter_masses_cache = masses
+        return self._ms2_filter_masses_cache
 
     def get_precursor_mz(self, scan_number: int) -> float:
         return get_precursor_mass(scan_number)
