@@ -22,6 +22,8 @@ if not _IS_SPHINX:
         def get_creation_date(): return ""
         def get_creator_id(): return ""
         def get_ms_order(s): return 0
+        def get_mass_analyzer(s): return 0
+        def get_scan_event_string(s): return ""
 else:
     def get_instrument_name(): return ""
     def get_instrument_model(): return ""
@@ -33,6 +35,8 @@ else:
     def get_creation_date(): return ""
     def get_creator_id(): return ""
     def get_ms_order(s): return 0
+    def get_mass_analyzer(s): return 0
+    def get_scan_event_string(s): return ""
 
 class CommonCoreDataObject(object):
     def deep_equals(self, other): return True
@@ -44,8 +48,52 @@ class ScanFilter(CommonCoreDataObject):
     def __init__(self, scan_number=0):
         self._scan_number = scan_number
     @property
+    def name(self):
+        return get_scan_event_string(self._scan_number)
+    @property
     def ms_order(self):
         return MsOrderType(get_ms_order(self._scan_number))
+    @property
+    def mass_analyzer(self):
+        return MassAnalyzerType(get_mass_analyzer(self._scan_number))
+    @property
+    def polarity(self):
+        n = self.name
+        if "+" in n: return PolarityType.Positive
+        if "-" in n: return PolarityType.Negative
+        return PolarityType.Any
+    @property
+    def scan_mode(self): return 0
+    @property
+    def accurate_mass(self): return 0
+    @property
+    def ionization_mode(self): return 0
+    @property
+    def lock(self): return 0
+    @property
+    def meta_filters(self): return []
+    @property
+    def turbo_scan(self): return 0
+    @property
+    def ultra(self): return 0
+    @property
+    def wideband(self): return 0
+    @property
+    def compensation_volt_type(self): return 0
+    @property
+    def compensation_voltage(self): return 0.0
+    @property
+    def compensation_voltage_count(self): return -1
+    @property
+    def compensation_voltage_value(self): return 0.0
+    @property
+    def corona(self): return 0
+    @property
+    def dependent(self): return 0
+    @property
+    def detector(self): return 0
+    @property
+    def detector_value(self): return 0.0
 
 class EnumBase(object):
     name = ""
@@ -899,86 +947,7 @@ class ScanEvents(CommonCoreDataObject):
     @property
     def segments(self): return -1
 
-class ScanFilter(CommonCoreDataObject):
-    def __init__(self, filter_string=""): self._name = filter_string
-    @property
-    def name(self): return self._name
-    @property
-    def ms_order(self):
-        if "ms2" in self._name.lower(): return 2
-        return 1
-    @property
-    def mass_analyzer(self):
-        if "ftms" in self._name.lower(): return MassAnalyzer.FTMS
-        return MassAnalyzer.Any
-    @property
-    def polarity(self):
-        if "+" in self._name: return PolarityType.Positive
-        return PolarityType.Any
-    @property
-    def scan_mode(self): return 0
-    @property
-    def accurate_mass(self): return 0
-    @property
-    def ionization_mode(self): return 0
-    @property
-    def lock(self): return 0
-    @property
-    def meta_filters(self): return []
-    @property
-    def turbo_scan(self): return 0
-    @property
-    def ultra(self): return 0
-    @property
-    def wideband(self): return 0
-    @property
-    def compensation_volt_type(self): return 0
-    @property
-    def compensation_voltage(self): return 0.0
-    @property
-    def compensation_voltage_count(self): return -1
-    @property
-    def compensation_voltage_value(self): return 0.0
-    @property
-    def corona(self): return 0
-    @property
-    def dependent(self): return 0
-    @property
-    def detector(self): return 0
-    @property
-    def detector_value(self): return 0.0
-    @property
-    def electron_capture_dissociation(self): return 0
-    @property
-    def electron_capture_dissociation_value(self): return 0.0
-    @property
-    def electron_transfer_dissociation(self): return 0
-    @property
-    def electron_transfer_dissociation_value(self): return 0.0
-    @property
-    def enhanced(self): return 0
-    @property
-    def field_free_region(self): return 0
-    @property
-    def higher_energy_ci_d(self): return 0
-    @property
-    def higher_energy_ci_d_value(self): return 0.0
-    @property
-    def is_custom(self): return 0
-    @property
-    def locale_name(self): return "Any"
-    @property
-    def mass_precision(self): return 4
-    @property
-    def multi_notch(self): return 0
-    @property
-    def multi_state_activation(self): return 0
-    @property
-    def multiple_photon_dissociation(self): return 0
-    @property
-    def multiple_photon_dissociation_value(self): return 0.0
-    @property
-    def multiplex(self): return 0
+# ScanFilter consolidated at the top
     @property
     def param_a(self): return 0.0
     @property
