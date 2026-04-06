@@ -219,12 +219,130 @@ class mass_options(CommonCoreDataObject):
     def __init__(self, tolerance=0.0, units=0): self.tolerance, self.units = tolerance, units
 MassOptions = mass_options
 
-class ScanStatistics(CommonCoreDataObject): pass
-class SegmentedScan(CommonCoreDataObject): pass
-class LogEntry(CommonCoreDataObject): pass
-class HeaderItem(CommonCoreDataObject): pass
-class StatusLogValues(CommonCoreDataObject): pass
-class TuneDataValues(CommonCoreDataObject): pass
+class InstrumentSelection(CommonCoreDataObject):
+    @property
+    def device_type(self): return 1
+    @property
+    def instrument_index(self): return 0
+
+class ScanStatistics(CommonCoreDataObject):
+    @property
+    def absorbance_unit_scale(self): return 0.0
+    @property
+    def base_peak_intensity(self): return 0.0
+    @property
+    def base_peak_mass(self): return 0.0
+    def clone(self): return self
+    def copy_to(self, other): pass
+    @property
+    def cycle_number(self): return 0
+    def deep_clone(self): return self
+    @property
+    def frequency(self): return 0.0
+    @property
+    def high_mass(self): return 0.0
+    @property
+    def is_centroid_scan(self): return 1
+    @property
+    def is_uniform_time(self): return 1
+    @property
+    def long_wavelength(self): return 0.0
+    @property
+    def low_mass(self): return 0.0
+    @property
+    def number_of_channels(self): return 0
+    @property
+    def packet_count(self): return 0
+    @property
+    def packet_type(self): return 0
+    @property
+    def scan_event_number(self): return 0
+    @property
+    def scan_number(self): return 0
+    @property
+    def scan_type(self): return 0
+    @property
+    def segment_number(self): return 0
+    @property
+    def short_wavelength(self): return 0.0
+    @property
+    def spectrum_packet_type(self): return 0
+    @property
+    def start_time(self): return 0.0
+    @property
+    def tic(self): return 0.0
+    @property
+    def wavelength_step(self): return 0.0
+
+class SegmentedScan(CommonCoreDataObject):
+    @property
+    def base_intensity(self): return 0.0
+    def clone(self): return self
+    def deep_clone(self): return self
+    @property
+    def flags(self): return []
+    def from_mass_and_intensities(self, m, i): return self
+    @property
+    def index_of_segment_start(self): return []
+    @property
+    def intensities(self): return np.array([])
+    @property
+    def mass_ranges(self): return []
+    @property
+    def position_count(self): return 0
+    @property
+    def positions(self): return np.array([])
+    @property
+    def ranges(self): return []
+    @property
+    def scan_number(self): return 0
+    @property
+    def segment_count(self): return 0
+    @property
+    def segment_lengths(self): return []
+    @property
+    def segment_sizes(self): return []
+    @property
+    def sum_intensities(self): return 0.0
+    def to_simple_scan(self): return None
+    def try_validate(self): return True
+    def validate(self): pass
+
+class LogEntry(CommonCoreDataObject):
+    @property
+    def labels(self): return []
+    @property
+    def length(self): return 0
+    @property
+    def values(self): return []
+
+class HeaderItem(CommonCoreDataObject):
+    @property
+    def data_type(self): return 0
+    @property
+    def format_value(self): return ""
+    @property
+    def is_numeric(self): return 1
+    @property
+    def is_scientific_notation(self): return 0
+    @property
+    def is_variable_header(self): return 0
+    @property
+    def label(self): return ""
+    @property
+    def string_length_or_precision(self): return 0
+
+class StatusLogValues(CommonCoreDataObject):
+    @property
+    def retention_time(self): return 0.0
+    @property
+    def values(self): return []
+
+class TuneDataValues(CommonCoreDataObject):
+    @property
+    def id(self): return 0
+    @property
+    def values(self): return []
 
 class Reaction(CommonCoreDataObject): 
     @property
@@ -248,8 +366,123 @@ class Reaction(CommonCoreDataObject):
     @property
     def precursor_range_is_valid(self): return 0
 
-class Scan(CommonCoreDataObject): pass
-class CentroidStream(CommonCoreDataObject): pass
+class Scan(CommonCoreDataObject):
+    @property
+    def always_merge_segments(self): return 0
+    @property
+    def at_time(self): return 0.0
+    @property
+    def can_merged_scan(self): return 0
+    @property
+    def centroid_scan(self): return None
+    @property
+    def centroid_stream_access(self): return None
+    def create_scan_reader(self, r): return None
+    def deep_clone(self): return self
+    def from_file(self, f, s): return self
+    def generate_frequency_table(self): return None
+    def generate_noise_table(self): return None
+    @property
+    def has_centroid_stream(self): return 0
+    @property
+    def has_noise_table(self): return 0
+    @property
+    def is_user_tolerance(self): return 0
+    @property
+    def mass_resolution(self): return 0.0
+    @property
+    def prefer_centroids(self): return 0
+    @property
+    def preferred_base_peak_intensity(self): return 0.0
+    @property
+    def preferred_base_peak_mass(self): return 0.0
+    @property
+    def preferred_base_peak_noise(self): return 0.0
+    @property
+    def preferred_base_peak_resolution(self): return 0.0
+    @property
+    def preferred_baselines(self): return np.array([])
+    @property
+    def preferred_flags(self): return []
+    @property
+    def preferred_intensities(self): return np.array([])
+    @property
+    def preferred_masses(self): return np.array([])
+    @property
+    def preferred_noises(self): return np.array([])
+    @property
+    def preferred_resolutions(self): return np.array([])
+    @property
+    def scan_adder(self): return None
+    @property
+    def scan_statistics(self): return None
+    @property
+    def scan_statistics_access(self): return None
+    @property
+    def scan_type(self): return 0
+    @property
+    def scans_combined(self): return []
+    @property
+    def segmented_scan(self): return None
+    @property
+    def segmented_scan_access(self): return None
+    def slice(self, l, h): return self
+    @property
+    def subtraction_pointer(self): return None
+    def to_centroid(self): return None
+    @property
+    def tolerance_unit(self): return 0
+
+class CentroidStream(CommonCoreDataObject):
+    @property
+    def base_intensity(self): return 0.0
+    @property
+    def base_peak_intensity(self): return 0.0
+    @property
+    def base_peak_mass(self): return 0.0
+    @property
+    def base_peak_noise(self): return 0.0
+    @property
+    def base_peak_resolution(self): return 0.0
+    @property
+    def baselines(self): return np.array([])
+    @property
+    def charges(self): return np.array([])
+    def clear(self): pass
+    def clone(self): return self
+    @property
+    def coefficients(self): return np.array([])
+    @property
+    def coefficients_count(self): return 0
+    def deep_clone(self): return self
+    @property
+    def flags(self): return []
+    def get_centroids(self): return []
+    def get_label_peak(self, i): return None
+    def get_label_peaks(self): return []
+    @property
+    def intensities(self): return np.array([])
+    @property
+    def length(self): return 0
+    @property
+    def masses(self): return np.array([])
+    @property
+    def noises(self): return np.array([])
+    def refresh_base_details(self): pass
+    @property
+    def resolutions(self): return np.array([])
+    @property
+    def scan_number(self): return 0
+    def set_label_peaks(self, p): pass
+    @property
+    def sum_intensities(self): return 0.0
+    @property
+    def sum_masses(self): return 0.0
+    def to_scan(self): return None
+    def to_segmented_scan(self): return None
+    def to_simple_scan(self): return None
+    def try_validate(self): return True
+    def validate(self): pass
 
 class ChromatogramSignal(CommonCoreDataObject): 
     @property
@@ -293,6 +526,23 @@ class ChromatogramTraceSettings(CommonCoreDataObject): pass
 
 class InstrumentData(CommonCoreDataObject):
     @property
+    def axis_label_x(self): return ""
+    @property
+    def axis_label_y(self): return ""
+    @property
+    def channel_labels(self): return []
+    def clone(self): return self
+    @property
+    def flags(self): return []
+    @property
+    def has_accurate_mass_precursors(self): return 0
+    @property
+    def is_tsq_quantum_file(self): return 0
+    @property
+    def is_valid(self): return True
+    @property
+    def units(self): return ""
+    @property
     def name(self) -> str: return get_instrument_name()
     @property
     def model(self) -> str: return get_instrument_model()
@@ -305,28 +555,48 @@ class InstrumentData(CommonCoreDataObject):
 
 class SampleInformation(CommonCoreDataObject):
     @property
+    def barcode(self): return ""
+    @property
+    def barcode_status(self): return 0
+    @property
+    def calibration_file(self): return ""
+    @property
+    def calibration_level(self): return 0
+    @property
+    def comment(self): return ""
+    def deep_copy(self): return self
+    @property
+    def dilution_factor(self): return 1.0
+    @property
+    def injection_volume(self): return 0.0
+    @property
+    def instrument_method_file(self): return ""
+    @property
+    def istd_amount(self): return 0.0
+    @property
+    def max_user_text_column_count(self): return 0
+    @property
+    def processing_method_file(self): return ""
+    @property
+    def row_number(self): return 0
+    @property
+    def sample_id(self): return ""
+    @property
+    def sample_name(self): return ""
+    @property
+    def sample_type(self): return 0
+    @property
+    def sample_volume(self): return 0.0
+    @property
+    def sample_weight(self): return 0.0
+    @property
+    def user_text(self): return []
+    @property
+    def vial(self): return ""
+    @property
     def raw_file_name(self) -> str: return get_file_name()
     @property
     def path(self) -> str: return get_path()
-
-class InstrumentSelection(CommonCoreDataObject): pass
-class AutoSamplerInformation(CommonCoreDataObject):
-    @property
-    def tray_index(self): return -1
-    @property
-    def tray_name(self): return "Any"
-    @property
-    def tray_shape(self): return TrayShape.Unknown
-    @property
-    def tray_shape_as_string(self): return "Unknown"
-    @property
-    def vial_index(self): return -1
-    @property
-    def vials_per_tray(self): return -1
-    @property
-    def vials_per_tray_x(self): return -1
-    @property
-    def vials_per_tray_y(self): return -1
 
 class FileHeader(CommonCoreDataObject):
     @property
@@ -352,7 +622,100 @@ class FileHeader(CommonCoreDataObject):
     @property
     def who_modified_logon(self): return ""
 
-class FileError(CommonCoreDataObject): pass
+class FileError(CommonCoreDataObject):
+    @property
+    def error_code(self): return 0
+    @property
+    def error_message(self): return ""
+    @property
+    def has_error(self): return 0
+    @property
+    def has_warning(self): return 0
+    @property
+    def warning_message(self): return ""
+
+class AutoSamplerInformation(CommonCoreDataObject):
+    @property
+    def tray_index(self): return -1
+    @property
+    def tray_name(self): return "Any"
+    @property
+    def tray_shape(self): return TrayShape.Unknown
+    @property
+    def tray_shape_as_string(self): return "Unknown"
+    @property
+    def vial_index(self): return -1
+    @property
+    def vials_per_tray(self): return -1
+    @property
+    def vials_per_tray_x(self): return -1
+    @property
+    def vials_per_tray_y(self): return -1
+
+class RunHeader(CommonCoreDataObject):
+    def __init__(self, raw_file=None): self._raw_file = raw_file
+    @property
+    def start_time(self) -> float: return get_start_time()
+    @property
+    def first_spectrum(self) -> int: return self._raw_file.first_scan if self._raw_file else 1
+    @property
+    def last_spectrum(self) -> int: return self._raw_file.last_scan if self._raw_file else 1
+    @property
+    def end_time(self): return 0.0
+    @property
+    def expected_runtime(self): return 0.0
+    @property
+    def high_mass(self): return 0.0
+    @property
+    def low_mass(self): return 0.0
+    @property
+    def mass_resolution(self): return 0.0
+    @property
+    def max_integrated_intensity(self): return 0.0
+    @property
+    def max_intensity(self): return 0.0
+    @property
+    def tolerance_unit(self): return 0
+
+class RunHeaderEx(RunHeader): pass
+
+class WrappedRunHeader(CommonCoreDataObject):
+    @property
+    def comment_1(self): return ""
+    @property
+    def comment_2(self): return ""
+    @property
+    def end_time(self): return 0.0
+    @property
+    def error_log_count(self): return 0
+    @property
+    def expected_run_time(self): return 0.0
+    @property
+    def filter_mass_precision(self): return 4
+    @property
+    def high_mass(self): return 0.0
+    @property
+    def in_acquisition(self): return 0
+    @property
+    def low_mass(self): return 0.0
+    @property
+    def mass_resolution(self): return 0.0
+    @property
+    def max_integrated_intensity(self): return 0.0
+    @property
+    def max_intensity(self): return 0.0
+    @property
+    def spectra_count(self): return 0
+    @property
+    def status_log_count(self): return 0
+    @property
+    def tolerance_unit(self): return 0
+    @property
+    def trailer_extra_count(self): return 0
+    @property
+    def trailer_scan_event_count(self): return 0
+    @property
+    def tune_data_count(self): return 0
 
 class ScanEvent(CommonCoreDataObject):
     @property
