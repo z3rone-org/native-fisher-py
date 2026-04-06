@@ -207,12 +207,17 @@ class RawFile(object):
         if not isinstance(settings, list):
             settings = [settings]
         
-        results = []
+        all_times = []
+        all_intensities = []
+        all_scans = []
         for s in settings:
             trace_type = s.trace.value if hasattr(s.trace, 'value') else int(s.trace)
             times, intensities = get_chromatogram(trace_type, 1000000)
-            results.append(ChromatogramData(times, intensities, [])) # Scans empty for now
-        return results
+            all_times.append(times)
+            all_intensities.append(intensities)
+            all_scans.append([]) # Empty scans for now
+            
+        return ChromatogramData(all_times, all_intensities, all_scans)
 
     def get_instrument_count_of_type(self, device_type):
         return get_instrument_count_of_type(device_type)

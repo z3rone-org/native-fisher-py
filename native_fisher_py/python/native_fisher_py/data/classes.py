@@ -732,7 +732,14 @@ class ChromatogramSignal(CommonCoreDataObject):
     
     @staticmethod
     def from_chromatogram_data(data):
-        return ChromatogramSignal(data.times, data.intensities, data.scan_numbers_array, data.intensities_array) # intensities_array is dummy
+        signals = []
+        for i in range(data.length):
+            signals.append(ChromatogramSignal(
+                data.positions_array[i],
+                data.intensities_array[i],
+                data.scan_numbers_array[i] if i < len(data.scan_numbers_array) else np.array([])
+            ))
+        return signals
 
     @staticmethod
     def from_time_and_intensity(times, intensities):
@@ -1308,23 +1315,19 @@ class ChromatogramTraceSettings(CommonCoreDataObject):
 
 
 class ChromatogramData(CommonCoreDataObject):
-    def __init__(self, times=None, intensities=None, scans=None):
-        self._times = times if times is not None else []
-        self._intensities = intensities if intensities is not None else []
-        self._scans = scans if scans is not None else []
+    def __init__(self, positions_array=None, intensities_array=None, scan_numbers_array=None):
+        self._positions_array = positions_array if positions_array is not None else []
+        self._intensities_array = intensities_array if intensities_array is not None else []
+        self._scan_numbers_array = scan_numbers_array if scan_numbers_array is not None else []
 
     @property
-    def intensities(self): return self._intensities
+    def intensities_array(self): return self._intensities_array
     @property
-    def intensities_array(self): return np.array(self._intensities)
+    def length(self): return len(self._positions_array)
     @property
-    def length(self): return len(self._times)
+    def positions_array(self): return self._positions_array
     @property
-    def positions_array(self): return np.array(self._times)
-    @property
-    def scan_numbers_array(self): return np.array(self._scans)
-    @property
-    def times(self): return self._times
+    def scan_numbers_array(self): return self._scan_numbers_array
 
 class business:
     InstrumentData = InstrumentData; SampleType = SampleType; ScanStatistics = ScanStatistics; SegmentedScan = SegmentedScan; RunHeader = RunHeader; SampleInformation = SampleInformation; InstrumentSelection = InstrumentSelection; FileHeader = FileHeader; FileError = FileError; CentroidStream = CentroidStream; ChromatogramSignal = ChromatogramSignal; ChromatogramTraceSettings = ChromatogramTraceSettings; HeaderItem = HeaderItem; LogEntry = LogEntry; MassOptions = MassOptions; Range = Range; Reaction = Reaction; Scan = Scan; StatusLogValues = StatusLogValues; TuneDataValues = TuneDataValues; TraceType = TraceType; BarcodeStatusType = EnumBase; BracketType = EnumBase; CachedScanProvider = object; SimpleScan = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; barcode_status_type = EnumBase; bracket_type = EnumBase; cached_scan_provider = object; centroid_stream = CentroidStream; chromatogram_signal = ChromatogramSignal; chromatogram_signal_cls = ChromatogramSignal; chromatogram_trace_settings = ChromatogramTraceSettings; data_units = EnumBase; generic_data_types = EnumBase; header_item = HeaderItem; instrument_data = InstrumentData; instrument_selection = InstrumentSelection; label_peak = object; log_entry = LogEntry; mass_options = MassOptions; mass_to_frequency_converter = object; noise_and_baseline = object; range = Range; reaction = Reaction; run_header = RunHeader; sample_information = SampleInformation; sample_type = SampleType; scan = Scan; scan_statistics = ScanStatistics; segmented_scan = SegmentedScan; simple_scan = object; spectrum_packet_type = object; status_log_values = StatusLogValues; tolerance_mode = EnumBase; trace_type = TraceType; tune_data_values = TuneDataValues; DataUnits = EnumBase; GenericDataTypes = EnumBase; MassToFrequencyConverter = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; SimpleScan = object; BarcodeStatusType = EnumBase; BracketType = EnumBase; SampleType = SampleType; TraceType = TraceType
