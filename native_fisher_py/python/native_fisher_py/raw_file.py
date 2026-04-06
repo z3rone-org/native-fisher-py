@@ -244,7 +244,7 @@ class RawFile(object):
     def get_status_log_entries_count(self): 
         return get_status_log_count()
     def get_tune_data(self, index): return None
-    def get_filters(self): return []
+    def get_filters(self): return get_filters()
     def get_auto_filters(self): return []
     def get_filter_for_scan_number(self, scan_number):
         from .data.classes import ScanFilter

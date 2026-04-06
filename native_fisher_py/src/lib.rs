@@ -479,6 +479,29 @@ fn get_chromatogram(trace_type: i32, filter: String, mass_ranges_start: Vec<f64>
 }
 
 #[pyfunction]
+fn get_filters() -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut filters = vec![std::ptr::null_mut(); 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut *mut std::os::raw::c_char, i32) -> i32> = lib.get(b"get_filters")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_filters: {}", e)))?;
+        let count = func(filters.as_mut_ptr(), 1024);
+        if count < 0 {
+            return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_filters failed"));
+        }
+        let actual_count = count.min(1024) as usize;
+        let mut result = Vec::with_capacity(actual_count);
+        for i in 0..actual_count {
+            if !filters[i].is_null() {
+                let s = std::ffi::CStr::from_ptr(filters[i]).to_string_lossy().into_owned();
+                result.push(s);
+            }
+        }
+        Ok(result)
+    }
+}
+
+#[pyfunction]
 fn get_averaged_spectrum(scan_numbers: Vec<i32>, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>)> {
     let lib = get_lib()?;
     let mut masses = vec![0.0f64; max_length as usize];
@@ -575,6 +598,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_num_scans, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_spectrum, m)?)?;
+    m.add_function(wrap_pyfunction!(get_filters, m)?)?;
     m.add_function(wrap_pyfunction!(get_first_scan, m)?)?;
     m.add_function(wrap_pyfunction!(get_last_scan, m)?)?;
     m.add_function(wrap_pyfunction!(get_start_time, m)?)?;

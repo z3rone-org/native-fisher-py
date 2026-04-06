@@ -74,6 +74,27 @@ namespace ThermoNativeReader
             }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_filters")]
+        public static unsafe int GetFilters(IntPtr* filters, int maxCount)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var filterList = _rawFile.GetFilters().ToArray();
+                int count = Math.Min(filterList.Length, maxCount);
+                for (int i = 0; i < count; i++)
+                {
+                    filters[i] = Marshal.StringToCoTaskMemAnsi(filterList[i]);
+                }
+                return filterList.Length;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in get_filters: {ex}");
+                return -1;
+            }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_first_scan")]
         public static int GetFirstScan()
         {

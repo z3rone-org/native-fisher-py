@@ -1200,57 +1200,97 @@ class Range(object):
         self.high = high
 class MassOptions(CommonCoreDataObject):
     def clone(self): return self
-    def get_tolerance_at_mass(self, m): return 0.0
-    def get_tolerance_string(self): return ""
+    def get_tolerance_at_mass(self, m): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("get_tolerance_at_mass")
+    def get_tolerance_string(self):
+        if _IS_SPHINX: return ""
+        raise NotImplementedError("get_tolerance_string")
     @property
-    def precision(self): return 4
+    def precision(self):
+        if _IS_SPHINX: return 4
+        raise NotImplementedError("precision")
     @property
-    def tolerance(self): return 0.0
+    def tolerance(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("tolerance")
     @property
-    def tolerance_string(self): return ""
+    def tolerance_string(self):
+        if _IS_SPHINX: return ""
+        raise NotImplementedError("tolerance_string")
     @property
-    def tolerance_units(self): return 0
+    def tolerance_units(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("tolerance_units")
 
 class FtAverageOptions(CommonCoreDataObject):
     @property
-    def max_charge_determinations(self): return -1
+    def max_charge_determinations(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("max_charge_determinations")
     @property
-    def max_scans_merged(self): return -1
+    def max_scans_merged(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("max_scans_merged")
     @property
-    def merge_in_parallel(self): return 0
+    def merge_in_parallel(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("merge_in_parallel")
     @property
-    def merge_task_batching(self): return -1
+    def merge_task_batching(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("merge_task_batching")
     @property
-    def use_noise_table_when_available(self): return 0
+    def use_noise_table_when_available(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("use_noise_table_when_available")
 
 
 class ScanDependents(CommonCoreDataObject):
     @property
-    def raw_file_instrument_type(self): return 0
+    def raw_file_instrument_type(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("raw_file_instrument_type")
     @property
-    def scan_dependent_detail_array(self): return []
+    def scan_dependent_detail_array(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("scan_dependent_detail_array")
 
 class SequenceFileWriter(CommonCoreDataObject):
     def __init__(self): self.samples = []
     @property
-    def bracket(self): return 0
+    def bracket(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("bracket")
     @property
-    def file_error(self): return None
+    def file_error(self):
+        if _IS_SPHINX: return None
+        raise NotImplementedError("file_error")
     @property
-    def file_header(self): return None
+    def file_header(self):
+        if _IS_SPHINX: return None
+        raise NotImplementedError("file_header")
     @property
-    def file_name(self): return ""
-    def get_user_column_label(self, index): return ""
+    def file_name(self):
+        if _IS_SPHINX: return ""
+        raise NotImplementedError("file_name")
+    def get_user_column_label(self, index):
+        if _IS_SPHINX: return ""
+        raise NotImplementedError("get_user_column_label")
     @property
-    def info(self): return None
+    def info(self):
+        if _IS_SPHINX: return None
+        raise NotImplementedError("info")
     @property
-    def is_error(self): return 0
+    def is_error(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("is_error")
     def save(self, path): pass
     def set_user_column_label(self, index, label): pass
     @property
-    def tray_configuration(self): return ""
-    @property
-    def tray_configuration(self): return ""
+    def tray_configuration(self):
+        if _IS_SPHINX: return ""
+        raise NotImplementedError("tray_configuration")
 
 
 class ChromatogramTraceSettings(CommonCoreDataObject):
