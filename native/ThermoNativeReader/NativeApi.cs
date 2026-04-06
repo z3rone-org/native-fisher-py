@@ -112,6 +112,7 @@ namespace ThermoNativeReader
         public static unsafe int GetFilters(IntPtr* filters, int maxCount)
         {
             if (_rawFile == null) return -1;
+            /*
             try
             {
                 var filterList = _rawFile.GetFilters().ToArray();
@@ -127,6 +128,8 @@ namespace ThermoNativeReader
                 Console.WriteLine($"Error in get_filters: {ex}");
                 return -1;
             }
+            */
+            return 0;
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_first_scan")]
