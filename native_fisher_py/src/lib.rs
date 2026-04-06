@@ -541,6 +541,92 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_instrument_serial_number, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_software_version, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_hardware_version, m)?)?;
+    m.add_function(wrap_pyfunction!(get_status_log_values, m)?)?;
+    m.add_function(wrap_pyfunction!(get_status_log_header, m)?)?;
+    m.add_function(wrap_pyfunction!(get_status_log_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_trailer_extra_values, m)?)?;
+    m.add_function(wrap_pyfunction!(get_trailer_extra_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_trailer_extra_header, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
+}
+
+#[pyfunction]
+fn get_trailer_extra_count() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_trailer_extra_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_trailer_extra_count: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_status_log_values(scan_number: i32) -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_status_log_values")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_status_log_values: {}", e)))?;
+        let res = func(scan_number, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_status_log_values failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        Ok(s.split('|').map(|x| x.to_string()).collect())
+    }
+}
+
+#[pyfunction]
+fn get_status_log_header() -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_status_log_header")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_status_log_header: {}", e)))?;
+        let res = func(buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_status_log_header failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        Ok(s.split('|').map(|x| x.to_string()).collect())
+    }
+}
+
+#[pyfunction]
+fn get_status_log_count() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_status_log_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_status_log_count: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_trailer_extra_values(scan_number: i32) -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_trailer_extra_values")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_trailer_extra_values: {}", e)))?;
+        let res = func(scan_number, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_trailer_extra_values failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        Ok(s.split('|').map(|x| x.to_string()).collect())
+    }
+}
+
+#[pyfunction]
+fn get_trailer_extra_header() -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_trailer_extra_header")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_trailer_extra_header: {}", e)))?;
+        let res = func(buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_trailer_extra_header failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        Ok(s.split('|').map(|x| x.to_string()).collect())
+    }
 }

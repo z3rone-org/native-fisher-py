@@ -313,12 +313,14 @@ class SegmentedScan(CommonCoreDataObject):
     def validate(self): pass
 
 class LogEntry(CommonCoreDataObject):
+    def __init__(self, values=None):
+        self._values = values or []
     @property
     def labels(self): return []
     @property
-    def length(self): return 0
+    def length(self): return len(self._values)
     @property
-    def values(self): return [""] * 100
+    def values(self): return self._values
 
 class HeaderItem(CommonCoreDataObject):
     @property

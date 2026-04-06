@@ -206,15 +206,20 @@ class RawFile(object):
     def get_instrument_count_of_type(self, device_type):
         return get_instrument_count_of_type(device_type)
 
-    def get_trailer_extra_header_information(self): return []
-    def get_trailer_extra_information(self, scan_number): return None
-    def get_trailer_extra_values(self, scan_number, formatted): return []
-    def get_status_log_header_information(self): return []
-    def get_status_log_values(self, index, formatted):
+    def get_trailer_extra_header_information(self): 
+        return get_trailer_extra_header()
+    def get_trailer_extra_information(self, scan_number): 
         from .data.classes import LogEntry
-        return LogEntry()
-    def get_status_log_entries_count(self): return 0
-    def get_tune_data_count(self): return 0
+        return LogEntry(get_trailer_extra_values(scan_number))
+    def get_trailer_extra_values(self, scan_number, formatted): 
+        return get_trailer_extra_values(scan_number)
+    def get_status_log_header_information(self): 
+        return get_status_log_header()
+    def get_status_log_values(self, scan_number, formatted):
+        from .data.classes import LogEntry
+        return LogEntry(get_status_log_values(scan_number))
+    def get_status_log_entries_count(self): 
+        return get_status_log_count()
     def get_tune_data(self, index): return None
     def get_filters(self): return []
     def get_auto_filters(self): return []

@@ -527,6 +527,93 @@ namespace ThermoNativeReader
             return _rawFile.HasMsData ? 1 : 0;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values")]
+        public static unsafe int GetStatusLogValues(int scanNumber, byte* buffer, int bufferSize)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var log = _rawFile.GetStatusLogForScanNumber(scanNumber);
+                if (log == null || log.Values == null) return 0;
+                var res = string.Join("|", log.Values);
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, bufferSize - 1);
+                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                buffer[count] = 0;
+                return bytes.Length;
+            }
+            catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_header")]
+        public static unsafe int GetStatusLogHeader(byte* buffer, int bufferSize)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var info = _rawFile.GetStatusLogHeaderInformation();
+                if (info == null) return 0;
+                var res = string.Join("|", info.Select(x => x.Label));
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, bufferSize - 1);
+                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                buffer[count] = 0;
+                return bytes.Length;
+            }
+            catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_count")]
+        public static int GetStatusLogCount()
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetStatusLogEntriesCount(); }
+            catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_values")]
+        public static unsafe int GetTrailerExtraValues(int scanNumber, byte* buffer, int bufferSize)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var trailer = _rawFile.GetTrailerExtraInformation(scanNumber);
+                if (trailer == null || trailer.Values == null) return 0;
+                var res = string.Join("|", trailer.Values);
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, bufferSize - 1);
+                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                buffer[count] = 0;
+                return bytes.Length;
+            }
+            catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_count")]
+        public static int GetTrailerExtraCount()
+        {
+            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+            return _rawFile.RunHeader.TrailerExtraCount;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
+        public static unsafe int GetTrailerExtraHeader(byte* buffer, int bufferSize)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var info = _rawFile.GetTrailerExtraHeaderInformation();
+                if (info == null) return 0;
+                var res = string.Join("|", info.Select(x => x.Label));
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, bufferSize - 1);
+                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                buffer[count] = 0;
+                return bytes.Length;
+            }
+            catch { return -1; }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "close_raw_file")]
         public static void CloseRawFile()
         {
