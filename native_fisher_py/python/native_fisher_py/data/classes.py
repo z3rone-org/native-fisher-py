@@ -1052,6 +1052,14 @@ class ChromatogramData(CommonCoreDataObject):
     @property
     def intensities(self): return []
     @property
+    def intensities_array(self): return np.array([])
+    @property
+    def length(self): return 0
+    @property
+    def positions_array(self): return np.array([])
+    @property
+    def scan_numbers_array(self): return np.array([])
+    @property
     def times(self): return []
 
 class business:

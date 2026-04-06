@@ -1,4 +1,5 @@
 import sys
+import os
 from ..data import (
     data, ScanDependents, AutoSamplerInformation, CentroidStream, 
     ChromatogramTraceSettings, Device, ErrorLogEntry, FileError, 
@@ -37,6 +38,8 @@ def _init_reader_(raw_file_cls):
     raw_file_access = sys.modules[__name__]
     raw_file_reader_adapter = sys.modules[__name__]
     scan_dependents = sys.modules[__name__]
+
+os = os
 
 raw_file_access = sys.modules[__name__]
 raw_file_reader_adapter = sys.modules[__name__]

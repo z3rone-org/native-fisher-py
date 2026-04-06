@@ -408,6 +408,33 @@ class pythonnet(object):
     @staticmethod
     def unload(*args, **kwargs): pass
 
+    class clr_stub(object):
+        @staticmethod
+        def AddReference(p): pass
+        @staticmethod
+        def FindAssembly(name): return None
+        @staticmethod
+        def GetClrType(t): return None
+        @staticmethod
+        def ListAssemblies(v): return []
+        Python = None
+        System = None
+        ThermoFisher = None
+        @staticmethod
+        def clrmethod(*args): return None
+        class clrproperty_inner(object):
+            @staticmethod
+            def getter(): return None
+            @staticmethod
+            def setter(v): pass
+        @staticmethod
+        def clrproperty(*args): return clr_stub.clrproperty_inner()
+        @staticmethod
+        def getPreload(): return False
+        loader = None
+        @staticmethod
+        def setPreload(p): pass
+
 class clr_inner(object):
     @staticmethod
     def FindAssembly(name): return None
