@@ -182,11 +182,12 @@ class RawFile(object):
 
     def get_status_log_for_retention_time(self, rt: float):
         from .data.classes import LogEntry
-        return LogEntry()
+        scan = self.scan_number_from_retention_time(rt)
+        return LogEntry(get_status_log_values(scan))
 
     def get_status_log_for_scan_number(self, scan_number: int):
         from .data.classes import LogEntry
-        return LogEntry()
+        return LogEntry(get_status_log_values(scan_number))
 
     def get_scan_event_string_for_scan_number(self, scan_number: int):
         return get_scan_event_string(scan_number)
