@@ -533,7 +533,8 @@ namespace ThermoNativeReader
             if (_rawFile == null) return -1;
             try
             {
-                var log = _rawFile.GetStatusLogForScanNumber(scanNumber);
+                var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
+                var log = _rawFile.GetStatusLogForRetentionTime(rt);
                 if (log == null || log.Values == null) return 0;
                 var res = string.Join("|", log.Values);
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
@@ -592,8 +593,12 @@ namespace ThermoNativeReader
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_count")]
         public static int GetTrailerExtraCount()
         {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
-            return _rawFile.RunHeader.TrailerExtraCount;
+            if (_rawFile == null) return -1;
+            try { 
+                var header = _rawFile.GetTrailerExtraHeaderInformation();
+                return header != null ? header.Count : 0;
+            }
+            catch { return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
