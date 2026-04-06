@@ -452,12 +452,19 @@ class LogEntry(CommonCoreDataObject):
     def values(self): return self._values
 
 class HeaderItem(CommonCoreDataObject):
-    def __init__(self, label=""):
-        self._label = label
+    def __init__(self, data):
+        if ":" in data:
+            parts = data.split(":")
+            self._label = parts[0]
+            try: self._data_type = GenericDataTypes(int(parts[1]))
+            except: self._data_type = GenericDataTypes.NULL
+        else:
+            self._label = data
+            self._data_type = 0
     @property
-    def data_type(self): return 0
+    def label(self): return self._label
     @property
-    def format_value(self): return ""
+    def data_type(self): return self._data_type
     @property
     def is_numeric(self): return 1
     @property

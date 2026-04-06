@@ -788,7 +788,7 @@ namespace ThermoNativeReader
             {
                 var info = _rawFile.GetTrailerExtraHeaderInformation();
                 if (info == null) return 0;
-                var res = string.Join("|", info.Select(x => x.Label));
+                var res = string.Join("|", info.Select(x => x.Label + ":" + (int)x.DataType));
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
                 for (int i = 0; i < count; i++) buffer[i] = bytes[i];
