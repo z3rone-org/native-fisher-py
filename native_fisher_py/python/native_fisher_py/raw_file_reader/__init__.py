@@ -5,7 +5,7 @@ from ..data import (
     InstrumentSelection, LogEntry, MassOptions, RunHeader, 
     SampleInformation, Scan, ScanEvent, ScanEvents, ScanFilter, 
     ScanStatistics, SegmentedScan, StatusLogValues, TuneDataValues,
-    Reaction, RawFileClassification, ScanDependentDetails
+    Reaction, RawFileClassification, ScanDependentDetails, WrappedRunHeader
 )
 from ..exceptions import RawFileException, NoSelectedDeviceException, NoSelectedMsDeviceException
 from ..utils import (
@@ -14,11 +14,11 @@ from ..utils import (
 import os
 
 NetWrapperBase = object
-WrappedRunHeader = RunHeader
-wrapped_run_header = RunHeader
+WrappedRunHeader = WrappedRunHeader
+wrapped_run_header = WrappedRunHeader
 data_model = data
-data_model.WrappedRunHeader = RunHeader
-data_model.wrapped_run_header = RunHeader
+data_model.WrappedRunHeader = WrappedRunHeader
+data_model.wrapped_run_header = WrappedRunHeader
 raw_file_access = None 
 raw_file_reader_adapter = None 
 scan_dependents = None 

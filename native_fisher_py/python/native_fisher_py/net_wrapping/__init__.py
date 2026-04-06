@@ -154,8 +154,10 @@ class Environment(object):
     def SetEnvironmentVariable(name, val): pass
     def ToString(self): return "Environment"
     
-    class SpecialFolder: pass
-    class SpecialFolderOption: pass
+    class SpecialFolder:
+        pass
+    class SpecialFolderOption:
+        pass
     
     @property
     def CommandLine(self): return ""
@@ -189,7 +191,119 @@ class Environment(object):
     def set_ExitCode(self, v): pass
 
 class clr_loader_stub(object):
-    Assembly = object; Dict = dict; DotnetCoreRuntimeSpec = object; Optional = None; Path = pathlib.Path; Runtime = object; RuntimeInfo = object; Sequence = list; StrOrPath = str; TemporaryDirectory = object; ffi = object
+    class Runtime(object):
+        @staticmethod
+        def get_assembly(*args): return None
+        info = None
+        @staticmethod
+        def shutdown(): pass
+    class Assembly(object):
+        @staticmethod
+        def get_function(*args): return None
+    class TemporaryDirectory(object):
+        @staticmethod
+        def cleanup(): pass
+    class RuntimeInfo(object): 
+        pass
+    class DotnetCoreRuntimeSpec(object):
+        floor_version = "8.0"
+        runtime_config = ""
+        tfm = ""
+        version_info = ""
+        @staticmethod
+        def write_config(): pass
+    class mono(object):
+        Any = None
+        Dict = dict
+        MethodDesc = object
+        Mono = object
+        MonoMethod = object
+        Optional = None
+        Path = pathlib.Path
+        Runtime = object
+        RuntimeInfo = object
+        Sequence = list
+        StrOrPath = str
+        atexit = None
+        ffi = object
+        @staticmethod
+        def initialize(): pass
+        @staticmethod
+        def load_mono(): pass
+        @staticmethod
+        def optional_path_as_string(p): return ""
+        @staticmethod
+        def path_as_string(p): return ""
+        re = None
+    class util(object):
+        ClrError = Exception
+        Optional = None
+        Path = pathlib.Path
+        StrOrPath = str
+        @staticmethod
+        def check_result(r): pass
+        clr_error = None
+        coreclr_errors = {}
+        @staticmethod
+        def find(*args): return ""
+        @staticmethod
+        def find_dotnet_root(): return ""
+        @staticmethod
+        def get_coreclr_error(e): return ""
+        @staticmethod
+        def get_hostfxr_error(e): return ""
+        hostfxr_errors = {}
+        @staticmethod
+        def optional_path_as_string(p): return ""
+        @staticmethod
+        def path_as_string(p): return ""
+        runtime_spec = None
+    class ffi(object):
+        Optional = None
+        Path = pathlib.Path
+        Tuple = tuple
+        @staticmethod
+        def cdef(s): pass
+        cffi = object
+        ffi = object
+        hostfxr = object
+        @staticmethod
+        def load_hostfxr(): pass
+        @staticmethod
+        def load_mono(): pass
+        @staticmethod
+        def load_netfx(): pass
+        mono = object
+        netfx = object
+        sys = sys
+    class types(object):
+        ABCMeta = type
+        Any = None
+        Assembly = object
+        Callable = object
+        ClrFunction = object
+        Dict = dict
+        Optional = None
+        PathLike = object
+        Runtime = object
+        RuntimeInfo = object
+        StrOrPath = str
+        Union = object
+        abstractmethod = lambda x: x
+        dataclass = lambda x: x
+        field = lambda x: x
+
+    Assembly = Assembly
+    Dict = dict
+    DotnetCoreRuntimeSpec = DotnetCoreRuntimeSpec
+    Optional = None
+    Path = pathlib.Path
+    Runtime = Runtime
+    RuntimeInfo = RuntimeInfo
+    Sequence = list
+    StrOrPath = str
+    TemporaryDirectory = TemporaryDirectory
+    ffi = ffi
     @staticmethod
     def find_dotnet_root(*args): return None
     @staticmethod
@@ -202,10 +316,18 @@ class clr_loader_stub(object):
     def get_mono(*args): return None
     @staticmethod
     def get_netfx(*args): return None
-    mono = object; types = object; util = object
+    mono = mono
+    types = types
+    util = util
 
 class pythonnet(object):
-    Any = None; Dict = dict; Optional = None; Path = pathlib.Path; Union = None; clr_loader = clr_loader_stub; sys = sys
+    Any = None
+    Dict = dict
+    Optional = None
+    Path = pathlib.Path
+    Union = None
+    clr_loader = clr_loader_stub
+    sys = sys
     @staticmethod
     def set_runtime(*args, **kwargs): pass
     @staticmethod
@@ -217,24 +339,36 @@ class pythonnet(object):
     @staticmethod
     def unload(*args, **kwargs): pass
 
-class clr(object):
+class clr_inner(object):
     @staticmethod
     def FindAssembly(name): return None
     @staticmethod
     def GetClrType(t): return None
     @staticmethod
     def ListAssemblies(verbose): return []
+    class clrmethod_stub(object): 
+        pass
     @staticmethod
-    def clrmethod(*args, **kwargs): return None
+    def clrmethod(*args, **kwargs): return clr_inner.clrmethod_stub()
+    class clrproperty_stub(object):
+        @staticmethod
+        def getter(): return None
+        @staticmethod
+        def setter(v): pass
     @staticmethod
-    def clrproperty(*args, **kwargs): return None
+    def clrproperty(*args, **kwargs): return clr_inner.clrproperty_stub()
     @staticmethod
     def getPreload(): return False
     @staticmethod
     def setPreload(p): pass
     @staticmethod
     def AddReference(p): pass
-    loader = None
+    class loader_stub(object):
+        DotNetFinder = object
+        DotNetLoader = object
+        importlib = object
+        sys = sys
+    loader = loader_stub
     Python = None
     System = None
     ThermoFisher = None
@@ -251,7 +385,7 @@ this = sys.modules[__name__]
 this.Extensions = Extensions
 this.Environment = Environment
 this.pythonnet = pythonnet
-this.clr = clr
+this.clr = clr_inner
 this.ThermoFisher = ThermoFisher
 this.Python = Python
 this.dotnet_version = "8.0"
@@ -300,6 +434,6 @@ class wrapped_net_array(object):
     Generic = object
     System = object
     generic = object
-    clr = clr
+    clr = clr_inner
     WrappedNetArray = WrappedNetArray
 this.wrapped_net_array = wrapped_net_array
