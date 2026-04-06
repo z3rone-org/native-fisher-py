@@ -47,6 +47,10 @@ class EnumBase(object):
     def __int__(self): return self.value
     def __repr__(self): return f"<{self.__class__.__name__}.{self.name if self.name else self.value}>"
 
+class GenericDataTypes(EnumBase): pass
+class SpectrumPacketType(object): pass
+class Scan(object): pass
+class ChromatogramSignal(object): pass
 class Device:
     MS = 1; PDA = 2; UV = 3; Analog = 4; MSAnalog = 4; Other = 5; none = 0; Pda = 2; name = "MS"; value = 1
 

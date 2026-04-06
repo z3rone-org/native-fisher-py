@@ -1,13 +1,7 @@
-from .._base import MSOrder as MsOrderType
-from .._base import MassAnalyzer as MassAnalyzerType
-
-class PolarityType:
-    Positive = 1
-    Negative = 2
-    Both = 3
-
-class IonizationModeType:
-    Unknown = 0
-    ESI = 1
-    APCI = 2
-    # ...
+from ..classes import (
+    MsOrderType, MSOrder, MassAnalyzerType, MassAnalyzer, 
+    PolarityType, IonizationModeType, ActivationType,
+    DetectorType, EnergyType, FieldFreeRegionType,
+    ScanDataType, ScanModeType, SectorScanType,
+    SourceFragmentationValueType, TriState, CompensationVoltageType
+)
