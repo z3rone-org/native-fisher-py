@@ -1,5 +1,5 @@
 import enum
-from .._base import ScanDependentDetails
+from ..classes import ScanDependentDetails
 scan_dependent_details = ScanDependentDetails
 ScanDependentDetails = ScanDependentDetails
 enum = enum

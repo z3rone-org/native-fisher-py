@@ -1,5 +1,5 @@
 import enum
-from .._base import SegmentedScan
+from ..classes import SegmentedScan
 segmented_scan = SegmentedScan
 SegmentedScan = SegmentedScan
 enum = enum

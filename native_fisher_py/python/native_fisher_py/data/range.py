@@ -1,3 +1,5 @@
-from ._base import range
-range = range
-range = range
+import enum
+from .classes import Range
+range = Range
+Range = Range
+enum = enum

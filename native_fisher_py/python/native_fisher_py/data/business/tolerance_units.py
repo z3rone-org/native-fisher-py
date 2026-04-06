@@ -1,5 +1,5 @@
 import enum
-from .._base import ToleranceUnits
+from ..classes import ToleranceUnits
 tolerance_units = ToleranceUnits
 ToleranceUnits = ToleranceUnits
 enum = enum

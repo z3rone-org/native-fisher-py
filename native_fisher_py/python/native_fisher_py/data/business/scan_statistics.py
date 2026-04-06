@@ -1,5 +1,5 @@
 import enum
-from .._base import ScanStatistics
+from ..classes import ScanStatistics
 scan_statistics = ScanStatistics
 ScanStatistics = ScanStatistics
 enum = enum

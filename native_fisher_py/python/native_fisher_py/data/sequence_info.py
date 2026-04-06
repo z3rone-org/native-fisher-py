@@ -1,3 +1,5 @@
-from ._base import SequenceInfo
+import enum
+from .classes import SequenceInfo
 sequence_info = SequenceInfo
 SequenceInfo = SequenceInfo
+enum = enum

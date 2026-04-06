@@ -1,5 +1,5 @@
 import enum
-from ._base import FieldFreeRegionType
+from .classes import FieldFreeRegionType
 field_free_region_type = FieldFreeRegionType
 FieldFreeRegionType = FieldFreeRegionType
 enum = enum

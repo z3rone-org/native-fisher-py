@@ -1,5 +1,5 @@
 import enum
-from .._base import FileHeader
+from ..classes import FileHeader
 file_header = FileHeader
 FileHeader = FileHeader
 enum = enum

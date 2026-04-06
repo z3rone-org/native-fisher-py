@@ -1,5 +1,5 @@
 import enum
-from .._base import TrayShape
+from ..classes import TrayShape
 tray_shape = TrayShape
 TrayShape = TrayShape
 enum = enum

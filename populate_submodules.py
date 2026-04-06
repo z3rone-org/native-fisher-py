@@ -20,10 +20,10 @@ for name in filter_enums:
     os.makedirs(dir_path, exist_ok=True)
     # Also create the leaf modules in `data/` directly as redirects
     with open(os.path.join(base_path, f"{name}.py"), "w") as f_leaf:
-        f_leaf.write(f"import enum\nfrom ._base import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\nenum = enum\n")
+        f_leaf.write(f"import enum\nfrom .classes import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\nenum = enum\n")
 
     with open(os.path.join(dir_path, f"{name}.py"), "w") as f:
-        f.write(f"import enum\nfrom .._base import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\nenum = enum\n")
+        f.write(f"import enum\nfrom ..classes import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\nenum = enum\n")
 
 business_objects = [
     "instrument_data", "sample_information", "file_header", "file_error", 
@@ -39,7 +39,6 @@ for name in business_objects:
     if name == "range": cls_name = "Range"
     if name == "trace_type": cls_name = "TraceType"
     if name == "tolerance_units": cls_name = "ToleranceUnits"
-    if name == "range": cls_name = "range" # Wait, Range is capitalized in _base
     if name == "common_core_data_object": cls_name = "CommonCoreDataObject"
     if name == "auto_sampler_information": cls_name = "AutoSamplerInformation"
     if name == "file_type": cls_name = "FileType"
@@ -57,7 +56,7 @@ for name in business_objects:
     
     # Also create the leaf modules in `data/` directly as redirects
     with open(os.path.join(base_path, f"{name}.py"), "w") as f_leaf:
-        f_leaf.write(f"from ._base import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\n")
+        f_leaf.write(f"import enum\nfrom .classes import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\nenum = enum\n")
 
     with open(os.path.join(dir_path, f"{name}.py"), "w") as f:
-        f.write(f"import enum\nfrom .._base import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\nenum = enum\n")
+        f.write(f"import enum\nfrom ..classes import {cls_name}\n{name} = {cls_name}\n{cls_name} = {cls_name}\nenum = enum\n")

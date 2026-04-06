@@ -1,5 +1,5 @@
 import enum
-from .._base import TraceType
+from ..classes import TraceType
 trace_type = TraceType
 TraceType = TraceType
 enum = enum

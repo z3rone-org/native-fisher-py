@@ -1,5 +1,5 @@
 import enum
-from ._base import EventAccurateMass
+from .classes import EventAccurateMass
 event_accurate_mass = EventAccurateMass
 EventAccurateMass = EventAccurateMass
 enum = enum

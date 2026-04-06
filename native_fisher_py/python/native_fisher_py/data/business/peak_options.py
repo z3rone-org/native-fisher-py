@@ -1,5 +1,5 @@
 import enum
-from .._base import PeakOptions
+from ..classes import PeakOptions
 peak_options = PeakOptions
 PeakOptions = PeakOptions
 enum = enum

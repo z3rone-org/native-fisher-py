@@ -1,3 +1,5 @@
-from ._base import Scan
+import enum
+from .classes import Scan
 scan = Scan
 Scan = Scan
+enum = enum

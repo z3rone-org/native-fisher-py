@@ -1,5 +1,5 @@
 import enum
-from .._base import DetectorType
+from ..classes import DetectorType
 detector_type = DetectorType
 DetectorType = DetectorType
 enum = enum

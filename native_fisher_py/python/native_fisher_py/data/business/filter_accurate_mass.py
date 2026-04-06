@@ -1,5 +1,5 @@
 import enum
-from .._base import FilterAccurateMass
+from ..classes import FilterAccurateMass
 filter_accurate_mass = FilterAccurateMass
 FilterAccurateMass = FilterAccurateMass
 enum = enum

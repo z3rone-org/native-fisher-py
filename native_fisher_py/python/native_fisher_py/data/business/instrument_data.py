@@ -1,5 +1,5 @@
 import enum
-from .._base import InstrumentData
+from ..classes import InstrumentData
 instrument_data = InstrumentData
 InstrumentData = InstrumentData
 enum = enum

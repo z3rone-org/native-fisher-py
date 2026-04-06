@@ -1,5 +1,5 @@
 import enum
-from .._base import CentroidStream
+from ..classes import CentroidStream
 centroid_stream = CentroidStream
 CentroidStream = CentroidStream
 enum = enum

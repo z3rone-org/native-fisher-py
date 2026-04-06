@@ -1,5 +1,5 @@
 import enum
-from .._base import MassOptions
+from ..classes import MassOptions
 mass_options = MassOptions
 MassOptions = MassOptions
 enum = enum
