@@ -62,26 +62,6 @@ _lib_path = os.path.join(_lib_dir, f"ThermoNativeReader{_ext}")
 if os.path.exists(_lib_path) and "THERMO_NATIVE_LIB" not in os.environ:
     os.environ["THERMO_NATIVE_LIB"] = _lib_path
 
-from . import exceptions
-class data:
-    Device = Device
-    ScanFilter = None
-    ScanEvent = ScanEvent
-    ScanEvents = None
-    FirstScan = 1
-    LastScan = 1
-    FileHeader = FileHeader
-    FileError = FileError
-    AutoSamplerInformation = None
-    CommonCoreDataObject = object
-    business = None # Set below
-class net_wrapping: pass
-class utils: pass
-class raw_file:
-    RawFile = None # Set below
-class raw_file_reader:
-    RawFileAccess = None # Set below
-
 class Device:
     MS = 1
     PDA = 2
@@ -146,6 +126,46 @@ class InstrumentData(object):
     @staticmethod
     def _get_wrapper_(obj): return InstrumentData()
     _wrapped_type = None
+
+class FileHeader(object):
+    """Information about the file header."""
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return FileHeader()
+    _wrapped_type = None
+
+class FileError(object):
+    """Information about file errors."""
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return FileError()
+    _wrapped_type = None
+
+class ScanEvent(object):
+    """Placeholder for ScanEvent."""
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return ScanEvent()
+
+from . import exceptions
+class data:
+    Device = Device
+    ScanFilter = None
+    ScanEvent = ScanEvent
+    ScanEvents = None
+    FirstScan = 1
+    LastScan = 1
+    FileHeader = FileHeader
+    FileError = FileError
+    AutoSamplerInformation = None
+    CommonCoreDataObject = object
+    business = None # Set below
+class net_wrapping: pass
+class utils: pass
+class raw_file:
+    RawFile = None # Set below
+class raw_file_reader:
+    RawFileAccess = None # Set below
 
 class RunHeader(object):
     """The run header."""
