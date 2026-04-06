@@ -129,6 +129,29 @@ class InstrumentData(object):
 
 class FileHeader(object):
     """Information about the file header."""
+    @property
+    def creation_date(self) -> str: return get_creation_date()
+    @property
+    def file_description(self) -> str: return ""
+    @property
+    def file_type(self) -> int: return 0
+    @property
+    def modified_date(self) -> str: return ""
+    @property
+    def number_of_times_calibrated(self) -> int: return 0
+    @property
+    def number_of_times_modified(self) -> int: return 0
+    @property
+    def revision(self) -> int: return 1
+    @property
+    def who_created_id(self) -> str: return get_creator_id()
+    @property
+    def who_created_logon(self) -> str: return ""
+    @property
+    def who_modified_id(self) -> str: return ""
+    @property
+    def who_modified_logon(self) -> str: return ""
+
     def _get_wrapped_object_(self): return None
     @staticmethod
     def _get_wrapper_(obj): return FileHeader()
@@ -136,6 +159,17 @@ class FileHeader(object):
 
 class FileError(object):
     """Information about file errors."""
+    @property
+    def error_code(self) -> int: return 0
+    @property
+    def error_message(self) -> str: return ""
+    @property
+    def has_error(self) -> bool: return False
+    @property
+    def has_warning(self) -> bool: return False
+    @property
+    def warning_message(self) -> str: return ""
+
     def _get_wrapped_object_(self): return None
     @staticmethod
     def _get_wrapper_(obj): return FileError()
@@ -143,11 +177,31 @@ class FileError(object):
 
 class ScanEvent(object):
     """Placeholder for ScanEvent."""
+    @property
+    def ms_order(self) -> int: return 1
+    @property
+    def mass_analyzer(self) -> int: return 0
+    @property
+    def polarity(self) -> int: return 1
+    @property
+    def scan_mode(self) -> int: return 0
+    @property
+    def ionization_mode(self) -> int: return 0
+    @property
+    def is_valid(self) -> bool: return True
+    
+    def get_reaction(self, index: int): return None # Stub
+    def get_mass(self, index: int): return 0.0
+
     def _get_wrapped_object_(self): return None
     @staticmethod
     def _get_wrapper_(obj): return ScanEvent()
 
 from . import exceptions
+exceptions.raw_file_exception = exceptions
+exceptions.core_exception = exceptions
+exceptions.NoSelectedDeviceException = exceptions.RawFileException
+exceptions.NoSelectedMsDeviceException = exceptions.RawFileException
 class data:
     Device = Device
     ScanFilter = None
@@ -799,3 +853,15 @@ raw_file.RawFileReaderAdapter = RawFile
 raw_file_reader.RawFileReaderAdapter = RawFile
 raw_file_reader.ScanDependents = object
 raw_file_reader.scan_dependents = object
+data.business = data
+data.device = data
+data.file_header = data
+data.file_error = data
+data.scan_event = data
+Device.name = 'MS'
+Device.value = 1
+Device.none = 0
+Device.Pda = 2
+Device.UV = 3
+Device.MSAnalog = 4
+Device.Other = 5
