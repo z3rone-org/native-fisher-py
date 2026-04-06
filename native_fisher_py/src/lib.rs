@@ -200,6 +200,26 @@ fn get_max_intensity() -> PyResult<i32> {
 }
 
 #[pyfunction]
+fn get_low_mass() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_low_mass")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_low_mass: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_high_mass() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_high_mass")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_high_mass: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
 fn get_file_name() -> PyResult<String> {
     let lib = get_lib()?;
     let mut buffer = vec![0u8; 1024];
@@ -557,6 +577,8 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_expected_runtime, m)?)?;
     m.add_function(wrap_pyfunction!(get_max_integrated_intensity, m)?)?;
     m.add_function(wrap_pyfunction!(get_max_intensity, m)?)?;
+    m.add_function(wrap_pyfunction!(get_low_mass, m)?)?;
+    m.add_function(wrap_pyfunction!(get_high_mass, m)?)?;
     m.add_function(wrap_pyfunction!(get_file_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_ms_order, m)?)?;
     m.add_function(wrap_pyfunction!(get_mass_analyzer, m)?)?;
