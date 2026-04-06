@@ -641,7 +641,12 @@ class Scan(CommonCoreDataObject):
     def create_scan_reader(self, r): return None
     def deep_clone(self): return self
     @classmethod
-    def from_file(cls, f, s): return cls()
+    def from_file(cls, f, s):
+        scan = cls()
+        segmented_scan = f.get_segmented_scan_from_scan_number(s)
+        scan._preferred_masses = segmented_scan.positions
+        scan._preferred_intensities = segmented_scan.intensities
+        return scan
     def generate_frequency_table(self): return None
     def generate_noise_table(self): return None
     @property
@@ -667,9 +672,9 @@ class Scan(CommonCoreDataObject):
     @property
     def preferred_flags(self): return []
     @property
-    def preferred_intensities(self): return np.array([])
+    def preferred_intensities(self): return getattr(self, '_preferred_intensities', np.array([]))
     @property
-    def preferred_masses(self): return np.array([])
+    def preferred_masses(self): return getattr(self, '_preferred_masses', np.array([]))
     @property
     def preferred_noises(self): return np.array([])
     @property
