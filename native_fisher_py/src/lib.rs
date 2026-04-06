@@ -454,7 +454,7 @@ fn get_ms1_scan_number_from_rt(rt: f64) -> PyResult<i32> {
 }
 
 #[pyfunction]
-fn get_chromatogram(trace_type: i32, filter: String, mass_ranges_start: Vec<f64>, mass_ranges_end: Vec<f64>, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>)> {
+fn get_chromatogram(trace_type: i32, filter: String, mass_ranges_start: Vec<f64>, mass_ranges_end: Vec<f64>, start_scan: i32, end_scan: i32, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>)> {
     let lib = get_lib()?;
     let mut times = vec![0.0f64; max_length as usize];
     let mut intensities = vec![0.0f64; max_length as usize];
@@ -465,9 +465,9 @@ fn get_chromatogram(trace_type: i32, filter: String, mass_ranges_start: Vec<f64>
     let c_filter = std::ffi::CString::new(filter).unwrap();
     
     unsafe {
-        let func: Symbol<unsafe extern "C" fn(i32, *const std::os::raw::c_char, *const f64, *const f64, i32, *mut f64, *mut f64, i32) -> i32> = lib.get(b"get_chromatogram")
+        let func: Symbol<unsafe extern "C" fn(i32, *const std::os::raw::c_char, *const f64, *const f64, i32, i32, i32, *mut f64, *mut f64, i32) -> i32> = lib.get(b"get_chromatogram")
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_chromatogram: {}", e)))?;
-        let count_res = func(trace_type, c_filter.as_ptr(), start_ptr, end_ptr, count, times.as_mut_ptr(), intensities.as_mut_ptr(), max_length);
+        let count_res = func(trace_type, c_filter.as_ptr(), start_ptr, end_ptr, count, start_scan, end_scan, times.as_mut_ptr(), intensities.as_mut_ptr(), max_length);
         if count_res < 0 {
             return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_chromatogram failed"));
         }
