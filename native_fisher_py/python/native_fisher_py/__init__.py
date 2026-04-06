@@ -85,12 +85,43 @@ class TraceType:
 
 class InstrumentData(object):
     """Information about the instrument."""
-    def __init__(self):
-        self.name = get_instrument_name()
-        self.model = get_instrument_model()
-        self.serial_number = get_instrument_serial_number()
-        self.software_version = get_instrument_software_version()
-        self.hardware_version = get_instrument_hardware_version()
+    @property
+    def name(self) -> str:
+        return get_instrument_name()
+    @property
+    def model(self) -> str:
+        return get_instrument_model()
+    @property
+    def serial_number(self) -> str:
+        return get_instrument_serial_number()
+    @property
+    def software_version(self) -> str:
+        return get_instrument_software_version()
+    @property
+    def hardware_version(self) -> str:
+        return get_instrument_hardware_version()
+    @property
+    def axis_label_x(self) -> str: return "m/z"
+    @property
+    def axis_label_y(self) -> str: return "Relative Intensity"
+    @property
+    def channel_labels(self) -> List[str]: return []
+    @property
+    def flags(self) -> str: return ""
+    @property
+    def has_accurate_mass_precursors(self) -> bool: return True
+    @property
+    def is_tsq_quantum_file(self) -> bool: return False
+    @property
+    def is_valid(self) -> bool: return True
+    @property
+    def units(self): return 0
+    def clone(self): return self
+
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return InstrumentData()
+    _wrapped_type = None
 
 class RunHeader(object):
     """The run header."""
@@ -112,6 +143,26 @@ class RunHeader(object):
     @property
     def end_time(self) -> float:
         return self._raw_file.total_time_min
+
+    @property
+    def high_mass(self) -> float: return 2000.0
+    @property
+    def low_mass(self) -> float: return 50.0
+    @property
+    def mass_resolution(self) -> float: return 0.5
+    @property
+    def expected_runtime(self) -> float: return self.end_time
+    @property
+    def max_integrated_intensity(self) -> float: return 1e9
+    @property
+    def max_intensity(self) -> float: return 1e8
+    @property
+    def tolerance_unit(self) -> int: return 0
+
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return RunHeader(obj)
+    _wrapped_type = None
 
 class RunHeaderEx(object):
     """Information about the file stream."""
@@ -137,6 +188,42 @@ class RunHeaderEx(object):
     @property
     def end_time(self) -> float:
         return self._raw_file.total_time_min
+
+    @property
+    def high_mass(self) -> float: return 2000.0
+    @property
+    def low_mass(self) -> float: return 50.0
+    @property
+    def mass_resolution(self) -> float: return 0.5
+    @property
+    def expected_run_time(self) -> float: return self.end_time
+    @property
+    def max_integrated_intensity(self) -> float: return 1e9
+    @property
+    def max_intensity(self) -> float: return 1e8
+    @property
+    def tolerance_unit(self) -> int: return 0
+    @property
+    def comment_1(self) -> str: return ""
+    @property
+    def comment_2(self) -> str: return ""
+    @property
+    def error_log_count(self) -> int: return 0
+    @property
+    def filter_mass_precision(self) -> int: return 4
+    @property
+    def status_log_count(self) -> int: return 0
+    @property
+    def trailer_extra_count(self) -> int: return self.spectra_count
+    @property
+    def trailer_scan_event_count(self) -> int: return self.spectra_count
+    @property
+    def tune_data_count(self) -> int: return 0
+
+    def _get_wrapped_object_(self): return None
+    @staticmethod
+    def _get_wrapper_(obj): return RunHeaderEx(obj)
+    _wrapped_type = None
 
 class RawFile(object):
     """
@@ -169,6 +256,15 @@ class RawFile(object):
     def _raw_file_access(self):
         """Hidden property for parity with internal fisher-py calls."""
         return self
+
+    def _get_wrapped_object_(self): return None
+    _wrapped_type = None
+
+    def _get_ms2_scan_numbers_and_masses_(self): return [], []
+    def _get_ms_scan_numbers_and_retention_times_(self, ms_order): return [], []
+    def _get_scan_(self, scan_number): return self.get_scan_from_scan_number(scan_number)
+    def _get_scan_filter_precursor_mass_(self, filter_string): return 0.0
+    def _get_scan_numbers_and_retention_times_(self): return [], []
 
     def select_instrument(self, device_type: int, device_number: int):
         """Select an instrument (e.g. MS). For now, we only support the default MS instrument."""
