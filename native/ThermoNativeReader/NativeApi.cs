@@ -19,19 +19,14 @@ namespace ThermoNativeReader
         private static string SafeGetFilterString(IScanFilter filter)
         {
             if (filter == null) return "";
-            // We AVOID filter.ToString() because it triggers the Thermo.FilterStringTokens static constructor
-            // which fails in AOT due to GetEnumValues[T] reflection.
             try 
             {
-                var polarity = filter.Polarity == PolarityType.Positive ? "+" : (filter.Polarity == PolarityType.Negative ? "-" : "");
-                var analyzer = ((int)filter.MassAnalyzer).ToString(); 
-                var msOrder = ((int)filter.MSOrder).ToString();
-                return $"{analyzer} {polarity} ms{msOrder}";
+                return filter.ToString();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Warning: Manual filter formatting failed: {ex.Message}");
-                return "MS_ORDER_ONLY";
+                Console.WriteLine($"Warning: Filter.ToString() failed: {ex.Message}");
+                return "FILTER_ERROR";
             }
         }
 
