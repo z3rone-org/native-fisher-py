@@ -87,7 +87,13 @@ class TraceType:
     TIC = 1
     BasePeak = 2
 
-class InstrumentData(object):
+class CommonCoreDataObject(object):
+    def deep_equals(self, other): return True
+    def equals(self, other): return True
+    def get_hash_code(self): return 0
+    def perform_default_settings(self): pass
+
+class InstrumentData(CommonCoreDataObject):
     """Information about the instrument."""
     @property
     def name(self) -> str:
@@ -127,7 +133,28 @@ class InstrumentData(object):
     def _get_wrapper_(obj): return InstrumentData()
     _wrapped_type = None
 
-class FileHeader(object):
+class AutoSamplerInformation(CommonCoreDataObject):
+    @property
+    def tray_index(self): return 0
+    @property
+    def tray_name(self): return ""
+    @property
+    def tray_shape(self): return 0
+    @property
+    def tray_shape_as_string(self): return ""
+    @property
+    def vial_index(self): return 0
+    @property
+    def vials_per_tray(self): return 0
+    @property
+    def vials_per_tray_x(self): return 0
+    @property
+    def vials_per_tray_y(self): return 0
+
+    @staticmethod
+    def _get_wrapper_(obj): return AutoSamplerInformation()
+
+class FileHeader(CommonCoreDataObject):
     """Information about the file header."""
     @property
     def creation_date(self) -> str: return get_creation_date()
@@ -157,7 +184,7 @@ class FileHeader(object):
     def _get_wrapper_(obj): return FileHeader()
     _wrapped_type = None
 
-class FileError(object):
+class FileError(CommonCoreDataObject):
     """Information about file errors."""
     @property
     def error_code(self) -> int: return 0
@@ -175,8 +202,10 @@ class FileError(object):
     def _get_wrapper_(obj): return FileError()
     _wrapped_type = None
 
-class ScanEvent(object):
+class ScanEvent(CommonCoreDataObject):
     """Placeholder for ScanEvent."""
+    @property
+    def accurate_mass(self): return False
     @property
     def ms_order(self) -> int: return 1
     @property
@@ -190,12 +219,190 @@ class ScanEvent(object):
     @property
     def is_valid(self) -> bool: return True
     
+    def get_energy(self): return 0.0
+    def get_energy_valid(self): return False
+    def get_activation(self): return 0
+    def get_isolation_width(self, index): return 0.0
+    def get_isolation_width_offset(self, index): return 0.0
+    def get_first_precursor_mass(self): return 0.0
+    def get_last_precursor_mass(self): return 0.0
+    def get_mass(self, index): return 0.0
+    def get_mass_range(self, index): return (0.0, 0.0)
+    def get_precursor_range_validity(self, index): return False
     def get_reaction(self, index: int): return None # Stub
-    def get_mass(self, index: int): return 0.0
 
     def _get_wrapped_object_(self): return None
     @staticmethod
     def _get_wrapper_(obj): return ScanEvent()
+
+class ScanEvents(CommonCoreDataObject):
+    def get_event(self, index): return ScanEvent()
+    def get_event_by_segment(self, segment, event): return ScanEvent()
+    def get_event_count(self, segment): return 0
+    @property
+    def scan_events(self): return []
+    @property
+    def segments(self): return 0
+    @staticmethod
+    def _get_wrapper_(obj): return ScanEvents()
+
+class ScanFilter(CommonCoreDataObject):
+    def __init__(self, filter_string=""): self.name = filter_string
+    @property
+    def ms_order(self): return 1
+    @property
+    def mass_analyzer(self): return 0
+    @property
+    def polarity(self): return 1
+    @property
+    def scan_mode(self): return 0
+    @property
+    def ionization_mode(self): return 0
+    @property
+    def meta_filters(self): return []
+
+class Range(CommonCoreDataObject):
+    def __init__(self, low=0.0, high=0.0): self.low, self.high = low, high
+
+class MassOptions(CommonCoreDataObject):
+    def __init__(self, tolerance=0.0, units=0): self.tolerance, self.units = tolerance, units
+
+class FtAverageOptions(CommonCoreDataObject): pass
+class ChromatogramTraceSettings(CommonCoreDataObject): pass
+class ScanStatistics(CommonCoreDataObject): pass
+class SegmentedScan(CommonCoreDataObject): pass
+class LogEntry(CommonCoreDataObject): pass
+class HeaderItem(CommonCoreDataObject): pass
+class StatusLogValues(CommonCoreDataObject): pass
+class TuneDataValues(CommonCoreDataObject): pass
+class Reaction(CommonCoreDataObject): pass
+class Scan(CommonCoreDataObject): pass
+class CentroidStream(CommonCoreDataObject): pass
+class ChromatogramSignal(CommonCoreDataObject): pass
+class DeviceType(object): pass
+class MsOrderType(object): pass
+class MassAnalyzerType(object): pass
+class ToleranceUnits(object): pass
+class TraceType(object): pass
+class ScanDataType(object): pass
+class ScanModeType(object): pass
+class SectorScanType(object): pass
+class IonizationModeType(object): pass
+class ActivationType(object): pass
+class EnergyType(object): pass
+class EventAccurateMass(object): pass
+class CompensationVoltageType(object): pass
+class FieldFreeRegionType(object): pass
+class SourceFragmentationValueType(object): pass
+class TriState(object): pass
+class TrayShape(object): pass
+class FileType(object): pass
+class RawFileClassification(object): pass
+class ScanDependentDetails(object): pass
+class SequenceFileWriter(object): pass
+class SequenceInfo(object): pass
+class SourceFragmentationInfoValidType(object): pass
+class FilterAccurateMass(object): pass
+class PeakOptions(object): pass
+class ErrorLogEntry(CommonCoreDataObject): pass
+
+class business:
+    InstrumentData = InstrumentData
+    InstrumentSelection = InstrumentSelection
+    RunHeader = RunHeader
+    ScanEvents = ScanEvents
+    SampleInformation = SampleInformation
+    FileHeader = FileHeader
+    FileError = FileError
+    Range = Range
+    MassOptions = MassOptions
+    FtAverageOptions = FtAverageOptions
+    ChromatogramTraceSettings = ChromatogramTraceSettings
+    ScanStatistics = ScanStatistics
+    SegmentedScan = SegmentedScan
+    LogEntry = LogEntry
+    HeaderItem = HeaderItem
+    StatusLogValues = StatusLogValues
+    TuneDataValues = TuneDataValues
+    Reaction = Reaction
+    Scan = Scan
+    CentroidStream = CentroidStream
+    ChromatogramSignal = ChromatogramSignal
+
+class filter_enums:
+    MsOrderType = MsOrderType
+    MassAnalyzerType = MassAnalyzerType
+    ToleranceUnits = ToleranceUnits
+    TraceType = TraceType
+    ScanDataType = ScanDataType
+    ScanModeType = ScanModeType
+    SectorScanType = SectorScanType
+    IonizationModeType = IonizationModeType
+    ActivationType = ActivationType
+    EnergyType = EnergyType
+    EventAccurateMass = EventAccurateMass
+    CompensationVoltageType = CompensationVoltageType
+    FieldFreeRegionType = FieldFreeRegionType
+    SourceFragmentationValueType = SourceFragmentationValueType
+    TriState = TriState
+
+class data:
+    Device = Device
+    MSOrder = MSOrder
+    MassAnalyzer = MassAnalyzer
+    TraceType = TraceType
+    ScanFilter = ScanFilter
+    ScanEvent = ScanEvent
+    ScanEvents = ScanEvents
+    FileHeader = FileHeader
+    FileError = FileError
+    AutoSamplerInformation = AutoSamplerInformation
+    CommonCoreDataObject = CommonCoreDataObject
+    FileType = FileType
+    RawFileClassification = RawFileClassification
+    ScanDependentDetails = ScanDependentDetails
+    SequenceFileWriter = SequenceFileWriter
+    SequenceInfo = SequenceInfo
+    SourceFragmentationInfoValidType = SourceFragmentationInfoValidType
+    ToleranceUnits = ToleranceUnits
+    TrayShape = TrayShape
+    FilterAccurateMass = FilterAccurateMass
+    PeakOptions = PeakOptions
+    FtAverageOptions = FtAverageOptions
+    ErrorLogEntry = ErrorLogEntry
+    business = business
+    filter_enums = filter_enums
+    device = None # Set below
+    file_header = None # Set below
+    file_error = None # Set below
+    scan_event = None # Set below
+    auto_sampler_information = None # Set below
+    common_core_data_object = None # Set below
+    error_log_entry = None # Set below
+
+class utils:
+    is_number = lambda x: isinstance(x, (int, float))
+    datetime_net_to_py = lambda x: x
+    datetime_py_to_net = lambda x: x
+    to_net_list = lambda x: x
+    to_net_array = lambda x: x
+    to_py_list = lambda x: x
+    Any = object
+    List = list
+    Tuple = tuple
+    np = np
+
+class net_wrapping:
+    NetWrapperBase = CommonCoreDataObject
+    ThermoFisher = object
+
+data.device = data
+data.file_header = data
+data.file_error = data
+data.scan_event = data
+data.auto_sampler_information = data
+data.common_core_data_object = data
+data.error_log_entry = data
 
 from . import exceptions
 exceptions.raw_file_exception = exceptions
