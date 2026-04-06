@@ -11,12 +11,15 @@ class TestAPIParity(unittest.TestCase):
         if id(orig_obj) in seen: return
         seen.add(id(orig_obj))
 
-        print(f"\n--- Comparing {name} ---")
         orig_members = set(n for n, _ in inspect.getmembers(orig_obj) if not n.startswith("_") or n == "_raw_file_access")
         native_members = set(n for n, _ in inspect.getmembers(native_obj) if not n.startswith("_") or n == "_raw_file_access")
         
         missing_in_native = orig_members - native_members
+        printed_name = False
         if missing_in_native:
+            if not printed_name:
+                print(f"\n--- {name} ---")  
+                printed_name = True
             print(f"FAILED: {name} is missing: {sorted(list(missing_in_native))}")
             assert False
         else:
