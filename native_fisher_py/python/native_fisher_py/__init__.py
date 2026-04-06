@@ -196,6 +196,8 @@ class RunHeaderEx(object):
     @property
     def mass_resolution(self) -> float: return 0.5
     @property
+    def in_acquisition(self) -> int: return 0
+    @property
     def expected_run_time(self) -> float: return self.end_time
     @property
     def max_integrated_intensity(self) -> float: return 1e9
