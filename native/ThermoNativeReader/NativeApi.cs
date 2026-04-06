@@ -84,7 +84,7 @@ namespace ThermoNativeReader
                 int count = Math.Min(filterList.Length, maxCount);
                 for (int i = 0; i < count; i++)
                 {
-                    filters[i] = Marshal.StringToCoTaskMemAnsi(filterList[i]);
+                    filters[i] = Marshal.StringToCoTaskMemAnsi(filterList[i].ToString());
                 }
                 return filterList.Length;
             }
