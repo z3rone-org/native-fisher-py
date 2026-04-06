@@ -931,6 +931,10 @@ class RunHeaderEx(CommonCoreDataObject):
     @property
     def trailer_extra_count(self): return get_trailer_extra_count()
     @property
+    def low_mass(self): return get_low_mass()
+    @property
+    def high_mass(self): return get_high_mass()
+    @property
     def error_message(self): return ""
     @property
     def has_error(self): return 0
