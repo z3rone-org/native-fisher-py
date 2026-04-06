@@ -1,0 +1,7 @@
+<linker>
+  <assembly fullname="ThermoFisher.CommonCore.Data" preserve="all" />
+  <assembly fullname="ThermoFisher.CommonCore.RawFileReader" preserve="all" />
+  <assembly fullname="OpenMcdf" preserve="all" />
+  <assembly fullname="ThermoFisher.CommonCore.BackgroundSubtraction" preserve="all" />
+  <assembly fullname="ThermoFisher.CommonCore.MassPrecisionEstimator" preserve="all" />
+</linker>

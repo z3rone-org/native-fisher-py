@@ -12,9 +12,7 @@
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
   <ItemGroup>
-    <TrimmerRootAssembly Include="ThermoFisher.CommonCore.Data" />
-    <TrimmerRootAssembly Include="ThermoFisher.CommonCore.RawFileReader" />
-    <TrimmerRootAssembly Include="OpenMcdf" />
+    <TrimmerRootDescriptor Include="Roots.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenMcdf">
