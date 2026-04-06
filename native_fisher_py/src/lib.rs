@@ -1089,3 +1089,85 @@ fn get_sample_comment() -> PyResult<String> {
         Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
     }
 }
+
+#[pyfunction]
+fn get_instrument_axis_label_x() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_instrument_axis_label_x")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_axis_label_x: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_axis_label_x failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_axis_label_y() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_instrument_axis_label_y")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_axis_label_y: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_axis_label_y failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_flags() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_instrument_flags")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_flags: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_flags failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_units() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_instrument_units")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_units: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_is_valid() -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_instrument_is_valid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_is_valid: {}", e)))?;
+        Ok(func() != 0)
+    }
+}
+
+#[pyfunction]
+fn get_instrument_has_accurate_mass_precursors() -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_instrument_has_accurate_mass_precursors")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_has_accurate_mass_precursors: {}", e)))?;
+        Ok(func() != 0)
+    }
+}
+
+#[pyfunction]
+fn get_instrument_is_tsq_quantum_file() -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_instrument_is_tsq_quantum_file")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_is_tsq_quantum_file: {}", e)))?;
+        Ok(func() != 0)
+    }
+}
