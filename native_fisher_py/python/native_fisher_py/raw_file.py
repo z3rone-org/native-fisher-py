@@ -295,7 +295,7 @@ class RawFile(object):
     def get_chromatogram(self, mass: float = 0.0, tolerance: float = 0.0, trace_type: int = 1, ms_filter: str = 'ms') -> Tuple[np.ndarray, np.ndarray]:
         starts = [mass - tolerance] if mass > 0 else []
         ends = [mass + tolerance] if mass > 0 else []
-        times, intensities = get_chromatogram(trace_type, ms_filter, starts, ends, -1, -1, 1000000)
+        times, intensities = get_chromatogram(int(trace_type), ms_filter, starts, ends, -1, -1, 1000000)
         return np.array(times), np.array(intensities)
 
     def get_averaged_ms2_scans(self, scan_numbers: List[int]) -> Tuple[np.ndarray, np.ndarray, int]:
