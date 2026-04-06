@@ -716,7 +716,17 @@ namespace ThermoNativeReader
         public static double GetScanEventCompensationVoltageValue(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltageValue; } catch { return -1; }
+            try 
+            { 
+#if NET8_0_OR_GREATER
+                var filterStr = _rawFile.GetFilterForScanNumber(scanNumber);
+                var filter = new ScanFilter(filterStr);
+                return filter.CompensationVoltage;
+#else
+                return 0.0;
+#endif
+            } 
+            catch { return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
