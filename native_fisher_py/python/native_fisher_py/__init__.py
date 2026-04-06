@@ -63,7 +63,18 @@ if os.path.exists(_lib_path) and "THERMO_NATIVE_LIB" not in os.environ:
     os.environ["THERMO_NATIVE_LIB"] = _lib_path
 
 from . import exceptions
-class data: pass
+class data:
+    Device = Device
+    ScanFilter = None
+    ScanEvent = ScanEvent
+    ScanEvents = None
+    FirstScan = 1
+    LastScan = 1
+    FileHeader = FileHeader
+    FileError = FileError
+    AutoSamplerInformation = None
+    CommonCoreDataObject = object
+    business = None # Set below
 class net_wrapping: pass
 class utils: pass
 class raw_file:
@@ -585,6 +596,22 @@ class RawFile(object):
         """Check if file contains MS data."""
         return has_ms_data()
 
+    def get_scan_type(self, scan_number: int):
+        return "" # Stub
+
+    def get_error_log_item(self, index: int):
+        return None # Stub
+
+    def get_tune_data_header_information(self, index: int):
+        return []
+
+    def get_tune_data_values(self, index: int):
+        return None
+    
+    @property
+    def instrument_methods_count(self) -> int:
+        return 0
+
     @property
     def instrument_count(self) -> int:
         """Get the number of instruments (data streams) in the file."""
@@ -741,3 +768,8 @@ else:
     __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx", "InstrumentData"]
 raw_file.RawFile = RawFile
 raw_file_reader.RawFileAccess = RawFile
+data.business = data
+raw_file.RawFileReaderAdapter = RawFile
+raw_file_reader.RawFileReaderAdapter = RawFile
+raw_file_reader.ScanDependents = object
+raw_file_reader.scan_dependents = object
