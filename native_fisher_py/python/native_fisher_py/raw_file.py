@@ -23,7 +23,10 @@ MassOptions = MassOptions
 ChromatogramTraceSettings = ChromatogramTraceSettings
 FtAverageOptions = FtAverageOptions
 Device = Device
-RawFileReaderAdapter = None # Placeholder?
+class RawFileReaderAdapter(object):
+    @staticmethod
+    def file_factory(path: str):
+        return RawFile(path)
 
 __all__ = [
     'RawFile', 'MsOrderType', 'MassAnalyzerType', 'Range', 
