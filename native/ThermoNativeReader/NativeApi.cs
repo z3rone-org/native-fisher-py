@@ -15,6 +15,16 @@ namespace ThermoNativeReader
     {
         private static IRawDataPlus? _rawFile;
 
+        // Dummy usage to prevent AOT trimming of important types used by reflection in Thermo DLLs
+        private static ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[] _dummyArray = new ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[0];
+        private static ThermoFisher.CommonCore.Data.Interfaces.IScanFilter? _dummyFilter = null;
+
+        static NativeApi() {
+            // Force compiler to keep these types
+            _dummyFilter = (ThermoFisher.CommonCore.Data.Interfaces.IScanFilter?)null;
+            var t = typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType);
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "open_raw_file")]
         public static unsafe int OpenRawFile(byte* pathPtr)
         {
