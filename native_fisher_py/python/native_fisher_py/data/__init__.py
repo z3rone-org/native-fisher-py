@@ -62,10 +62,14 @@ class Device:
     name = "MS"
     value = 1
 
+class ToleranceUnits(EnumBase): pass
+
 class MSOrder:
     Ms = 1
     Ms2 = 2
     Ms3 = 3
+
+MsOrderType = MSOrder
 
 class MassAnalyzer:
     Any = 0
@@ -75,6 +79,8 @@ class MassAnalyzer:
     TOFMS = 4
     FTMS = 5
     Sector = 6
+
+MassAnalyzerType = MassAnalyzer
 
 class TraceType:
     MassRange = 0
@@ -377,8 +383,18 @@ class ScanFilter(CommonCoreDataObject):
         if "-" in self.name: return PolarityType.Negative
         return PolarityType.Any
 
+    @property
+    def scan_mode(self): return 0
+    @property
+    def accurate_mass(self): return 0
+    @property
+    def ionization_mode(self): return 0
+
 class Range(range): pass
 class MassOptions(mass_options): pass
+
+FtAverageOptions = object
+ChromatogramTraceSettings = object
 
 class RunHeader(CommonCoreDataObject):
     def __init__(self, raw_file): self._raw_file = raw_file
