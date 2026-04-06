@@ -85,10 +85,10 @@ namespace ThermoNativeReader
             {
                 var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
                 var scan = _rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
-                if (scan == null) { Console.WriteLine($"[AOT] Scan {scanNumber} is null!"); return -2; }
-                if (scan.Positions == null) { Console.WriteLine($"[AOT] Scan {scanNumber} Positions are null!"); return -3; }
+                if (scan == null) { return -2; }
+                if (scan.Positions == null) { return -3; }
                 if (scan.Intensities == null) { return -4; }
-                if (scan.Positions.Length == 0) { Console.WriteLine($"[AOT] Scan {scanNumber} Positions length is 0 (PacketCount: {scanStatistics.PacketCount})"); return -5; }
+                if (scan.Positions.Length == 0) { return -5; }
                 
                 int count = Math.Min(scan.Positions.Length, maxLength);
                 for (int i = 0; i < count; i++)
@@ -100,7 +100,6 @@ namespace ThermoNativeReader
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[AOT] Exception in GetSpectrum for scan {scanNumber}: {ex.Message}");
                 return -1;
             }
         }
