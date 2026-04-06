@@ -162,8 +162,8 @@ class FieldFreeRegionType(EnumBase):
     FieldFreeRegion1 = 1
     FieldFreeRegion2 = 2
 FieldFreeRegionType.Any = FieldFreeRegionType(0); FieldFreeRegionType.Any.name = "Any"
-FieldFreeRegionType.FieldFreeRegion1 = FieldFreeRegionType(1); FieldFreeRegion1.name = "FieldFreeRegion1"
-FieldFreeRegionType.FieldFreeRegion2 = FieldFreeRegionType(2); FieldFreeRegion2.name = "FieldFreeRegion2"
+FieldFreeRegionType.FieldFreeRegion1 = FieldFreeRegionType(1); FieldFreeRegionType.FieldFreeRegion1.name = "FieldFreeRegion1"
+FieldFreeRegionType.FieldFreeRegion2 = FieldFreeRegionType(2); FieldFreeRegionType.FieldFreeRegion2.name = "FieldFreeRegion2"
 
 class EnergyType(EnumBase):
     Any = 0
