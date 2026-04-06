@@ -586,8 +586,8 @@ class LogEntry(CommonCoreDataObject):
 
 class HeaderItem(CommonCoreDataObject):
     def __init__(self, data):
-        if ":" in data:
-            parts = data.split(":")
+        if ":::" in data:
+            parts = data.split(":::")
             self._label = parts[0]
             try: self._data_type = GenericDataTypes(int(parts[1]))
             except: self._data_type = GenericDataTypes.NULL
