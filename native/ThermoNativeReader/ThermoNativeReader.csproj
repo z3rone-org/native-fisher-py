@@ -12,6 +12,11 @@
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
   <ItemGroup>
+    <TrimmerRootAssembly Include="ThermoFisher.CommonCore.Data" />
+    <TrimmerRootAssembly Include="ThermoFisher.CommonCore.RawFileReader" />
+    <TrimmerRootAssembly Include="OpenMcdf" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="OpenMcdf">
       <HintPath>../../vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/OpenMcdf.dll</HintPath>
       <Private>true</Private>
