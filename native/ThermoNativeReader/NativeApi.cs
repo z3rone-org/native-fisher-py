@@ -539,6 +539,27 @@ namespace ThermoNativeReader
             return count;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_type")]
+        public static int GetSampleType()
+        {
+            if (_rawFile == null) return 0;
+            return (int)_rawFile.SampleInformation.SampleType;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_row_number")]
+        public static int GetSampleRowNumber()
+        {
+            if (_rawFile == null) return 0;
+            return _rawFile.SampleInformation.RowNumber;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_dilution_factor")]
+        public static double GetSampleDilutionFactor()
+        {
+            if (_rawFile == null) return 1.0;
+            return _rawFile.SampleInformation.DilutionFactor;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_ms_order")]
         public static int GetMsOrder(int scanNumber)
         {

@@ -42,6 +42,9 @@ if not _IS_SPHINX:
         def get_sample_name(): return ""
         def get_sample_vial(): return ""
         def get_sample_comment(): return ""
+        def get_sample_type(): return 0
+        def get_sample_row_number(): return 0
+        def get_sample_dilution_factor(): return 1.0
         def get_creation_date(): return ""
         def get_creator_id(): return ""
         def get_ms_order(s): return 0
@@ -257,8 +260,10 @@ class SpectrumPacketType(EnumBase):
     FtCentroid = 3
 class Scan(object): pass
 # ChromatogramSignal was here
-class Device:
-    MS = 1; PDA = 2; UV = 3; Analog = 4; MSAnalog = 4; Other = 5; none = 0; Pda = 2; name = "MS"; value = 1
+class Device(EnumBase):
+    MS = 1; PDA = 2; UV = 3; Analog = 4; MSAnalog = 4; Other = 5; none = 0; Pda = 2
+for name, val in {"MS": 1, "PDA": 2, "UV": 3, "Analog": 4, "MSAnalog": 4, "Other": 5, "none": 0, "Pda": 2}.items():
+    inst = Device(val); inst.name = name; setattr(Device, name, inst)
 
 class TraceType(EnumBase):
     MassRange = 0; TIC = 1; BasePeak = 2; Fragment = 3; SpectrumMax = 4
@@ -289,8 +294,10 @@ for name in ["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9
     getattr(MsOrderType, name).name = name
 MSOrder = MsOrderType
 
-class MassAnalyzer:
-    Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2; name = "Any"; value = 0
+class MassAnalyzer(EnumBase):
+    Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2
+for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 4, "FTMS": 5, "Sector": 6, "MassAnalyzerFTMS": 5, "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 4, "MassAnalyzerTQMS": 2}.items():
+    inst = MassAnalyzer(val); inst.name = name; setattr(MassAnalyzer, name, inst)
 MassAnalyzerType = MassAnalyzer
 
 class TriState(EnumBase): Any = 0; Off = 1; On = 2
@@ -372,7 +379,11 @@ PolarityType.Positive = PolarityType(1); PolarityType.Positive.name = "Positive"
 PolarityType.Negative = PolarityType(2); PolarityType.Negative.name = "Negative"
 
 class SampleType(EnumBase): Unknown = 0; Blank = 1; QC = 2; StdBracket = 3; SolventBlank = 4; MatrixBlank = 5; MatrixSpike = 6; MatrixSpikeDuplicate = 7; Program = 8; StdBracketStart = 9; StdBracketEnd = 10; StdClear = 11; StdUpdate = 12
-SampleType.Unknown = SampleType(0); SampleType.Unknown.name = "Unknown"
+for name in ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike", "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"]:
+    idx = ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike", "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"].index(name)
+    ev = SampleType(idx)
+    ev.name = name
+    setattr(SampleType, name, ev)
 
 class PeakOptions(EnumBase): none = 0; Saturated = 1; Fragmented = 2; Exception = 3; LockPeak = 4; Merged = 5; Modified = 6; Reference = 7
 PeakOptions.none = PeakOptions(0); PeakOptions.none.name = "none"
@@ -402,10 +413,19 @@ TrayShape.StaggeredOdd = TrayShape(4); TrayShape.StaggeredOdd.name = "StaggeredO
 class FileType(EnumBase): 
     RawFile = 0; ExperimentMethod = 1; ProcessingMethod = 2; ResultsFile = 3; CalibrationFile = 4; LayoutFile = 5; MethodFile = 6; QuanFile = 7; SampleList = 8; TuneMethod = 9; XqnFile = 10; NotSupported = 11
     MethodEditorLayout = 12; ProcessingMethodEditLayout = 13; QualBrowserLayout = 14; ResultsLayout = 15; SampleListEditorLayout = 16; TuneLayout = 17
+
 FileType.RawFile = FileType(0); FileType.RawFile.name = "RawFile"
 for name in ["MethodEditorLayout", "ProcessingMethodEditLayout", "QualBrowserLayout", "ResultsLayout", "SampleListEditorLayout", "TuneLayout"]:
     setattr(FileType, name, FileType(12 + ["MethodEditorLayout", "ProcessingMethodEditLayout", "QualBrowserLayout", "ResultsLayout", "SampleListEditorLayout", "TuneLayout"].index(name)))
     getattr(FileType, name).name = name
+
+# Mass-initialize any remaining uninstantiated enum members
+for cls in EnumBase.__subclasses__():
+    for name, val in list(cls.__dict__.items()):
+        if not name.startswith("_") and isinstance(val, int) and name not in ["value", "name"]:
+            inst = cls(val)
+            inst.name = name
+            setattr(cls, name, inst)
 
 class ScanDependentDetails(CommonCoreDataObject):
     @property
@@ -873,7 +893,7 @@ class SampleInformation(CommonCoreDataObject):
     def comment(self): return get_sample_comment()
     def deep_copy(self): return self
     @property
-    def dilution_factor(self): return 1.0
+    def dilution_factor(self): return get_sample_dilution_factor()
     @property
     def injection_volume(self): return 0.0
     @property
@@ -885,7 +905,7 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def processing_method_file(self): return ""
     @property
-    def row_number(self): return 0
+    def row_number(self): return get_sample_row_number()
     @property
     def sample_id(self): return get_sample_id()
     @property
@@ -893,7 +913,7 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def vial(self): return get_sample_vial()
     @property
-    def sample_type(self): return 0
+    def sample_type(self): return SampleType(get_sample_type())
     @property
     def sample_volume(self): return 0.0
     @property

@@ -140,6 +140,36 @@ fn get_centroid_stream(scan_number: i32, max_length: i32) -> PyResult<(Vec<f64>,
 }
 
 #[pyfunction]
+fn get_sample_type() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_sample_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_type: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_sample_row_number() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_sample_row_number")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_row_number: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_sample_dilution_factor() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_sample_dilution_factor")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_dilution_factor: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
 fn get_first_scan() -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -668,6 +698,9 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(set_dylib_path, m)?)?;
     m.add_function(wrap_pyfunction!(get_computer_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_creator_id, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_type, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_row_number, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_dilution_factor, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_model, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_serial_number, m)?)?;
