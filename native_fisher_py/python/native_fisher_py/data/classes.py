@@ -211,7 +211,10 @@ class EnumBase(object):
     def name(self):
         if self._name: return self._name
         for k, v in self.__class__.__dict__.items():
+            if k.startswith("_") or k == "name" or k == "value": continue
             if isinstance(v, self.__class__) and v.value == self.value:
+                return k
+            if not isinstance(v, EnumBase) and v == self.value:
                 return k
         return str(self.value)
     @name.setter
@@ -565,7 +568,7 @@ class HeaderItem(CommonCoreDataObject):
             except: self._data_type = GenericDataTypes.NULL
         else:
             self._label = data
-            self._data_type = 0
+            self._data_type = GenericDataTypes.NULL
     @property
     def label(self): return self._label
     @property
