@@ -31,6 +31,7 @@ else:
     def get_instrument_name(): return ""
     def get_instrument_serial_number(): return ""
     def get_instrument_software_version(): return ""
+    def get_instrument_hardware_version(): return ""
     def get_ms_order(scan_number): return 1
     def get_mass_analyzer(scan_number): return 0
     def get_precursor_mass(scan_number): return 0.0
@@ -89,6 +90,7 @@ class InstrumentData(object):
         self.model = get_instrument_model()
         self.serial_number = get_instrument_serial_number()
         self.software_version = get_instrument_software_version()
+        self.hardware_version = get_instrument_hardware_version()
 
 class RunHeader(object):
     """The run header."""
@@ -408,7 +410,8 @@ if not _IS_SPHINX:
             "get_averaged_spectrum", "get_instrument_count", "get_instrument_count_of_type",
             "is_open", "is_error", "in_acquisition", "has_ms_data", "get_file_name", "get_path",
             "get_creation_date", "get_computer_name", "get_creator_id", "close_raw_file",
-            "get_instrument_model", "get_instrument_name", "get_instrument_serial_number", "get_instrument_software_version"
+            "get_instrument_model", "get_instrument_name", "get_instrument_serial_number", 
+            "get_instrument_software_version", "get_instrument_hardware_version"
         ]
 else:
     __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx", "InstrumentData"]

@@ -213,6 +213,19 @@ namespace ThermoNativeReader
             return count;
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_hardware_version")]
+        public static unsafe int GetInstrumentHardwareVersion(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var data = _rawFile.GetInstrumentData();
+            var str = data?.HardwareVersion ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_ms_order")]
         public static int GetMsOrder(int scanNumber)
         {
