@@ -708,6 +708,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_instrument_hardware_version, m)?)?;
     m.add_function(wrap_pyfunction!(get_status_log_values, m)?)?;
     m.add_function(wrap_pyfunction!(get_status_log_header, m)?)?;
+    m.add_function(wrap_pyfunction!(get_status_log_values_for_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_status_log_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_trailer_extra_values, m)?)?;
     m.add_function(wrap_pyfunction!(get_trailer_extra_count, m)?)?;
@@ -1024,6 +1025,21 @@ fn get_status_log_header() -> PyResult<Vec<String>> {
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_status_log_header: {}", e)))?;
         let res = func(buffer.as_mut_ptr(), 8192);
         if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_status_log_header failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        Ok(s.split('|').map(|x| x.to_string()).collect())
+    }
+}
+
+#[pyfunction]
+fn get_status_log_values_for_rt(rt: f64) -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 16384];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(f64, *mut u8, i32) -> i32> = lib.get(b"get_status_log_values_for_rt")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_status_log_values_for_rt: {}", e)))?;
+        let res = func(rt, buffer.as_mut_ptr(), 16384);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_status_log_values_for_rt failed")); }
         let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
         let s = String::from_utf8_lossy(&buffer[..end]);
         Ok(s.split('|').map(|x| x.to_string()).collect())

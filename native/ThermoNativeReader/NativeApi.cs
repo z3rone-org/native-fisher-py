@@ -906,13 +906,12 @@ namespace ThermoNativeReader
             return _rawFile.HasMsData ? 1 : 0;
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values")]
-        public static unsafe int GetStatusLogValues(int scanNumber, byte* buffer, int bufferSize)
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values_for_rt")]
+        public static unsafe int GetStatusLogValuesForRt(double rt, byte* buffer, int bufferSize)
         {
             if (_rawFile == null) return -1;
             try
             {
-                var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
                 var log = _rawFile.GetStatusLogForRetentionTime(rt);
                 if (log == null || log.Values == null) return 0;
                 var res = string.Join("|", log.Values);
@@ -925,6 +924,18 @@ namespace ThermoNativeReader
             catch { return -1; }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values")]
+        public static unsafe int GetStatusLogValues(int scanNumber, byte* buffer, int bufferSize)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
+                return GetStatusLogValuesForRt(rt, buffer, bufferSize);
+            }
+            catch { return -1; }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_header")]
         public static unsafe int GetStatusLogHeader(byte* buffer, int bufferSize)
         {
@@ -933,7 +944,7 @@ namespace ThermoNativeReader
             {
                 var info = _rawFile.GetStatusLogHeaderInformation();
                 if (info == null) return 0;
-                var res = string.Join("|", info.Select(x => x.Label));
+                var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType));
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
                 for (int i = 0; i < count; i++) buffer[i] = bytes[i];

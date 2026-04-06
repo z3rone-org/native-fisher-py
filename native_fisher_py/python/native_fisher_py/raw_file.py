@@ -259,6 +259,9 @@ class RawFile(object):
         return LogEntry(get_status_log_values(scan_number))
     def get_status_log_entries_count(self): 
         return get_status_log_count()
+    def get_status_log_for_retention_time(self, rt):
+        from .data.classes import LogEntry
+        return LogEntry(get_status_log_values_for_rt(rt))
     def get_tune_data(self, index): return None
     def get_filters(self): return get_filters()
     def get_auto_filters(self): return []
