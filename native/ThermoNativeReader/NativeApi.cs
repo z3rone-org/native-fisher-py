@@ -83,17 +83,17 @@ namespace ThermoNativeReader
             
             try 
             {
-                var reader = (ISimplifiedScanReader)_rawFile;
-                var centroids = reader.GetSimplifiedCentroids(scanNumber);
-                if (centroids == null || centroids.Masses == null || centroids.Intensities == null) return 0;
+                var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
+                var scan = _rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
+                if (scan == null || scan.Positions == null || scan.Intensities == null) return 0;
                 
-                int count = Math.Min(centroids.Masses.Length, maxLength);
+                int count = Math.Min(scan.Positions.Length, maxLength);
                 for (int i = 0; i < count; i++)
                 {
-                    masses[i] = centroids.Masses[i];
-                    intensities[i] = centroids.Intensities[i];
+                    masses[i] = scan.Positions[i];
+                    intensities[i] = scan.Intensities[i];
                 }
-                return centroids.Masses.Length;
+                return count;
             }
             catch
             {
