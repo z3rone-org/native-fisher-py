@@ -18,17 +18,20 @@ namespace ThermoNativeReader
 
         private static string SafeGetFilterString(IScanFilter filter)
         {
+            if (filter == null) return "";
+            // We AVOID filter.ToString() because it triggers the Thermo.FilterStringTokens static constructor
+            // which fails in AOT due to GetEnumValues[T] reflection.
             try 
             {
-                // Try the standard one first, it might work if we rooted correctly
-                return filter.ToString() ?? "";
-            }
-            catch (Exception)
-            {
-                // Fallback that avoids reflection on enums if possible
                 var polarity = filter.Polarity == PolarityType.Positive ? "+" : (filter.Polarity == PolarityType.Negative ? "-" : "");
                 var analyzer = ((int)filter.MassAnalyzer).ToString(); 
-                return $"{analyzer} {polarity} ms{(int)filter.MSOrder}";
+                var msOrder = ((int)filter.MSOrder).ToString();
+                return $"{analyzer} {polarity} ms{msOrder}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: Manual filter formatting failed: {ex.Message}");
+                return "MS_ORDER_ONLY";
             }
         }
 
@@ -561,16 +564,19 @@ namespace ThermoNativeReader
         private static string SafeGetScanEventString(IScanEvent scanEvent)
         {
             if (scanEvent == null) return "";
+            // We AVOID scanEvent.ToString() because it triggers the Thermo.FilterStringTokens static constructor
+            // which fails in AOT due to GetEnumValues[T] reflection.
             try 
             {
-                return scanEvent.ToString() ?? "";
-            }
-            catch (Exception)
-            {
-                // Manual construct to avoid reflection
                 var polarity = scanEvent.Polarity == PolarityType.Positive ? "+" : (scanEvent.Polarity == PolarityType.Negative ? "-" : "");
-                var order = ((int)scanEvent.MSOrder).ToString();
-                return $"ms{order} {polarity}";
+                var analyzer = ((int)scanEvent.MassAnalyzer).ToString(); 
+                var msOrder = ((int)scanEvent.MSOrder).ToString();
+                return $"{analyzer} {polarity} ms{msOrder}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: Manual scan event formatting failed: {ex.Message}");
+                return "MS_ORDER_ONLY";
             }
         }
 
