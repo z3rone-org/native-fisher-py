@@ -76,6 +76,21 @@ namespace ThermoNativeReader
             return _rawFile.RetentionTimeFromScanNumber(scanNumber);
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "is_centroid")]
+        public static int IsCentroid(int scanNumber)
+        {
+            if (_rawFile == null) return 0;
+            try
+            {
+                var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
+                return scanStatistics.IsCentroidScan ? 1 : 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_spectrum")]
         public static unsafe int GetSpectrum(int scanNumber, double* masses, double* intensities, int maxLength)
         {

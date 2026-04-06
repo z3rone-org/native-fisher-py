@@ -120,6 +120,16 @@ fn get_spectrum(scan_number: i32, max_length: i32) -> PyResult<(Vec<f64>, Vec<f6
 }
 
 #[pyfunction]
+fn is_centroid(scan_number: i32) -> PyResult<bool> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"is_centroid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function is_centroid: {}", e)))?;
+        Ok(func(scan_number) != 0)
+    }
+}
+
+#[pyfunction]
 fn get_centroid_stream(scan_number: i32, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>)> {
     let lib = get_lib()?;
     let mut masses = vec![0.0f64; max_length as usize];
@@ -664,6 +674,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_num_scans, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_spectrum, m)?)?;
+    m.add_function(wrap_pyfunction!(is_centroid, m)?)?;
     m.add_function(wrap_pyfunction!(get_centroid_stream, m)?)?;
     m.add_function(wrap_pyfunction!(get_filters, m)?)?;
     m.add_function(wrap_pyfunction!(get_first_scan, m)?)?;
