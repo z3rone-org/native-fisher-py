@@ -16,6 +16,22 @@ namespace ThermoNativeReader
     {
         private static IRawDataPlus? _rawFile;
 
+        private static string SafeGetFilterString(IScanFilter filter)
+        {
+            try 
+            {
+                // Try the standard one first, it might work if we rooted correctly
+                return filter.ToString() ?? "";
+            }
+            catch (Exception)
+            {
+                // Fallback that avoids reflection on enums if possible
+                var polarity = filter.Polarity == PolarityType.Positive ? "+" : (filter.Polarity == PolarityType.Negative ? "-" : "");
+                var analyzer = ((int)filter.MassAnalyzer).ToString(); 
+                return $"{analyzer} {polarity} ms{(int)filter.MSOrder}";
+            }
+        }
+
         // Dummy usage to prevent AOT trimming of important types used by reflection in Thermo DLLs
         private static ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[] _dummyArray = new ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[0];
         private static ThermoFisher.CommonCore.Data.Interfaces.IScanFilter? _dummyFilter = null;
@@ -99,7 +115,7 @@ namespace ThermoNativeReader
                 int count = Math.Min(filterList.Length, maxCount);
                 for (int i = 0; i < count; i++)
                 {
-                    filters[i] = Marshal.StringToHGlobalAnsi(filterList[i].FilterString);
+                    filters[i] = Marshal.StringToHGlobalAnsi(SafeGetFilterString(filterList[i]));
                 }
                 return filterList.Length;
             }
@@ -542,33 +558,32 @@ namespace ThermoNativeReader
             }
         }
 
+        private static string SafeGetScanEventString(IScanEvent scanEvent)
+        {
+            if (scanEvent == null) return "";
+            try 
+            {
+                return scanEvent.ToString() ?? "";
+            }
+            catch (Exception)
+            {
+                // Manual construct to avoid reflection
+                var polarity = scanEvent.Polarity == PolarityType.Positive ? "+" : (scanEvent.Polarity == PolarityType.Negative ? "-" : "");
+                var order = ((int)scanEvent.MSOrder).ToString();
+                return $"ms{order} {polarity}";
+            }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_string")]
         public static unsafe int GetScanEventString(int scanNumber, byte* buffer, int bufferSize)
         {
-            if (_rawFile == null) return -1;
+            if (_rawFile == null) return 0;
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
-                string? eventStr = null;
-                
-                try 
-                {
-                    eventStr = scanEvent.ToAutoFilterString();
-                }
-                catch (Exception ex)
-                {
-                    // NativeAOT Workaround: If ToString fails due to Assembly.Location being null/empty,
-                    // we manually construct a basic filter string.
-                    Console.WriteLine($"Warning: ScanEvent.ToString failed in AOT, using fallback. Error: {ex.Message}");
-                    
-                    // Construct a basic filter string like "FTMS + p NSI Full ms [400.00-2000.00]"
-                    // We can pull these parts from the scanEvent properties.
-                    var analyzer = ((int)scanEvent.MassAnalyzer).ToString();
-                    var polarity = scanEvent.Polarity == ThermoFisher.CommonCore.Data.FilterEnums.PolarityType.Positive ? "+" : "-";
-                    var msOrder = (scanEvent.MSOrder == MSOrderType.Ms) ? "ms" : $"ms{(int)scanEvent.MSOrder}";
-                    
-                    eventStr = $"{analyzer} {polarity} p NSI Full {msOrder}";
-                }
+                if (scanEvent == null) return 0;
+
+                string eventStr = SafeGetScanEventString(scanEvent);
 
                 if (string.IsNullOrEmpty(eventStr)) return 0;
                 
