@@ -62,7 +62,14 @@ _lib_path = os.path.join(_lib_dir, f"ThermoNativeReader{_ext}")
 if os.path.exists(_lib_path) and "THERMO_NATIVE_LIB" not in os.environ:
     os.environ["THERMO_NATIVE_LIB"] = _lib_path
 
-from .exceptions import RawFileException
+from . import exceptions
+class data: pass
+class net_wrapping: pass
+class utils: pass
+class raw_file:
+    RawFile = None # Set below
+class raw_file_reader:
+    RawFileAccess = None # Set below
 
 class MSOrder:
     Ms = 1
@@ -449,6 +456,130 @@ class RawFile(object):
         """Check if file is still being acquired."""
         return in_acquisition()
 
+    def retention_time_from_scan_number(self, scan_number: int) -> float:
+        return get_retention_time_from_scan_number(scan_number)
+
+    def scan_number_from_retention_time(self, rt: float) -> int:
+        return get_scan_number_from_retention_time(rt)
+
+    def get_scan_event_for_scan_number(self, scan_number: int):
+        return None # Stub
+
+    def get_scan_event_string_for_scan_number(self, scan_number: int):
+        return get_scan_event_str_from_scan_number(scan_number)
+
+    def get_centroid_stream(self, scan_number: int, include_ref_peaks: bool = False):
+        return None # Stub
+
+    def get_segmented_scan_from_scan_number(self, scan_number: int, stats = None):
+        return None # Stub
+
+    def get_scan_stats_for_scan_number(self, scan_number: int):
+        return None # Stub
+
+    def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
+        return None # Stub
+
+    def get_instrument_count_of_type(self, device_type):
+        return get_instrument_count_of_type(device_type)
+
+    def select_instrument(self, device_type: int, device_number: int):
+        pass
+
+    def get_trailer_extra_header_information(self): return []
+    def get_trailer_extra_information(self, scan_number): return None
+    def get_trailer_extra_values(self, scan_number, formatted): return []
+    def get_status_log_header_information(self): return []
+    def get_status_log_values(self, index, formatted): return None
+    def get_status_log_entries_count(self): return 0
+    def get_status_log_for_retention_time(self, rt): return None
+    def get_tune_data_count(self): return 0
+    def get_tune_data(self, index): return None
+    def get_filters(self): return []
+    def get_auto_filters(self): return []
+    def get_filter_for_scan_number(self, scan_number): return ""
+    def get_scan_events(self, start, end): return []
+    def get_scan_dependents(self, scan_number, precision): return None
+    def get_instrument_method(self, index): return ""
+    def has_instrument_method(self): return True
+    def get_all_instrument_names_from_instrument_method(self): return []
+    def get_instrument_type(self, index): return 1
+    def get_segment_event_table(self): return []
+    def average_scans(self, start, end): return None
+    def average_scans_in_scan_range(self, start, end, filter_str, options, avg_options): return None
+    def is_centroid_scan_from_scan_number(self, scan_number): return True
+    def refresh_view_of_file(self): pass
+    def dispose(self): self.close()
+
+    @property
+    def selected_instrument(self): return None
+    @property
+    def status_log_plottable_data(self): return []
+    @property
+    def default_mass_options(self): return None
+
+    def retention_time_from_scan_number(self, scan_number: int) -> float:
+        return get_retention_time_from_scan_number(scan_number)
+
+    def scan_number_from_retention_time(self, rt: float) -> int:
+        return get_scan_number_from_retention_time(rt)
+
+    def get_scan_event_for_scan_number(self, scan_number: int):
+        return None # Stub
+
+    def get_scan_event_string_for_scan_number(self, scan_number: int):
+        return get_scan_event_str_from_scan_number(scan_number)
+
+    def get_centroid_stream(self, scan_number: int, include_ref_peaks: bool = False):
+        return None # Stub
+
+    def get_segmented_scan_from_scan_number(self, scan_number: int, stats = None):
+        return None # Stub
+
+    def get_scan_stats_for_scan_number(self, scan_number: int):
+        return None # Stub
+
+    def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
+        return None # Stub
+
+    def get_instrument_count_of_type(self, device_type):
+        return get_instrument_count_of_type(device_type)
+
+    def select_instrument(self, device_type: int, device_number: int):
+        pass
+
+    def get_trailer_extra_header_information(self): return []
+    def get_trailer_extra_information(self, scan_number): return None
+    def get_trailer_extra_values(self, scan_number, formatted): return []
+    def get_status_log_header_information(self): return []
+    def get_status_log_values(self, index, formatted): return None
+    def get_status_log_entries_count(self): return 0
+    def get_status_log_for_retention_time(self, rt): return None
+    def get_tune_data_count(self): return 0
+    def get_tune_data(self, index): return None
+    def get_filters(self): return []
+    def get_auto_filters(self): return []
+    def get_filter_for_scan_number(self, scan_number): return ""
+    def get_scan_events(self, start, end): return []
+    def get_scan_dependents(self, scan_number, precision): return None
+    def get_instrument_method(self, index): return ""
+    def has_instrument_method(self): return True
+    def get_all_instrument_names_from_instrument_method(self): return []
+    def get_instrument_type(self, index): return 1
+    def get_segment_event_table(self): return []
+    def average_scans(self, start, end): return None
+    def average_scans_in_scan_range(self, start, end, filter_str, options, avg_options): return None
+    def is_centroid_scan_from_scan_number(self, scan_number): return True
+    def refresh_view_of_file(self): pass
+    def dispose(self): self.close()
+
+    @property
+    def selected_instrument(self): return None
+    @property
+    def status_log_plottable_data(self): return []
+    @property
+    def default_mass_options(self): return None
+
     @property
     def has_ms_data(self) -> bool:
         """Check if file contains MS data."""
@@ -608,3 +739,5 @@ if not _IS_SPHINX:
         ]
 else:
     __all__ = ["RawFile", "MSOrder", "MassAnalyzer", "TraceType", "RawFileException", "RunHeader", "RunHeaderEx", "InstrumentData"]
+raw_file.RawFile = RawFile
+raw_file_reader.RawFileAccess = RawFile
