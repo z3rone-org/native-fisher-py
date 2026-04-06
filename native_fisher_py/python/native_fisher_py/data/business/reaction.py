@@ -1,5 +1,5 @@
 import enum
-from .. import Reaction
+from .._base import Reaction
 reaction = Reaction
 Reaction = Reaction
 enum = enum

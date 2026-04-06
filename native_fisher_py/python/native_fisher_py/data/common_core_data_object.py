@@ -1,0 +1,3 @@
+from ._base import CommonCoreDataObject
+common_core_data_object = CommonCoreDataObject
+CommonCoreDataObject = CommonCoreDataObject

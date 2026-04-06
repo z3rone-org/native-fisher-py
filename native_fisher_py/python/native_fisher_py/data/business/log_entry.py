@@ -1,5 +1,5 @@
 import enum
-from .. import LogEntry
+from .._base import LogEntry
 log_entry = LogEntry
 LogEntry = LogEntry
 enum = enum

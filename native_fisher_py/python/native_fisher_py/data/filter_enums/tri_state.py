@@ -1,5 +1,5 @@
 import enum
-from .. import TriState
+from .._base import TriState
 tri_state = TriState
 TriState = TriState
 enum = enum

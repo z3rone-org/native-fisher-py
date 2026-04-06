@@ -1,5 +1,5 @@
 import enum
-from .. import SampleInformation
+from .._base import SampleInformation
 sample_information = SampleInformation
 SampleInformation = SampleInformation
 enum = enum

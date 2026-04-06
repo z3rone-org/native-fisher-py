@@ -1,5 +1,5 @@
 import enum
-from .. import ScanDataType
+from .._base import ScanDataType
 scan_data_type = ScanDataType
 ScanDataType = ScanDataType
 enum = enum

@@ -1,5 +1,5 @@
 import enum
-from .. import Range
-range = Range
-Range = Range
+from .._base import range
+range = range
+range = range
 enum = enum

@@ -1,5 +1,5 @@
 import enum
-from .. import ScanEvent
+from .._base import ScanEvent
 scan_event = ScanEvent
 ScanEvent = ScanEvent
 enum = enum

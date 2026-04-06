@@ -1,0 +1,3 @@
+from ._base import AutoSamplerInformation
+auto_sampler_information = AutoSamplerInformation
+AutoSamplerInformation = AutoSamplerInformation

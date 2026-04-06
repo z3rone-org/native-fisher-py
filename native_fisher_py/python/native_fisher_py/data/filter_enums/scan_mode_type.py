@@ -1,5 +1,5 @@
 import enum
-from .. import ScanModeType
+from .._base import ScanModeType
 scan_mode_type = ScanModeType
 ScanModeType = ScanModeType
 enum = enum

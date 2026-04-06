@@ -1,5 +1,5 @@
 import enum
-from .. import FileError
+from .._base import FileError
 file_error = FileError
 FileError = FileError
 enum = enum

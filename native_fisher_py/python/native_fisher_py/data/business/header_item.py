@@ -1,5 +1,5 @@
 import enum
-from .. import HeaderItem
+from .._base import HeaderItem
 header_item = HeaderItem
 HeaderItem = HeaderItem
 enum = enum

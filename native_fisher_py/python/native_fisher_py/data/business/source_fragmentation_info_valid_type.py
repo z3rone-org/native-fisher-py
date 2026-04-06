@@ -1,0 +1,5 @@
+import enum
+from .._base import SourceFragmentationInfoValidType
+source_fragmentation_info_valid_type = SourceFragmentationInfoValidType
+SourceFragmentationInfoValidType = SourceFragmentationInfoValidType
+enum = enum
