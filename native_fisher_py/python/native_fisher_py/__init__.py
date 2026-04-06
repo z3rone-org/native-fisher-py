@@ -380,6 +380,90 @@ class ScanFilter(CommonCoreDataObject):
     def ultra(self): return False
     @property
     def wideband(self): return False
+    @property
+    def compensation_volt_type(self): return 0
+    @property
+    def compensation_voltage(self): return 0.0
+    @property
+    def compensation_voltage_count(self): return 0
+    @property
+    def compensation_voltage_value(self): return 0.0
+    @property
+    def corona(self): return False
+    @property
+    def dependent(self): return False
+    @property
+    def detector(self): return 0
+    @property
+    def detector_value(self): return 0.0
+    @property
+    def electron_capture_dissociation(self): return False
+    @property
+    def electron_capture_dissociation_value(self): return 0.0
+    @property
+    def electron_transfer_dissociation(self): return False
+    @property
+    def electron_transfer_dissociation_value(self): return 0.0
+    @property
+    def enhanced(self): return False
+    @property
+    def field_free_region(self): return 0
+    @property
+    def higher_energy_ci_d(self): return False
+    @property
+    def higher_energy_ci_d_value(self): return 0.0
+    @property
+    def is_custom(self): return False
+    @property
+    def locale_name(self): return ""
+    @property
+    def mass_precision(self): return 4
+    @property
+    def multi_notch(self): return False
+    @property
+    def multi_state_activation(self): return False
+    @property
+    def multiple_photon_dissociation(self): return False
+    @property
+    def multiple_photon_dissociation_value(self): return 0.0
+    @property
+    def multiplex(self): return False
+    @property
+    def param_a(self): return 0.0
+    @property
+    def param_b(self): return 0.0
+    @property
+    def param_f(self): return 0.0
+    @property
+    def param_r(self): return 0.0
+    @property
+    def param_v(self): return 0.0
+    @property
+    def photo_ionization(self): return False
+    @property
+    def pulsed_q_dissociation(self): return False
+    @property
+    def pulsed_q_dissociation_value(self): return 0.0
+    @property
+    def scan_data(self): return 0
+    @property
+    def sector_scan(self): return 0
+    @property
+    def source_fragmentation(self): return False
+    @property
+    def source_fragmentation_type(self): return 0
+    @property
+    def source_fragmentation_value(self): return 0.0
+    @property
+    def supplemental_activation(self): return False
+    @property
+    def unique_mass_count(self): return 0
+    def get_source_fragmentation_info_valid(self, index): return False
+    def source_fragmentation_info_valid(self, index): return False
+    @property
+    def index_to_multiple_activation_index(self): return []
+    @property
+    def souce_fragmentaion_value_count(self): return 0
 
 class Range(CommonCoreDataObject):
     def __init__(self, low=0.0, high=0.0): self.low, self.high = low, high
@@ -395,42 +479,232 @@ class ScanDependents(CommonCoreDataObject):
 
 class FtAverageOptions(object): pass
 class ChromatogramTraceSettings(object): pass
-class ScanStatistics(object): pass
-class SegmentedScan(object): pass
-class LogEntry(object): pass
-class HeaderItem(object): pass
-class StatusLogValues(object): pass
-class TuneDataValues(object): pass
-class Reaction(object): pass
-class Scan(object): pass
-class CentroidStream(object): pass
-class ChromatogramSignal(object): pass
+class ScanStatistics(CommonCoreDataObject): pass
+class SegmentedScan(CommonCoreDataObject): pass
+class LogEntry(CommonCoreDataObject): pass
+class HeaderItem(CommonCoreDataObject): pass
+class StatusLogValues(CommonCoreDataObject): pass
+class TuneDataValues(CommonCoreDataObject): pass
+class Reaction(CommonCoreDataObject): pass
+class Scan(CommonCoreDataObject): pass
+class CentroidStream(CommonCoreDataObject): pass
+class ChromatogramSignal(CommonCoreDataObject): pass
+
+class EnumBase(object):
+    name = ""
+    value = 0
+    def __str__(self): return self.name
+    def __int__(self): return self.value
+
+class TriState(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    Off = EnumBase(); Off.name, Off.value = "Off", 1
+    On = EnumBase(); On.name, On.value = "On", 2
+
+class EventAccurateMass(EnumBase):
+    External = EnumBase(); External.name, External.value = "External", 1
+    Internal = EnumBase(); Internal.name, Internal.value = "Internal", 2
+    Off = EnumBase(); Off.name, Off.value = "Off", 0
+    On = EnumBase(); On.name, On.value = "On", 3
+
+class SourceFragmentationValueType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    NoValue = EnumBase(); NoValue.name, NoValue.value = "NoValue", 1
+    Ramp = EnumBase(); Ramp.name, Ramp.value = "Ramp", 2
+    SIM = EnumBase(); SIM.name, SIM.value = "SIM", 3
+    SingleValue = EnumBase(); SingleValue.name, SingleValue.value = "SingleValue", 4
+
+class ScanModeType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    Crm = EnumBase(); Crm.name, Crm.value = "Crm", 1
+    Full = EnumBase(); Full.name, Full.value = "Full", 2
+    Q1Ms = EnumBase(); Q1Ms.name, Q1Ms.value = "Q1Ms", 3
+    Q3Ms = EnumBase(); Q3Ms.name, Q3Ms.value = "Q3Ms", 4
+    Sim = EnumBase(); Sim.name, Sim.value = "Sim", 5
+    Srm = EnumBase(); Srm.name, Srm.value = "Srm", 6
+    Zoom = EnumBase(); Zoom.name, Zoom.value = "Zoom", 7
+
+class CompensationVoltageType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    NoValue = EnumBase(); NoValue.name, NoValue.value = "NoValue", 1
+    Ramp = EnumBase(); Ramp.name, Ramp.value = "Ramp", 2
+    SIM = EnumBase(); SIM.name, SIM.value = "SIM", 3
+    SingleValue = EnumBase(); SingleValue.name, SingleValue.value = "SingleValue", 4
+
+class ScanDataType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    Centroid = EnumBase(); Centroid.name, Centroid.value = "Centroid", 1
+    Profile = EnumBase(); Profile.name, Profile.value = "Profile", 2
+
+class SectorScanType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    SectorBScan = EnumBase(); SectorBScan.name, SectorBScan.value = "SectorBScan", 1
+    SectorEScan = EnumBase(); SectorEScan.name, SectorEScan.value = "SectorEScan", 2
+
+class FieldFreeRegionType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    FieldFreeRegion1 = EnumBase(); FieldFreeRegion1.name, FieldFreeRegion1.value = "FieldFreeRegion1", 1
+    FieldFreeRegion2 = EnumBase(); FieldFreeRegion2.name, FieldFreeRegion2.value = "FieldFreeRegion2", 2
+
+class EnergyType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    Valid = EnumBase(); Valid.name, Valid.value = "Valid", 1
+
+class IonizationModeType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    ElectroSpray = EnumBase(); ElectroSpray.name, ElectroSpray.value = "ElectroSpray", 1
+    AtmosphericPressureChemicalIonization = EnumBase(); AtmosphericPressureChemicalIonization.name, AtmosphericPressureChemicalIonization.value = "AtmosphericPressureChemicalIonization", 2
+    NanoSpray = EnumBase(); NanoSpray.name, NanoSpray.value = "NanoSpray", 3
+    ChemicalIonization = EnumBase(); ChemicalIonization.name, ChemicalIonization.value = "ChemicalIonization", 4
+    ElectronImpact = EnumBase(); ElectronImpact.name, ElectronImpact.value = "ElectronImpact", 5
+    FastAtomBombardment = EnumBase(); FastAtomBombardment.name, FastAtomBombardment.value = "FastAtomBombardment", 6
+    FieldDesorption = EnumBase(); FieldDesorption.name, FieldDesorption.value = "FieldDesorption", 7
+    MatrixAssistedLaserDesorptionIonization = EnumBase(); MatrixAssistedLaserDesorptionIonization.name, MatrixAssistedLaserDesorptionIonization.value = "MatrixAssistedLaserDesorptionIonization", 8
+    GlowDischarge = EnumBase(); GlowDischarge.name, GlowDischarge.value = "GlowDischarge", 9
+    ThermoSpray = EnumBase(); ThermoSpray.name, ThermoSpray.value = "ThermoSpray", 10
+    CardNanoSprayIonization = EnumBase(); CardNanoSprayIonization.name, CardNanoSprayIonization.value = "CardNanoSprayIonization", 11
+    PaperSprayIonization = EnumBase(); PaperSprayIonization.name, PaperSprayIonization.value = "PaperSprayIonization", 12
+    IonModeBeyondKnown = EnumBase(); IonModeBeyondKnown.name, IonModeBeyondKnown.value = "IonModeBeyondKnown", 13
+    IonizationMode1 = EnumBase(); IonizationMode1.name, IonizationMode1.value = "IonizationMode1", 14
+    IonizationMode2 = EnumBase(); IonizationMode2.name, IonizationMode2.value = "IonizationMode2", 15
+    IonizationMode3 = EnumBase(); IonizationMode3.name, IonizationMode3.value = "IonizationMode3", 16
+    IonizationMode4 = EnumBase(); IonizationMode4.name, IonizationMode4.value = "IonizationMode4", 17
+    IonizationMode5 = EnumBase(); IonizationMode5.name, IonizationMode5.value = "IonizationMode5", 18
+    IonizationMode6 = EnumBase(); IonizationMode6.name, IonizationMode6.value = "IonizationMode6", 19
+    IonizationMode7 = EnumBase(); IonizationMode7.name, IonizationMode7.value = "IonizationMode7", 20
+    IonizationMode8 = EnumBase(); IonizationMode8.name, IonizationMode8.value = "IonizationMode8", 21
+    IonizationMode9 = EnumBase(); IonizationMode9.name, IonizationMode9.value = "IonizationMode9", 22
+
+class ActivationType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    CollisionInducedDissociation = EnumBase(); CollisionInducedDissociation.name, CollisionInducedDissociation.value = "CollisionInducedDissociation", 1
+    ElectronCaptureDissociation = EnumBase(); ElectronCaptureDissociation.name, ElectronCaptureDissociation.value = "ElectronCaptureDissociation", 2
+    ElectronTransferDissociation = EnumBase(); ElectronTransferDissociation.name, ElectronTransferDissociation.value = "ElectronTransferDissociation", 3
+    HigherEnergyCollisionalDissociation = EnumBase(); HigherEnergyCollisionalDissociation.name, HigherEnergyCollisionalDissociation.value = "HigherEnergyCollisionalDissociation", 4
+    MultiPhotonDissociation = EnumBase(); MultiPhotonDissociation.name, MultiPhotonDissociation.value = "MultiPhotonDissociation", 5
+    PQD = EnumBase(); PQD.name, PQD.value = "PQD", 6
+    SAactivation = EnumBase(); SAactivation.name, SAactivation.value = "SAactivation", 7
+    UltraVioletPhotoDissociation = EnumBase(); UltraVioletPhotoDissociation.name, UltraVioletPhotoDissociation.value = "UltraVioletPhotoDissociation", 8
+    NegativeElectronTransferDissociation = EnumBase(); NegativeElectronTransferDissociation.name, NegativeElectronTransferDissociation.value = "NegativeElectronTransferDissociation", 9
+    ProtonTransferReaction = EnumBase(); ProtonTransferReaction.name, ProtonTransferReaction.value = "ProtonTransferReaction", 10
+    NegativeProtonTransferReaction = EnumBase(); NegativeProtonTransferReaction.name, NegativeProtonTransferReaction.value = "NegativeProtonTransferReaction", 11
+    LastActivation = EnumBase(); LastActivation.name, LastActivation.value = "LastActivation", 12
+    ModeA = EnumBase(); ModeA.name, ModeA.value = "ModeA", 13
+    ModeB = EnumBase(); ModeB.name, ModeB.value = "ModeB", 14
+    ModeC = EnumBase(); ModeC.name, ModeC.value = "ModeC", 15
+    ModeD = EnumBase(); ModeD.name, ModeD.value = "ModeD", 16
+    ModeE = EnumBase(); ModeE.name, ModeE.value = "ModeE", 17
+    ModeF = EnumBase(); ModeF.name, ModeF.value = "ModeF", 18
+    ModeG = EnumBase(); ModeG.name, ModeG.value = "ModeG", 19
+    ModeH = EnumBase(); ModeH.name, ModeH.value = "ModeH", 20
+    ModeI = EnumBase(); ModeI.name, ModeI.value = "ModeI", 21
+    ModeJ = EnumBase(); ModeJ.name, ModeJ.value = "ModeJ", 22
+    ModeK = EnumBase(); ModeK.name, ModeK.value = "ModeK", 23
+    ModeL = EnumBase(); ModeL.name, ModeL.value = "ModeL", 24
+    ModeM = EnumBase(); ModeM.name, ModeM.value = "ModeM", 25
+    ModeN = EnumBase(); ModeN.name, ModeN.value = "ModeN", 26
+    ModeO = EnumBase(); ModeO.name, ModeO.value = "ModeO", 27
+    ModeP = EnumBase(); ModeP.name, ModeP.value = "ModeP", 28
+    ModeQ = EnumBase(); ModeQ.name, ModeQ.value = "ModeQ", 29
+    ModeR = EnumBase(); ModeR.name, ModeR.value = "ModeR", 30
+    ModeS = EnumBase(); ModeS.name, ModeS.value = "ModeS", 31
+    ModeT = EnumBase(); ModeT.name, ModeT.value = "ModeT", 32
+    ModeU = EnumBase(); ModeU.name, ModeU.value = "ModeU", 33
+    ModeV = EnumBase(); ModeV.name, ModeV.value = "ModeV", 34
+    ModeW = EnumBase(); ModeW.name, ModeW.value = "ModeW", 35
+    ModeX = EnumBase(); ModeX.name, ModeX.value = "ModeX", 36
+    ModeY = EnumBase(); ModeY.name, ModeY.value = "ModeY", 37
+    ModeZ = EnumBase(); ModeZ.name, ModeZ.value = "ModeZ", 38
+
+class DetectorType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    Detector1 = EnumBase(); Detector1.name, Detector1.value = "Detector1", 1
+
+class PolarityType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    Positive = EnumBase(); Positive.name, Positive.value = "Positive", 1
+    Negative = EnumBase(); Negative.name, Negative.value = "Negative", 2
+
+class SampleType(EnumBase):
+    Unknown = EnumBase(); Unknown.name, Unknown.value = "Unknown", 0
+    Blank = EnumBase(); Blank.name, Blank.value = "Blank", 1
+    QC = EnumBase(); QC.name, QC.value = "QC", 2
+    StdBracket = EnumBase(); StdBracket.name, StdBracket.value = "StdBracket", 3
+    StdBracketStart = EnumBase(); StdBracketStart.name, StdBracketStart.value = "StdBracketStart", 4
+    StdBracketEnd = EnumBase(); StdBracketEnd.name, StdBracketEnd.value = "StdBracketEnd", 5
+    StdClear = EnumBase(); StdClear.name, StdClear.value = "StdClear", 6
+    StdUpdate = EnumBase(); StdUpdate.name, StdUpdate.value = "StdUpdate", 7
+    MatrixBlank = EnumBase(); MatrixBlank.name, MatrixBlank.value = "MatrixBlank", 8
+    MatrixSpike = EnumBase(); MatrixSpike.name, MatrixSpike.value = "MatrixSpike", 9
+    MatrixSpikeDuplicate = EnumBase(); MatrixSpikeDuplicate.name, MatrixSpikeDuplicate.value = "MatrixSpikeDuplicate", 10
+    SolventBlank = EnumBase(); SolventBlank.name, SolventBlank.value = "SolventBlank", 11
+    Program = EnumBase(); Program.name, Program.value = "Program", 12
+
+class PeakOptions(EnumBase):
+    none = EnumBase(); none.name, none.value = "none", 0
+    Saturated = EnumBase(); Saturated.name, Saturated.value = "Saturated", 1
+    Fragmented = EnumBase(); Fragmented.name, Fragmented.value = "Fragmented", 2
+    Merged = EnumBase(); Merged.name, Merged.value = "Merged", 4
+    Exception = EnumBase(); Exception.name, Exception.value = "Exception", 8
+    Reference = EnumBase(); Reference.name, Reference.value = "Reference", 16
+    Modified = EnumBase(); Modified.name, Modified.value = "Modified", 32
+    LockPeak = EnumBase(); LockPeak.name, LockPeak.value = "LockPeak", 64
+
 class DeviceType(object): pass
 class MsOrderType(object): pass
 class MassAnalyzerType(object): pass
-class ToleranceUnits(object): pass
-class TraceType(object): pass
-class ScanDataType(object): pass
-class ScanModeType(object): pass
-class SectorScanType(object): pass
-class IonizationModeType(object): pass
-class ActivationType(object): pass
-class EnergyType(object): pass
-class EventAccurateMass(object): pass
-class CompensationVoltageType(object): pass
-class FieldFreeRegionType(object): pass
-class SourceFragmentationValueType(object): pass
-class TriState(object): pass
-class TrayShape(object): pass
-class FileType(object): pass
-class RawFileClassification(object): pass
-class ScanDependentDetails(object): pass
-class SequenceFileWriter(object): pass
-class SequenceInfo(object): pass
-class SourceFragmentationInfoValidType(object): pass
-class FilterAccurateMass(object): pass
-class PeakOptions(object): pass
-class ErrorLogEntry(object): pass
+class ToleranceUnits(EnumBase): pass
+class TraceType(EnumBase): pass
+class SectorScanType(EnumBase): pass
+class SourceFragmentationValueType(EnumBase): pass
+class TrayShape(EnumBase): pass
+class FileType(EnumBase): pass
+
+class RawFileClassification(EnumBase):
+    StandardRaw = EnumBase(); StandardRaw.name, StandardRaw.value = "StandardRaw", 0
+    MasterScanNumberRaw = EnumBase(); MasterScanNumberRaw.name, MasterScanNumberRaw.value = "MasterScanNumberRaw", 1
+    Indeterminate = EnumBase(); Indeterminate.name, Indeterminate.value = "Indeterminate", 2
+
+class SourceFragmentationInfoValidType(EnumBase):
+    Any = EnumBase(); Any.name, Any.value = "Any", 0
+    Energy = EnumBase(); Energy.name, Energy.value = "Energy", 1
+
+class FilterAccurateMass(EnumBase):
+    Off = EnumBase(); Off.name, Off.value = "Off", 0
+    On = EnumBase(); On.name, On.value = "On", 1
+    External = EnumBase(); External.name, External.value = "External", 2
+    Internal = EnumBase(); Internal.name, Internal.value = "Internal", 3
+    Any = EnumBase(); Any.name, Any.value = "Any", 4
+
+class ScanDependentDetails(CommonCoreDataObject):
+    @property
+    def filter_string(self): return ""
+    @property
+    def isolation_width_array(self): return []
+    @property
+    def precursor_mass_array(self): return []
+    @property
+    def scan_index(self): return 0
+
+class SequenceInfo(CommonCoreDataObject):
+    @property
+    def bracket(self): return 0
+    @property
+    def column_width(self): return []
+    @property
+    def tray_configuration(self): return ""
+    @property
+    def type_to_column_position(self): return {}
+    @property
+    def user_label(self): return []
+    @property
+    def user_private_label(self): return []
+
+class ErrorLogEntry(CommonCoreDataObject):
+    @property
+    def message(self): return ""
+    @property
+    def retention_time(self): return 0.0
 
 class RunHeader(CommonCoreDataObject):
     """The run header."""
@@ -526,7 +800,7 @@ class business:
     Reaction = Reaction
     RunHeader = RunHeader
     SampleInformation = SampleInformation
-    SampleType = object
+    SampleType = SampleType
     Scan = Scan
     ScanStatistics = ScanStatistics
     SegmentedScan = SegmentedScan
@@ -556,7 +830,7 @@ class business:
     reaction = Reaction
     run_header = RunHeader
     sample_information = SampleInformation
-    sample_type = object
+    sample_type = SampleType
     scan = Scan
     scan_statistics = ScanStatistics
     segmented_scan = SegmentedScan
@@ -583,6 +857,23 @@ class filter_enums:
     FieldFreeRegionType = FieldFreeRegionType
     SourceFragmentationValueType = SourceFragmentationValueType
     TriState = TriState
+    DetectorType = DetectorType
+    PolarityType = PolarityType
+    activation_type = ActivationType
+    compensation_voltage_type = CompensationVoltageType
+    detector_type = DetectorType
+    energy_type = EnergyType
+    event_accurate_mass = EventAccurateMass
+    field_free_region_type = FieldFreeRegionType
+    ionization_mode_type = IonizationModeType
+    mass_analyzer_type = MassAnalyzerType
+    ms_order_type = MsOrderType
+    polarity_type = PolarityType
+    scan_data_type = ScanDataType
+    scan_mode_type = ScanModeType
+    sector_scan_type = SectorScanType
+    source_fragmentation_value_type = SourceFragmentationValueType
+    tri_state = TriState
 
 class data:
     Device = Device
@@ -599,14 +890,14 @@ class data:
     FileType = FileType
     RawFileClassification = RawFileClassification
     ScanDependentDetails = ScanDependentDetails
-    SequenceFileWriter = SequenceFileWriter
+    SequenceFileWriter = object
     SequenceInfo = SequenceInfo
     SourceFragmentationInfoValidType = SourceFragmentationInfoValidType
-    ToleranceUnits = ToleranceUnits
-    TrayShape = TrayShape
+    ToleranceUnits = object
+    TrayShape = object
     FilterAccurateMass = FilterAccurateMass
     PeakOptions = PeakOptions
-    FtAverageOptions = FtAverageOptions
+    FtAverageOptions = object
     ErrorLogEntry = ErrorLogEntry
     business = business
     filter_enums = filter_enums
