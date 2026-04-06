@@ -241,7 +241,7 @@ for name in ["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "U
     getattr(GenericDataTypes, name).name = name
 class SpectrumPacketType(object): pass
 class Scan(object): pass
-class ChromatogramSignal(object): pass
+# ChromatogramSignal was here
 class Device:
     MS = 1; PDA = 2; UV = 3; Analog = 4; MSAnalog = 4; Other = 5; none = 0; Pda = 2; name = "MS"; value = 1
 
@@ -758,17 +758,6 @@ class ChromatogramSignal(CommonCoreDataObject):
     def start_time(self): return self._times[0] if len(self._times) > 0 else 0.0
     @property
     def times(self): return self._times
-    def signal_intensities(self): return np.array([])
-    @property
-    def signal_scans(self): return np.array([])
-    @property
-    def signal_times(self): return np.array([])
-    @property
-    def start_time(self): return 0.0
-    @property
-    def time_range(self): return range(0.0, 0.0)
-    @property
-    def times(self): return np.array([])
     def to_chromatogram_data(self): return None
     @property
     def valid(self): return 1
@@ -1256,8 +1245,36 @@ class ScanDependents(CommonCoreDataObject):
         if _IS_SPHINX: return []
         raise NotImplementedError("scan_dependent_detail_array")
 
+class SequenceInfo(CommonCoreDataObject):
+    @property
+    def column_width(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("column_width")
+    @property
+    def type_to_column_position(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("type_to_column_position")
+    @property
+    def bracket(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("bracket")
+    @property
+    def user_private_label(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("user_private_label")
+    @property
+    def tray_configuration(self):
+        if _IS_SPHINX: return ""
+        raise NotImplementedError("tray_configuration")
+    @property
+    def user_label(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("user_label")
+
 class SequenceFileWriter(CommonCoreDataObject):
-    def __init__(self): self.samples = []
+    def __init__(self): 
+        self.samples = []
+        self._info = SequenceInfo()
     @property
     def bracket(self):
         if _IS_SPHINX: return 0
@@ -1279,8 +1296,10 @@ class SequenceFileWriter(CommonCoreDataObject):
         raise NotImplementedError("get_user_column_label")
     @property
     def info(self):
-        if _IS_SPHINX: return None
-        raise NotImplementedError("info")
+        return self._info
+    @info.setter
+    def info(self, value):
+        self._info = value
     @property
     def is_error(self):
         if _IS_SPHINX: return 0
