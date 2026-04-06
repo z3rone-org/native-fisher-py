@@ -906,8 +906,7 @@ namespace ThermoNativeReader
             return _rawFile.HasMsData ? 1 : 0;
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values_for_rt")]
-        public static unsafe int GetStatusLogValuesForRt(double rt, byte* buffer, int bufferSize)
+        private static unsafe int _getStatusLogValuesForRt(double rt, byte* buffer, int bufferSize)
         {
             if (_rawFile == null) return -1;
             try
@@ -924,6 +923,12 @@ namespace ThermoNativeReader
             catch { return -1; }
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values_for_rt")]
+        public static unsafe int GetStatusLogValuesForRt(double rt, byte* buffer, int bufferSize)
+        {
+            return _getStatusLogValuesForRt(rt, buffer, bufferSize);
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_values")]
         public static unsafe int GetStatusLogValues(int scanNumber, byte* buffer, int bufferSize)
         {
@@ -931,7 +936,7 @@ namespace ThermoNativeReader
             try
             {
                 var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
-                return GetStatusLogValuesForRt(rt, buffer, bufferSize);
+                return _getStatusLogValuesForRt(rt, buffer, bufferSize);
             }
             catch { return -1; }
         }
