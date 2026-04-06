@@ -422,6 +422,19 @@ class RawFile(object):
         return FileError()
 
     @property
+    def auto_sampler_information(self):
+        """Gets the auto sampler information."""
+        return None
+
+    @property
+    def include_reference_and_exception_data(self) -> bool:
+        return False
+
+    @include_reference_and_exception_data.setter
+    def include_reference_and_exception_data(self, value: bool):
+        pass
+
+    @property
     def is_open(self) -> bool:
         """Check if the file was successfully opened."""
         return is_open()
