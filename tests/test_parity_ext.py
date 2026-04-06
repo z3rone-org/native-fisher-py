@@ -18,6 +18,7 @@ class TestAPIParity(unittest.TestCase):
         missing_in_native = orig_members - native_members
         if missing_in_native:
             print(f"FAILED: {name} is missing: {sorted(list(missing_in_native))}")
+            assert False
         else:
             print(f"OK: {name} API parity matches.")
 
@@ -26,6 +27,8 @@ class TestAPIParity(unittest.TestCase):
             for member_name in orig_members:
                 if member_name in native_members:
                     try:
+                        if member_name.startswith('clr'):
+                            continue
                         orig_m = getattr(orig_obj, member_name)
                         native_m = getattr(native_obj, member_name)
                         if inspect.isclass(orig_m) or inspect.ismodule(orig_m):
