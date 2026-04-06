@@ -30,10 +30,15 @@ else:
     def get_instrument_hardware_version(): return ""
     def get_start_time(): return 0.0
     def get_file_name(): return ""
-    def get_path(): return ""
     def get_creation_date(): return ""
     def get_creator_id(): return ""
     def get_ms_order(s): return 0
+
+class CommonCoreDataObject(object):
+    def deep_equals(self, other): return True
+    def equals(self, other): return True
+    def get_hash_code(self): return 0
+    def perform_default_settings(self): pass
 
 class ScanFilter(CommonCoreDataObject):
     def __init__(self, scan_number=0):
@@ -41,12 +46,6 @@ class ScanFilter(CommonCoreDataObject):
     @property
     def ms_order(self):
         return MsOrderType(get_ms_order(self._scan_number))
-
-class CommonCoreDataObject(object):
-    def deep_equals(self, other): return True
-    def equals(self, other): return True
-    def get_hash_code(self): return 0
-    def perform_default_settings(self): pass
 
 class EnumBase(object):
     name = ""
