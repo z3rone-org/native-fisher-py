@@ -665,6 +665,13 @@ class net_wrapping:
     thermo_fisher_raw_file_reader = object
     wrapped_net_array = object
 
+net_wrapping.pythonnet = object
+net_wrapping.net_wrapper_base = object
+net_wrapping.wrapped_net_array = object
+net_wrapping.Environment = object
+net_wrapping.Extensions = object
+net_wrapping.ThermoFisher = object
+
 from . import exceptions
 exceptions.raw_file_exception = exceptions
 exceptions.core_exception = exceptions
@@ -723,6 +730,22 @@ class RawFile(object):
 
     def select_instrument(self, device_type: int, device_number: int):
         pass
+
+    def average_scans(self, start, end): return None
+    def average_scans_in_scan_range(self, start, end, options): return None
+    @property
+    def default_mass_options(self): return MassOptions()
+    def dispose(self): self.close()
+    def get_all_instrument_names_from_instrument_method(self): return []
+    def get_instrument_method(self, index): return ""
+    def get_instrument_type(self): return 0
+    def get_segment_event_table(self): return []
+    def has_instrument_method(self): return False
+    def is_centroid_scan_from_scan_number(self, scan_number): return True
+    def refresh_view_of_file(self): pass
+    @property
+    def selected_instrument(self): return 0
+    def status_log_plottable_data(self): return []
 
     @property
     def user_label(self) -> List[str]:
