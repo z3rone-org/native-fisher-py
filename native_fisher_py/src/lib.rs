@@ -406,6 +406,22 @@ fn get_scan_event_string(scan_number: i32) -> PyResult<String> {
 }
 
 #[pyfunction]
+fn get_scan_filter_string(scan_number: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_scan_filter_string")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_string: {}", e)))?;
+        let actual_len = func(scan_number, buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 {
+            return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_scan_filter_string failed"));
+        }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
 fn get_scan_number_from_rt(rt: f64) -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -614,6 +630,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_mass_analyzer, m)?)?;
     m.add_function(wrap_pyfunction!(get_precursor_mass, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_string, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_string, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_number_from_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_ms2_filter_masses, m)?)?;
     m.add_function(wrap_pyfunction!(get_ms2_scan_number_from_rt, m)?)?;

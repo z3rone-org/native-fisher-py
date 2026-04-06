@@ -144,8 +144,8 @@ class ScanFilter(CommonCoreDataObject):
     def __init__(self, scan_number=0):
         self._scan_number = scan_number
     def __str__(self):
-        from . import get_scan_event_string
-        return get_scan_event_string(self._scan_number)
+        from . import get_scan_filter_string
+        return get_scan_filter_string(self._scan_number)
     @property
     def name(self):
         return get_scan_event_string(self._scan_number)
