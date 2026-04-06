@@ -720,7 +720,7 @@ namespace ThermoNativeReader
             { 
 #if NET8_0_OR_GREATER
                 var filterStr = _rawFile.GetFilterForScanNumber(scanNumber);
-                var filter = new ScanFilter(filterStr);
+                var filter = new ThermoFisher.CommonCore.Data.FilterEnums.ScanFilter(filterStr);
                 return filter.CompensationVoltage;
 #else
                 return 0.0;
