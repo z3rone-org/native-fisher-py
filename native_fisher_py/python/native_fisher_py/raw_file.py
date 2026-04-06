@@ -203,7 +203,16 @@ class RawFile(object):
         return ScanStatistics(scan_number)
 
     def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
-        return []
+        from .data.classes import ChromatogramData
+        if not isinstance(settings, list):
+            settings = [settings]
+        
+        results = []
+        for s in settings:
+            trace_type = s.trace.value if hasattr(s.trace, 'value') else int(s.trace)
+            times, intensities = get_chromatogram(trace_type, 1000000)
+            results.append(ChromatogramData(times, intensities, [])) # Scans empty for now
+        return results
 
     def get_instrument_count_of_type(self, device_type):
         return get_instrument_count_of_type(device_type)
