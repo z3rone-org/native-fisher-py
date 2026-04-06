@@ -1282,7 +1282,7 @@ namespace ThermoNativeReader
         public static double GetScanFilterSourceFragmentationValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(); } catch { return 0.0; }
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(0); } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
@@ -1326,7 +1326,9 @@ namespace ThermoNativeReader
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
                 var prop = filter.GetType().GetProperty(name);
                 if (prop == null) return 0.0;
-                return (double)Convert.ChangeType(prop.GetValue(filter), typeof(double));
+                var val = prop.GetValue(filter);
+                if (val == null) return 0.0;
+                return (double)Convert.ChangeType(val, typeof(double));
             } catch { return 0.0; }
         }
 
@@ -1337,7 +1339,9 @@ namespace ThermoNativeReader
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
                 var prop = filter.GetType().GetProperty(name);
                 if (prop == null) return 0;
-                return (int)Convert.ChangeType(prop.GetValue(filter), typeof(int));
+                var val = prop.GetValue(filter);
+                if (val == null) return 0;
+                return (int)Convert.ChangeType(val, typeof(int));
             } catch { return 0; }
         }
 
