@@ -245,6 +245,12 @@ SampleType.Blank = SampleType(1); SampleType.Blank.name = "Blank"
 SampleType.QC = SampleType(2); SampleType.QC.name = "QC"
 SampleType.StdBracket = SampleType(3); SampleType.StdBracket.name = "StdBracket"
 
+class ScanDependents(CommonCoreDataObject):
+    @property
+    def raw_file_instrument_type(self): return 0
+    @property
+    def scan_dependent_detail_array(self): return []
+
 class PeakOptions(EnumBase):
     none = 0
     Saturated = 1
