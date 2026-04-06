@@ -7,9 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>ThermoNativeReader</AssemblyName>
     <!-- IL Trimming is needed for AOT with external DLLs, but we must be careful -->
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>partial</TrimMode>
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
   <ItemGroup>
     <TrimmerRootDescriptor Include="Roots.xml" />
