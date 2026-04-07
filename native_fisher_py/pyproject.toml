@@ -4,6 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "native-fisher-py"
+description = "Drop-in replacement for fisher-py without dotnet required"
 requires-python = ">=3.8"
 readme = "../README.md"
 classifiers = [
