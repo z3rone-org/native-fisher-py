@@ -216,7 +216,8 @@ class RawFile(object):
             tic=data[3],
             base_peak_mass=data[4],
             base_peak_intensity=data[5],
-            packet_count=int(data[6])
+            packet_count=int(data[6]),
+            is_centroid_scan=bool(data[7])
         )
 
     def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):

@@ -1147,7 +1147,7 @@ fn get_scan_event_collision_energy(scan_number: i32, index: i32) -> PyResult<f64
 #[pyfunction]
 fn get_scan_stats(scan_number: i32) -> PyResult<Vec<f64>> {
     let lib = get_lib()?;
-    let mut data = vec![0.0f64; 7];
+    let mut data = vec![0.0f64; 8];
     unsafe {
         let func: Symbol<unsafe extern "C" fn(i32, *mut f64) -> i32> = lib.get(b"get_scan_stats")
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_stats: {}", e)))?;

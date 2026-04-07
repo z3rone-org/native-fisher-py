@@ -1096,7 +1096,8 @@ namespace ThermoNativeReader
                 data[4] = stats.BasePeakMass;
                 data[5] = stats.BasePeakIntensity;
                 data[6] = stats.PacketCount;
-                return 7;
+                data[7] = stats.IsCentroidScan ? 1.0 : 0.0;
+                return 8;
             }
             catch { return -1; }
         }

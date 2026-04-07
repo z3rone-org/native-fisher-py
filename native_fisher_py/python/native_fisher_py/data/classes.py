@@ -584,7 +584,7 @@ class InstrumentSelection(CommonCoreDataObject):
     def instrument_index(self): return 0
 
 class ScanStatistics(CommonCoreDataObject):
-    def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0):
+    def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0, is_centroid_scan=False):
         self._start_time = start_time
         self._low_mass = low_mass
         self._high_mass = high_mass
@@ -594,6 +594,7 @@ class ScanStatistics(CommonCoreDataObject):
         self._packet_count = packet_count
         self._scan_number = scan_number
         self._ms_order = ms_order
+        self._is_centroid_scan = bool(is_centroid_scan)
 
     @property
     def start_time(self): return self._start_time
@@ -624,7 +625,7 @@ class ScanStatistics(CommonCoreDataObject):
     @property
     def frequency(self): raise NotImplementedError
     @property
-    def is_centroid_scan(self): raise NotImplementedError
+    def is_centroid_scan(self): return self._is_centroid_scan
     @property
     def is_uniform_time(self): raise NotImplementedError
     @property
