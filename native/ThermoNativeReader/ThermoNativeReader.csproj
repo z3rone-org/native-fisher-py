@@ -12,29 +12,38 @@
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
   <ItemGroup>
+    <TrimmerRootDescriptor Include="Roots.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="OpenMcdf">
       <HintPath>../../vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/OpenMcdf.dll</HintPath>
       <Private>true</Private>
+      <IsTrimmable>false</IsTrimmable>
     </Reference>
     <Reference Include="OpenMcdf.Extensions">
       <HintPath>../../vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/OpenMcdf.Extensions.dll</HintPath>
       <Private>true</Private>
+      <IsTrimmable>false</IsTrimmable>
     </Reference>
     <Reference Include="ThermoFisher.CommonCore.BackgroundSubtraction">
       <HintPath>../../vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/ThermoFisher.CommonCore.BackgroundSubtraction.dll</HintPath>
       <Private>true</Private>
+      <IsTrimmable>false</IsTrimmable>
     </Reference>
     <Reference Include="ThermoFisher.CommonCore.Data">
       <HintPath>../../vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/ThermoFisher.CommonCore.Data.dll</HintPath>
       <Private>true</Private>
+      <IsTrimmable>false</IsTrimmable>
     </Reference>
     <Reference Include="ThermoFisher.CommonCore.MassPrecisionEstimator">
       <HintPath>../../vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/ThermoFisher.CommonCore.MassPrecisionEstimator.dll</HintPath>
       <Private>true</Private>
+      <IsTrimmable>false</IsTrimmable>
     </Reference>
     <Reference Include="ThermoFisher.CommonCore.RawFileReader">
       <HintPath>../../vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
       <Private>true</Private>
+      <IsTrimmable>false</IsTrimmable>
     </Reference>
   </ItemGroup>
   
