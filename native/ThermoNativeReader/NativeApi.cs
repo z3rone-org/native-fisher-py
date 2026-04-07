@@ -154,9 +154,14 @@ namespace ThermoNativeReader
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
-                if (filter == null || filter.MetaFilters == null) return 0;
+                if (filter == null) return 0;
+                var prop = filter.GetType().GetProperty("MetaFilters");
+                if (prop == null) return 0;
+                var metaFiltersObj = prop.GetValue(filter) as System.Collections.IEnumerable;
+                if (metaFiltersObj == null) return 0;
+
                 var metaList = new List<string>();
-                foreach (var mf in filter.MetaFilters)
+                foreach (var mf in metaFiltersObj)
                 {
                     if (mf != null) metaList.Add(mf.ToString() ?? "");
                 }
