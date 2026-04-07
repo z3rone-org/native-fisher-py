@@ -547,33 +547,33 @@ for cls in EnumBase.__subclasses__():
 
 class ScanDependentDetails(CommonCoreDataObject):
     @property
-    def filter_string(self): return ""
+    def filter_string(self): raise NotImplementedError
     @property
-    def isolation_width_array(self): return []
+    def isolation_width_array(self): raise NotImplementedError
     @property
-    def precursor_mass_array(self): return []
+    def precursor_mass_array(self): raise NotImplementedError
     @property
-    def scan_index(self): return 0
+    def scan_index(self): raise NotImplementedError
 
 class SequenceInfo(CommonCoreDataObject):
     @property
-    def bracket(self): return 0
+    def bracket(self): raise NotImplementedError
     @property
-    def column_width(self): return []
+    def column_width(self): raise NotImplementedError
     @property
-    def tray_configuration(self): return ""
+    def tray_configuration(self): raise NotImplementedError
     @property
-    def type_to_column_position(self): return {}
+    def type_to_column_position(self): raise NotImplementedError
     @property
-    def user_label(self): return []
+    def user_label(self): raise NotImplementedError
     @property
-    def user_private_label(self): return []
+    def user_private_label(self): raise NotImplementedError
 
 class ErrorLogEntry(CommonCoreDataObject):
     @property
-    def message(self): return ""
+    def message(self): raise NotImplementedError
     @property
-    def retention_time(self): return 0.0
+    def retention_time(self): raise NotImplementedError
 
 
 
@@ -615,36 +615,36 @@ class ScanStatistics(CommonCoreDataObject):
     def ms_order(self): return self._ms_order
 
     @property
-    def absorbance_unit_scale(self): return 0.0
-    def clone(self): return self
-    def copy_to(self, other): pass
+    def absorbance_unit_scale(self): raise NotImplementedError
+    def clone(self): raise NotImplementedError
+    def copy_to(self, other): raise NotImplementedError
     @property
-    def cycle_number(self): return 0
-    def deep_clone(self): return self
+    def cycle_number(self): raise NotImplementedError
+    def deep_clone(self): raise NotImplementedError
     @property
-    def frequency(self): return 0.0
+    def frequency(self): raise NotImplementedError
     @property
-    def is_centroid_scan(self): return 1
+    def is_centroid_scan(self): raise NotImplementedError
     @property
-    def is_uniform_time(self): return 1
+    def is_uniform_time(self): raise NotImplementedError
     @property
-    def long_wavelength(self): return 0.0
+    def long_wavelength(self): raise NotImplementedError
     @property
-    def number_of_channels(self): return 0
+    def number_of_channels(self): raise NotImplementedError
     @property
-    def packet_type(self): return 0
+    def packet_type(self): raise NotImplementedError
     @property
-    def scan_event_number(self): return 0
+    def scan_event_number(self): raise NotImplementedError
     @property
-    def scan_type(self): return 0
+    def scan_type(self): raise NotImplementedError
     @property
-    def segment_number(self): return 0
+    def segment_number(self): raise NotImplementedError
     @property
-    def short_wavelength(self): return 0.0
+    def short_wavelength(self): raise NotImplementedError
     @property
-    def spectrum_packet_type(self): return 0
+    def spectrum_packet_type(self): raise NotImplementedError
     @property
-    def wavelength_step(self): return 0.0
+    def wavelength_step(self): raise NotImplementedError
 
 class SegmentedScan(CommonCoreDataObject):
     def __init__(self, masses=None, intensities=None, scan_number=0):
@@ -734,13 +734,21 @@ class HeaderItem(CommonCoreDataObject):
     @property
     def data_type(self): return self._data_type
     @property
-    def is_numeric(self): return 1
+    def is_numeric(self): 
+        if _IS_SPHINX: return 1
+        raise NotImplementedError
     @property
-    def is_scientific_notation(self): return 0
+    def is_scientific_notation(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def is_variable_header(self): return 0
+    def is_variable_header(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def format_value(self): return ""
+    def format_value(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
 
 class StatusLogValues(CommonCoreDataObject):
     def __init__(self, retention_time=0.0, values=None):
@@ -774,19 +782,19 @@ class Reaction(CommonCoreDataObject):
     def collision_energy(self):
         return get_scan_event_collision_energy(self._scan_number, self._index)
     @property
-    def collision_energy_valid(self): return 0
+    def collision_energy_valid(self): raise NotImplementedError
     @property
-    def first_precursor_mass(self): return 0.0
+    def first_precursor_mass(self): raise NotImplementedError
     @property
-    def isolation_width(self): return 0.0
+    def isolation_width(self): raise NotImplementedError
     @property
-    def isolation_width_offset(self): return 0.0
+    def isolation_width_offset(self): raise NotImplementedError
     @property
-    def last_precursor_mass(self): return 0.0
+    def last_precursor_mass(self): raise NotImplementedError
     @property
-    def multiple_activation(self): return 0
+    def multiple_activation(self): raise NotImplementedError
     @property
-    def precursor_range_is_valid(self): return 0
+    def precursor_range_is_valid(self): raise NotImplementedError
 
 class Scan(CommonCoreDataObject):
     @property
@@ -884,25 +892,39 @@ class CentroidStream(CommonCoreDataObject):
     @property
     def base_peak_mass(self): return self._masses[np.argmax(self._intensities)] if self._intensities.size > 0 else 0.0
     @property
-    def base_peak_noise(self): return 0.0
+    def base_peak_noise(self): raise NotImplementedError
     @property
-    def base_peak_resolution(self): return 0.0
+    def base_peak_resolution(self): raise NotImplementedError
     @property
-    def baselines(self): return np.array([])
+    def baselines(self): raise NotImplementedError
     @property
-    def charges(self): return np.array([])
-    def clear(self): pass
+    def charges(self): raise NotImplementedError
+    def clear(self): raise NotImplementedError
     def clone(self): return self
     @property
-    def coefficients(self): return np.array([])
+    def coefficients(self): 
+        if _IS_SPHINX: return np.array([])
+        raise NotImplementedError
     @property
-    def coefficients_count(self): return 0
-    def deep_clone(self): return self
+    def coefficients_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
+    def deep_clone(self): 
+        if _IS_SPHINX: return self
+        raise NotImplementedError
     @property
-    def flags(self): return []
-    def get_centroids(self): return []
-    def get_label_peak(self, i): return None
-    def get_label_peaks(self): return []
+    def flags(self): 
+        if _IS_SPHINX: return []
+        raise NotImplementedError
+    def get_centroids(self): 
+        if _IS_SPHINX: return []
+        raise NotImplementedError
+    def get_label_peak(self, i): 
+        if _IS_SPHINX: return None
+        raise NotImplementedError
+    def get_label_peaks(self): 
+        if _IS_SPHINX: return []
+        raise NotImplementedError
     @property
     def intensities(self): return self._intensities
     @property
@@ -910,7 +932,7 @@ class CentroidStream(CommonCoreDataObject):
     @property
     def masses(self): return self._masses
     @property
-    def noises(self): return np.array([])
+    def noises(self): raise NotImplementedError
     def refresh_base_details(self): pass
     @property
     def resolutions(self): return np.array([])
@@ -1018,26 +1040,42 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def barcode(self): return get_sample_barcode()
     @property
-    def barcode_status(self): return 0
+    def barcode_status(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def calibration_file(self): return ""
+    def calibration_file(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
     @property
-    def calibration_level(self): return 0
+    def calibration_level(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
     def comment(self): return get_sample_comment()
-    def deep_copy(self): return self
+    def deep_copy(self): raise NotImplementedError
     @property
     def dilution_factor(self): return get_sample_dilution_factor()
     @property
-    def injection_volume(self): return 0.0
+    def injection_volume(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def instrument_method_file(self): return ""
+    def instrument_method_file(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
     @property
-    def istd_amount(self): return 0.0
+    def istd_amount(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def max_user_text_column_count(self): return 0
+    def max_user_text_column_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def processing_method_file(self): return ""
+    def processing_method_file(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
     @property
     def row_number(self): return get_sample_row_number()
     @property
@@ -1073,11 +1111,17 @@ class FileHeader(CommonCoreDataObject):
     @property
     def modified_date(self): return get_modified_date()
     @property
-    def number_of_times_calibrated(self): return -1
+    def number_of_times_calibrated(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
     @property
-    def number_of_times_modified(self): return -1
+    def number_of_times_modified(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
     @property
-    def revision(self): return -1
+    def revision(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
     @property
     def who_created_logon(self): return get_who_created_logon()
     @property
@@ -1099,21 +1143,37 @@ class FileError(CommonCoreDataObject):
 
 class AutoSamplerInformation(CommonCoreDataObject):
     @property
-    def tray_index(self): return -1
+    def tray_index(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
     @property
-    def tray_name(self): return "Any"
+    def tray_name(self): 
+        if _IS_SPHINX: return "Any"
+        raise NotImplementedError
     @property
-    def tray_shape(self): return TrayShape.Unknown
+    def tray_shape(self): 
+        if _IS_SPHINX: return TrayShape.Unknown
+        raise NotImplementedError
     @property
-    def tray_shape_as_string(self): return "Unknown"
+    def tray_shape_as_string(self): 
+        if _IS_SPHINX: return "Unknown"
+        raise NotImplementedError
     @property
-    def vial_index(self): return -1
+    def vial_index(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
     @property
-    def vials_per_tray(self): return -1
+    def vials_per_tray(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
     @property
-    def vials_per_tray_x(self): return -1
+    def vials_per_tray_x(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
     @property
-    def vials_per_tray_y(self): return -1
+    def vials_per_tray_y(self): 
+        if _IS_SPHINX: return -1
+        raise NotImplementedError
 
 class RunHeader(CommonCoreDataObject):
     def __init__(self, raw_file=None): self._raw_file = raw_file
@@ -1124,31 +1184,57 @@ class RunHeader(CommonCoreDataObject):
     @property
     def last_spectrum(self) -> int: return self._raw_file.last_scan if self._raw_file else 1
     @property
-    def end_time(self): return 0.0
+    def end_time(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def expected_runtime(self): return 0.0
+    def expected_runtime(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def high_mass(self): return 0.0
+    def high_mass(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def low_mass(self): return 0.0
+    def low_mass(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def mass_resolution(self): return 0.0
+    def mass_resolution(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def max_integrated_intensity(self): return 0.0
+    def max_integrated_intensity(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def max_intensity(self): return 0.0
+    def max_intensity(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def spectra_count(self): return 0
+    def spectra_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def status_log_count(self): return 0
+    def status_log_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def trailer_extra_count(self): return 0
+    def trailer_extra_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def trailer_scan_event_count(self): return 0
+    def trailer_scan_event_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def tune_data_count(self): return 0
+    def tune_data_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def tolerance_unit(self): return 0
+    def tolerance_unit(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
 
 class RunHeaderEx(CommonCoreDataObject):
     def __init__(self, raw_file): self._raw_file = raw_file
@@ -1177,57 +1263,107 @@ class RunHeaderEx(CommonCoreDataObject):
     @property
     def high_mass(self): return get_high_mass()
     @property
-    def error_message(self): return ""
+    def error_message(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
     @property
-    def has_error(self): return 0
+    def has_error(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def has_warning(self): return 0
+    def has_warning(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def warning_message(self): return ""
+    def warning_message(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
 
 class WrappedRunHeader(CommonCoreDataObject):
     @property
-    def comment_1(self): return ""
+    def comment_1(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
     @property
-    def comment_2(self): return ""
+    def comment_2(self): 
+        if _IS_SPHINX: return ""
+        raise NotImplementedError
     @property
-    def end_time(self): return 0.0
+    def end_time(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def error_log_count(self): return 0
+    def error_log_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def expected_run_time(self): return 0.0
+    def expected_run_time(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def filter_mass_precision(self): return 4
+    def filter_mass_precision(self): 
+        if _IS_SPHINX: return 4
+        raise NotImplementedError
     @property
-    def high_mass(self): return 0.0
+    def high_mass(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def in_acquisition(self): return 0
+    def in_acquisition(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def low_mass(self): return 0.0
+    def low_mass(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def mass_resolution(self): return 0.0
+    def mass_resolution(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def max_integrated_intensity(self): return 0.0
+    def max_integrated_intensity(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def max_intensity(self): return 0.0
+    def max_intensity(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def spectra_count(self): return 0
+    def spectra_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def status_log_count(self): return 0
+    def status_log_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def trailer_extra_count(self): return 0
+    def trailer_extra_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def trailer_scan_event_count(self): return 0
+    def trailer_scan_event_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def tune_data_count(self): return 0
+    def tune_data_count(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def first_spectrum(self): return 0
+    def first_spectrum(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def last_spectrum(self): return 0
+    def last_spectrum(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @property
-    def start_time(self): return 0.0
+    def start_time(self): 
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError
     @property
-    def tolerance_unit(self): return 0
+    def tolerance_unit(self): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
 
 class ScanEvent(CommonCoreDataObject):
     def __init__(self, scan_number=0):
@@ -1505,7 +1641,9 @@ class Range(object):
     @property
     def high(self): return self._high
 
-    def compare_to(self, other): return 0
+    def compare_to(self, other): 
+        if _IS_SPHINX: return 0
+        raise NotImplementedError
     @staticmethod
     def create(l, h): return Range(l, h)
     @staticmethod
