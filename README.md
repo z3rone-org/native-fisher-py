@@ -6,21 +6,22 @@
 <!-- [![Downloads](https://static.pepy.tech/badge/native-fisher-py)](https://pepy.tech/project/native-fisher-py) -->
 
 ## Why native-fisher-py?
-`native-fisher-py` is a high-performance, **drop-in replacement** for the legacy `fisher-py` reader. While the original `fisher-py` relies on `pythonnet` and a local .NET runtime (which often fails in CI/CD or specialized Linux environments), `native-fisher-py` utilizes **.NET NativeAOT** and **Rust** to provide a self-contained, high-speed binary bridge.
+`native-fisher-py` is a self-contained alternative to the `fisher-py` reader. While `fisher-py` requires a local .NET runtime and `pythonnet`, this package bundles the necessary components using **.NET NativeAOT** and **Rust** to provide a consistent binary bridge.
 
 ### Features
-- **Drop-in Replacement**: Designed to match the `fisher_py.RawFile` API for seamless migration.
-- **Zero .NET Dependency**: No local .NET runtime or `pythonnet` required on the host machine. Everything is bundled.
-- **Cross-Platform**: Native binaries for **macOS (ARM64/x64)**, **Linux (x64)**, and **Windows (x64)**.
-- **Turbo-charged Performance**: Significantly faster metadata discovery and spectral extraction than the legacy Python bridge.
+- **Drop-in Compatible**: Designed to match the `fisher_py.RawFile` API for simplified migration.
+- **Bundled .NET Components**: No separate .NET runtime installation is required on the host system.
+- **Cross-Platform**: Pre-built binaries for **macOS (ARM64/x64)**, **Linux (x64)**, and **Windows (x64)**.
+- **Reliable Deployment**: Easier integration into CI/CD pipelines and specialized Linux environments.
+
 ## How it works
-This project is a clean **native bridge** to the official Thermo Fisher libraries. It uses a three-layer architecture to provide cross-platform compatibility:
+This project provides a native bridge to the official Thermo Fisher libraries using a three-layer approach:
 
-1. **Official DLLs**: We use the original `.dll` assemblies provided by Thermo Fisher Scientific.
-2. **C# NativeAOT Wrapper**: A thin, compiled layer (`ThermoNativeReader`) interfaces directly with the official DLLs and exports a simple C-compatible API.
-3. **Rust PyO3 Layer**: A high-performance Rust bridge (`native-fisher-py`) provides the Python bindings and handles memory safety and NumPy integration.
+1. **Official DLLs**: Uses the original `.dll` assemblies provided by Thermo Fisher Scientific.
+2. **C# NativeAOT Wrapper**: A compiled transition layer (`ThermoNativeReader`) that interfaces with those DLLs.
+3. **Rust PyO3 Layer**: A Rust bridge (`native-fisher-py`) that provides the final Python bindings.
 
-This approach ensures that we maintain **binary-level parity** with the official reader while providing a lightweight, dependency-free experience for Python users.
+This approach ensures stability and parity with the official reader while providing a dependency-free experience for Python users.
 
 ## Quick Start
 ```python
@@ -43,7 +44,7 @@ If you are currently using `fisher-py`, migration is as simple as:
 - from fisher_py import RawFile
 + from native_fisher_py import RawFile
 ```
-3. (Optional) Uninstall the old package: `pip uninstall fisher-py`
+3. (Optional) Uninstall `fisher-py`: `pip uninstall fisher-py`
 
 All core methods (`get_scan_from_scan_number`, `get_spectrum`, `get_chromatogram`, `get_ms2_scan_number_from_retention_time`, etc.) are implemented with identical signatures and return types.
 
