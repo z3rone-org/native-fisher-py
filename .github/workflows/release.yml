@@ -11,7 +11,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            target: x86_64-unknown-linux-gnu
+            ext: .so
+          - os: macos-latest
+            rid: universal2
+            target: universal2-apple-darwin
+            ext: .dylib
+          - os: windows-latest
+            rid: win-x64
+            target: x86_64-pc-windows-msvc
+            ext: .dll
 
     steps:
     - uses: actions/checkout@v4
@@ -31,7 +43,7 @@ jobs:
         fi
 
     - name: Install NativeAOT Dependencies (Linux)
-      if: runner.os == 'Linux'
+      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y clang zlib1g-dev libkrb5-dev
@@ -45,25 +57,18 @@ jobs:
       shell: bash
       run: |
         cd native/ThermoNativeReader
-        if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-          RID="osx-arm64"; TARGET="aarch64-apple-darwin"; 
-          LIB="ThermoNativeReader.dylib"
-        elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-          RID="osx-x64"; TARGET="x86_64-apple-darwin";
-          LIB="ThermoNativeReader.dylib"
-        elif [[ "${{ runner.os }}" == "Linux" ]]; then
-          RID="linux-x64"; TARGET="x86_64-unknown-linux-gnu";
-          LIB="ThermoNativeReader.so"
+        if [[ "${{ matrix.rid }}" == "universal2" ]]; then
+          dotnet publish -r osx-x64 -c Release -p:PublishAot=true
+          dotnet publish -r osx-arm64 -c Release -p:PublishAot=true
+          mkdir -p ../../native_fisher_py/python/native_fisher_py/
+          lipo -create \
+            bin/Release/net8.0/osx-x64/publish/ThermoNativeReader.dylib \
+            bin/Release/net8.0/osx-arm64/publish/ThermoNativeReader.dylib \
+            -output ../../native_fisher_py/python/native_fisher_py/ThermoNativeReader.dylib
         else
-          RID="win-x64"; TARGET="x86_64-pc-windows-msvc";
-          LIB="ThermoNativeReader.dll"
+          dotnet publish -r ${{ matrix.rid }} -c Release -p:PublishAot=true
+          cp bin/Release/net8.0/${{ matrix.rid }}/publish/ThermoNativeReader${{ matrix.ext }} ../../native_fisher_py/python/native_fisher_py/
         fi
-        
-        dotnet publish -r $RID -c Release -p:PublishAot=true
-        
-        cp bin/Release/net8.0/$RID/publish/$LIB ../../native_fisher_py/python/native_fisher_py/
-        
-        echo "TARGET=$TARGET" >> $GITHUB_ENV
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -75,7 +80,7 @@ jobs:
       with:
         command: build
         args: --release --out dist --manifest-path native_fisher_py/Cargo.toml
-        target: ${{ env.TARGET }}
+        target: ${{ matrix.target }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@v4
