@@ -66,6 +66,8 @@ jobs:
     - name: Build and test
       run: |
         source .venv/bin/activate
+        # Patch fisher-py
+        python .github/patch_fisher_py.py
         # Copy native lib for bundling
         cp ${{ env.DYLIB_PATH }} native_fisher_py/python/native_fisher_py/
         
