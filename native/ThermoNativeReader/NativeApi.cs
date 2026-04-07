@@ -155,7 +155,11 @@ namespace ThermoNativeReader
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
                 if (filter == null || filter.MetaFilters == null) return 0;
-                var metaList = filter.MetaFilters.ToList();
+                var metaList = new List<string>();
+                foreach (var mf in filter.MetaFilters)
+                {
+                    if (mf != null) metaList.Add(mf.ToString() ?? "");
+                }
                 int count = Math.Min(metaList.Count, maxCount);
                 for (int i = 0; i < count; i++)
                 {
@@ -1213,7 +1217,11 @@ namespace ThermoNativeReader
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
                 // Use reflection for properties that might not be in the base IScanEvent interface in some versions
                 var prop = scanEvent.GetType().GetProperty("CompensationVoltageValue");
-                if (prop != null) return (double)prop.GetValue(scanEvent);
+                if (prop != null) 
+                {
+                    var val = prop.GetValue(scanEvent);
+                    return val != null ? (double)Convert.ChangeType(val, typeof(double)) : 0.0;
+                }
                 return 0.0;
             } 
             catch { return -1; }
