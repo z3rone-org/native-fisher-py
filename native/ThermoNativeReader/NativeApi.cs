@@ -147,6 +147,25 @@ namespace ThermoNativeReader
 
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_meta_filters")]
+        public static unsafe int GetScanFilterMetaFilters(int scanNumber, IntPtr* filters, int maxCount)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                var filter = _rawFile.GetFilterForScanNumber(scanNumber);
+                if (filter == null || filter.MetaFilters == null) return 0;
+                var metaList = filter.MetaFilters.ToArray();
+                int count = Math.Min(metaList.Length, maxCount);
+                for (int i = 0; i < count; i++)
+                {
+                    filters[i] = Marshal.StringToHGlobalAnsi(metaList[i]);
+                }
+                return metaList.Length;
+            }
+            catch { return -1; }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "get_filters")]
         public static unsafe int GetFilters(IntPtr* filters, int maxCount)
         {
@@ -1191,8 +1210,8 @@ namespace ThermoNativeReader
             if (_rawFile == null) return -1;
             try 
             { 
-                // TODO: ScanFilter class namespace investigation
-                return 0.0;
+                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+                return scanEvent.CompensationVoltageValue;
             } 
             catch { return -1; }
         }
@@ -1423,6 +1442,18 @@ namespace ThermoNativeReader
         public static double GetScanFilterParamV(int scanNumber)
         {
             return GetFilterDouble(scanNumber, "ParamV");
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_field_free_region")]
+        public static int GetScanFilterFieldFreeRegion(int scanNumber)
+        {
+            return GetFilterInt(scanNumber, "FieldFreeRegion");
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_index_to_multiple_activation_index")]
+        public static int GetScanFilterIndexToMultipleActivationIndex(int scanNumber)
+        {
+            return GetFilterInt(scanNumber, "IndexToMultipleActivationIndex");
         }
     }
 }

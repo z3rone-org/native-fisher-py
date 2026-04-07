@@ -680,6 +680,49 @@ fn close_raw_file() -> PyResult<()> {
 
 
 #[pyfunction]
+fn get_scan_filter_meta_filters(scan_number: i32) -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut filters = vec![std::ptr::null_mut(); 32];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut *mut std::os::raw::c_char, i32) -> i32> = lib.get(b"get_scan_filter_meta_filters")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_meta_filters: {}", e)))?;
+        let count = func(scan_number, filters.as_mut_ptr(), 32);
+        if count < 0 {
+            return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_scan_filter_meta_filters failed"));
+        }
+        let actual_count = (count as usize).min(32);
+        let mut result = Vec::with_capacity(actual_count);
+        for i in 0..actual_count {
+            if !filters[i].is_null() {
+                let s = std::ffi::CStr::from_ptr(filters[i]).to_string_lossy().into_owned();
+                result.push(s);
+            }
+        }
+        Ok(result)
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_field_free_region(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_field_free_region")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_field_free_region: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
+fn get_scan_filter_index_to_multiple_activation_index(scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_filter_index_to_multiple_activation_index")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_index_to_multiple_activation_index: {}", e)))?;
+        Ok(func(scan_number))
+    }
+}
+
+#[pyfunction]
 fn get_scan_filter_compensation_volt_type(scan_number: i32) -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -1625,6 +1668,9 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_filter_param_f, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_param_r, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_param_v, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_meta_filters, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_field_free_region, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_index_to_multiple_activation_index, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }

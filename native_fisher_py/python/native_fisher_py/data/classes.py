@@ -71,6 +71,9 @@ if not _IS_SPHINX:
         def get_scan_event_activation_type(s, i): return 0
         def get_scan_event_collision_energy(s, i): return 0.0
         def get_scan_stats(s): return [0.0]*7
+        def get_scan_filter_meta_filters(s): return []
+        def get_scan_filter_field_free_region(s): return 0
+        def get_scan_filter_index_to_multiple_activation_index(s): return 0
 else:
     def get_instrument_name(): return ""
     def get_instrument_model(): return ""
@@ -192,7 +195,9 @@ class ScanFilter(CommonCoreDataObject):
     def lock(self):
         return TriState(get_scan_filter_lock(self._scan_number))
     @property
-    def meta_filters(self): return []
+    def meta_filters(self):
+        # This will be implemented in the native layer to return a list of filter strings
+        return get_scan_filter_meta_filters(self._scan_number)
     @property
     def turbo_scan(self):
         return TriState(get_scan_filter_turbo_scan(self._scan_number))
@@ -278,7 +283,8 @@ class ScanFilter(CommonCoreDataObject):
     @property
     def get_source_fragmentation_info_valid(self): return True
     @property
-    def index_to_multiple_activation_index(self): return 0
+    def index_to_multiple_activation_index(self): 
+        return get_scan_filter_index_to_multiple_activation_index(self._scan_number)
     @property
     def locale_name(self): return "en-US"
     @property
