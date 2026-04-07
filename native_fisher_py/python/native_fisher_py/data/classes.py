@@ -702,6 +702,22 @@ class LogEntry(CommonCoreDataObject):
     @property
     def values(self): return self._values
 
+    def keys(self):
+        return [l.strip().rstrip(':') for l in self._labels]
+
+    def __getitem__(self, key):
+        clean_key = key.strip().rstrip(':')
+        for i, label in enumerate(self._labels):
+            if label.strip().rstrip(':') == clean_key:
+                return self._values[i]
+        raise KeyError(key)
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
 class HeaderItem(CommonCoreDataObject):
     def __init__(self, data):
         if "###TYPE###" in data:

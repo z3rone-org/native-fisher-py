@@ -246,23 +246,32 @@ class RawFile(object):
 
     def get_trailer_extra_information(self, scan_number): 
         from .data.classes import LogEntry
-        return LogEntry(get_trailer_extra_values(scan_number))
+        labels = [h.label for h in self.get_trailer_extra_header_information()]
+        return LogEntry(get_trailer_extra_values(scan_number), labels)
+
     def get_trailer_extra_header_information(self): 
         from .data.classes import HeaderItem
         return [HeaderItem(h) for h in get_trailer_extra_header()]
-    def get_trailer_extra_values(self, scan_number, formatted): 
+
+    def get_trailer_extra_values(self, scan_number, formatted=False): 
         return get_trailer_extra_values(scan_number)
+
     def get_status_log_header_information(self): 
         from .data.classes import HeaderItem
         return [HeaderItem(h) for h in get_status_log_header()]
-    def get_status_log_values(self, scan_number, formatted):
+
+    def get_status_log_values(self, scan_number, formatted=False):
         from .data.classes import LogEntry
-        return LogEntry(get_status_log_values(scan_number))
+        labels = [h.label for h in self.get_status_log_header_information()]
+        return LogEntry(get_status_log_values(scan_number), labels)
+
     def get_status_log_entries_count(self): 
         return get_status_log_count()
+
     def get_status_log_for_retention_time(self, rt):
         from .data.classes import LogEntry
-        return LogEntry(get_status_log_values_for_rt(rt))
+        labels = [h.label for h in self.get_status_log_header_information()]
+        return LogEntry(get_status_log_values_for_rt(rt), labels)
     def get_tune_data_count(self): 
         return get_tune_data_count()
     def get_tune_data(self, index): return None
