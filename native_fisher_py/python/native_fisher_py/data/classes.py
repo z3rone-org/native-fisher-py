@@ -1234,121 +1234,249 @@ class ScanEvent(CommonCoreDataObject):
     def name(self):
         return get_scan_event_string(self._scan_number)
     @property
-    def accurate_mass(self): return 0
+    def accurate_mass(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("accurate_mass")
     @property
-    def mass_analyzer(self) -> int: return 0
+    def mass_analyzer(self) -> int:
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("mass_analyzer")
     @property
-    def polarity(self) -> int: return 1
+    def polarity(self) -> int:
+        if _IS_SPHINX: return 1
+        raise NotImplementedError("polarity")
     @property
-    def scan_mode(self) -> int: return 0
+    def scan_mode(self) -> int:
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("scan_mode")
     @property
-    def ionization_mode(self) -> int: return 0
+    def ionization_mode(self) -> int:
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("ionization_mode")
     @property
-    def is_valid(self) -> bool: return True
+    def is_valid(self) -> bool:
+        if _IS_SPHINX: return True
+        raise NotImplementedError("is_valid")
     @property
-    def compensation_volt_type(self): return 0
+    def compensation_volt_type(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("compensation_volt_type")
     @property
-    def compensation_voltage(self): return 0.0
+    def compensation_voltage(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("compensation_voltage")
     @property
-    def corona(self): return 0
+    def corona(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("corona")
     @property
-    def dependent(self): return 0
+    def dependent(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("dependent")
     @property
-    def detector(self): return 0
+    def detector(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("detector")
     @property
-    def detector_value(self): return 0.0
+    def detector_value(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("detector_value")
     @property
-    def electron_capture_dissociation(self): return 0
+    def electron_capture_dissociation(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("electron_capture_dissociation")
     @property
-    def electron_capture_dissociation_value(self): return 0.0
+    def electron_capture_dissociation_value(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("electron_capture_dissociation_value")
     @property
-    def electron_transfer_dissociation(self): return 0
+    def electron_transfer_dissociation(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("electron_transfer_dissociation")
     @property
-    def electron_transfer_dissociation_value(self): return 0.0
+    def electron_transfer_dissociation_value(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("electron_transfer_dissociation_value")
     @property
-    def enhanced(self): return 0
+    def enhanced(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("enhanced")
     @property
-    def field_free_region(self): return 0
+    def field_free_region(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("field_free_region")
     @property
-    def higher_energy_ci_d(self): return 0
+    def higher_energy_ci_d(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("higher_energy_ci_d")
     @property
-    def higher_energy_ci_d_value(self): return 0.0
+    def higher_energy_ci_d_value(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("higher_energy_ci_d_value")
     @property
-    def is_custom(self): return 0
+    def is_custom(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("is_custom")
     @property
-    def lock(self): return 0
+    def lock(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("lock")
     @property
-    def mass_calibrator_count(self): return -1
+    def mass_calibrator_count(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("mass_calibrator_count")
     @property
-    def mass_range_count(self): return -1
+    def mass_range_count(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("mass_range_count")
     @property
-    def multi_notch(self): return 0
+    def multi_notch(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("multi_notch")
     @property
-    def multi_state_activation(self): return 0
+    def multi_state_activation(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("multi_state_activation")
     @property
-    def multiple_photon_dissociation(self): return 0
+    def multiple_photon_dissociation(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("multiple_photon_dissociation")
     @property
-    def multiple_photon_dissociation_value(self): return 0.0
+    def multiple_photon_dissociation_value(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("multiple_photon_dissociation_value")
     @property
-    def multiplex(self): return 0
+    def multiplex(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("multiplex")
     @property
-    def param_a(self): return 0.0
+    def param_a(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("param_a")
     @property
-    def param_b(self): return 0.0
+    def param_b(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("param_b")
     @property
-    def param_f(self): return 0.0
+    def param_f(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("param_f")
     @property
-    def param_r(self): return 0.0
+    def param_r(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("param_r")
     @property
-    def param_v(self): return 0.0
+    def param_v(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("param_v")
     @property
-    def photo_ionization(self): return 0
+    def photo_ionization(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("photo_ionization")
     @property
-    def pulsed_q_dissociation(self): return 0
+    def pulsed_q_dissociation(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("pulsed_q_dissociation")
     @property
-    def pulsed_q_dissociation_value(self): return 0.0
+    def pulsed_q_dissociation_value(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("pulsed_q_dissociation_value")
     @property
-    def scan_data(self): return 0
+    def scan_data(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("scan_data")
     @property
-    def scan_type_index(self): return -1
+    def scan_type_index(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("scan_type_index")
     @property
-    def sector_scan(self): return 0
+    def sector_scan(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("sector_scan")
     @property
-    def source_fragmentation(self): return 0
+    def source_fragmentation(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("source_fragmentation")
     @property
-    def source_fragmentation_info_count(self): return -1
+    def source_fragmentation_info_count(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("source_fragmentation_info_count")
     @property
-    def source_fragmentation_mass_range_count(self): return -1
+    def source_fragmentation_mass_range_count(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("source_fragmentation_mass_range_count")
     @property
-    def source_fragmentation_type(self): return 0
+    def source_fragmentation_type(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("source_fragmentation_type")
     @property
-    def supplemental_activation(self): return 0
+    def supplemental_activation(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("supplemental_activation")
     @property
-    def turbo_scan(self): return 0
+    def turbo_scan(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("turbo_scan")
     @property
-    def ultra(self): return 0
+    def ultra(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("ultra")
     @property
-    def wideband(self): return 0
-    def get_energy_valid(self, index): return 0
-    def get_first_precursor_mass(self, index): return 0.0
-    def get_last_precursor_mass(self, index): return 0.0
-    def get_isolation_width(self, index): return 0.0
-    def get_isolation_width_offset(self, index): return 0.0
-    def get_is_multiple_activation(self, index): return 0
-    def get_mass_range(self, index): return (0.0, 0.0)
-    def get_mass_calibrator(self, index): return 0.0
-    def get_precursor_range_validity(self, index): return 0
-    def get_source_fragmentation_info(self, index): return None
-    def get_source_fragmentation_mass_range(self, index): return (0.0, 0.0)
+    def wideband(self):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("wideband")
+    def get_energy_valid(self, index):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("get_energy_valid")
+    def get_first_precursor_mass(self, index):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("get_first_precursor_mass")
+    def get_last_precursor_mass(self, index):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("get_last_precursor_mass")
+    def get_isolation_width(self, index):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("get_isolation_width")
+    def get_isolation_width_offset(self, index):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("get_isolation_width_offset")
+    def get_is_multiple_activation(self, index):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("get_is_multiple_activation")
+    def get_mass_range(self, index):
+        if _IS_SPHINX: return (0.0, 0.0)
+        raise NotImplementedError("get_mass_range")
+    def get_mass_calibrator(self, index):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("get_mass_calibrator")
+    def get_precursor_range_validity(self, index):
+        if _IS_SPHINX: return 0
+        raise NotImplementedError("get_precursor_range_validity")
+    def get_source_fragmentation_info(self, index):
+        if _IS_SPHINX: return None
+        raise NotImplementedError("get_source_fragmentation_info")
+    def get_source_fragmentation_mass_range(self, index):
+        if _IS_SPHINX: return (0.0, 0.0)
+        raise NotImplementedError("get_source_fragmentation_mass_range")
 
 class ScanEvents(CommonCoreDataObject):
-    def get_event(self, index): return ScanEvent()
-    def get_event_by_segment(self, segment, event): return ScanEvent()
-    def get_event_count(self, segment): return -1
+    def get_event(self, index):
+        if _IS_SPHINX: return ScanEvent()
+        raise NotImplementedError("get_event")
+    def get_event_by_segment(self, segment, event):
+        if _IS_SPHINX: return ScanEvent()
+        raise NotImplementedError("get_event_by_segment")
+    def get_event_count(self, segment):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("get_event_count")
     @property
-    def scan_events(self): return []
+    def scan_events(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("scan_events")
     @property
-    def segments(self): return -1
+    def segments(self):
+        if _IS_SPHINX: return -1
+        raise NotImplementedError("segments")
 
 
 class Range(object):
@@ -1513,18 +1641,26 @@ class ChromatogramTraceSettings(CommonCoreDataObject):
 
     def clone(self): return self
     @property
-    def compound_names(self): return []
+    def compound_names(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("compound_names")
     @property
-    def delay_in_min(self): return 0.0
+    def delay_in_min(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("delay_in_min")
     @property
     def filter(self): return self._filter
     @filter.setter
     def filter(self, value): self._filter = value
     @property
-    def fragment_mass(self): return 0.0
+    def fragment_mass(self):
+        if _IS_SPHINX: return 0.0
+        raise NotImplementedError("fragment_mass")
     def get_mass_range(self, index): return self._mass_ranges[index] if index < len(self._mass_ranges) else None
     @property
-    def include_reference(self): return False
+    def include_reference(self):
+        if _IS_SPHINX: return False
+        raise NotImplementedError("include_reference")
     @property
     def mass_range_count(self): return len(self._mass_ranges)
     @property
@@ -1545,7 +1681,9 @@ class ChromatogramTraceSettings(CommonCoreDataObject):
     @trace.setter
     def trace(self, value): self._trace = value
     @property
-    def times(self): return []
+    def times(self):
+        if _IS_SPHINX: return []
+        raise NotImplementedError("times")
 
 
 class ChromatogramData(CommonCoreDataObject):
