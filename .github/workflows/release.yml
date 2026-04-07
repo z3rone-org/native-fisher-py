@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-13, macos-14, windows-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -45,29 +45,22 @@ jobs:
       shell: bash
       run: |
         cd native/ThermoNativeReader
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          ARCH=$(uname -m)
-          if [[ "$ARCH" == "arm64" ]]; then 
-            RID="osx-arm64"; TARGET="aarch64-apple-darwin"; 
-          else 
-            RID="osx-x64"; TARGET="x86_64-apple-darwin"; 
-          fi
+        if [[ "${{ matrix.os }}" == "macos-14" ]]; then
+          RID="osx-arm64"; TARGET="aarch64-apple-darwin"; 
+          LIB="ThermoNativeReader.dylib"
+        elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
+          RID="osx-x64"; TARGET="x86_64-apple-darwin";
+          LIB="ThermoNativeReader.dylib"
         elif [[ "${{ runner.os }}" == "Linux" ]]; then
           RID="linux-x64"; TARGET="x86_64-unknown-linux-gnu";
+          LIB="ThermoNativeReader.so"
         else
           RID="win-x64"; TARGET="x86_64-pc-windows-msvc";
+          LIB="ThermoNativeReader.dll"
         fi
         
         dotnet publish -r $RID -c Release -p:PublishAot=true
         
-        # Copy native lib to package for release bundling
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          LIB="ThermoNativeReader.dylib"
-        elif [[ "${{ runner.os }}" == "Linux" ]]; then
-          LIB="ThermoNativeReader.so"
-        else
-          LIB="ThermoNativeReader.dll"
-        fi
         cp bin/Release/net8.0/$RID/publish/$LIB ../../native_fisher_py/python/native_fisher_py/
         
         echo "TARGET=$TARGET" >> $GITHUB_ENV
@@ -87,7 +80,7 @@ jobs:
     - name: Upload wheels
       uses: actions/upload-artifact@v4
       with:
-        name: wheels-${{ runner.os }}
+        name: wheels-${{ matrix.os }}
         path: dist/*.whl
 
   publish:
@@ -106,6 +99,4 @@ jobs:
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        # Using Trusted Publishing instead of passwords is recommended
-        # Set up a Trusted Publisher on PyPI targeting your repository
         print-hash: true
