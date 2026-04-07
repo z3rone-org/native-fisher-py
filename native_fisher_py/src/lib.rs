@@ -99,6 +99,7 @@ fn get_tune_data_count() -> PyResult<i32> {
     }
 }
 
+
 #[pyfunction]
 fn get_scan_rt(scan_number: i32) -> PyResult<f64> {
     let lib = get_lib()?;
@@ -677,15 +678,6 @@ fn close_raw_file() -> PyResult<()> {
     }
 }
 
-#[pyfunction]
-fn get_tune_data_count() -> PyResult<i32> {
-    let lib = get_lib()?;
-    unsafe {
-        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_tune_data_count")
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_tune_data_count: {}", e)))?;
-        Ok(func())
-    }
-}
 
 #[pyfunction]
 fn get_scan_filter_compensation_volt_type(scan_number: i32) -> PyResult<i32> {
