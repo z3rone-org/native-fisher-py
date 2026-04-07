@@ -316,8 +316,8 @@ class EnumBase(object):
             return inst
         return EnumBase._instances[key]
     def __init__(self, value=0): 
-        if hasattr(self, "value"): return
-        self.value = value
+        if hasattr(self, "_value"): return
+        self._value = value
         self._name = None
     @property
     def name(self):
@@ -337,9 +337,12 @@ class EnumBase(object):
     def name(self, val):
         self._name = val
     def __repr__(self): return str(self)
-    def __int__(self): return self.value
+    @property
+    def value(self): return self._value
+    @value.setter
+    def value(self, val): self._value = val
+    def __int__(self): return self._value
     def __str__(self):
-        # We want "GenericDataTypes.FLOAT" or similar
         return f"{self.__class__.__name__}.{self.name}"
 
 class GenericDataTypes(EnumBase):

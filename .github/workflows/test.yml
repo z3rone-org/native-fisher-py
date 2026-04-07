@@ -13,7 +13,11 @@ jobs:
       PYTHONNET_RUNTIME: coreclr
     strategy:
       matrix:
+<<<<<<< HEAD
         os: [macos-latest, ubuntu-latest] # Windows needs some more setup for NativeAOT but possible
+=======
+        os: [ubuntu-latest]
+>>>>>>> 9a6c4a1 (Only test on linux)
 
     steps:
     - uses: actions/checkout@v4
