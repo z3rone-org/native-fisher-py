@@ -87,6 +87,6 @@ maturin develop
 ```
 
 ## Credits & Legal Notice
-This project is powered by the **Thermo Fisher Scientific RawFileReader** (copyright © 2016-2026 Thermo Fisher Scientific, Inc.). All rights reserved.
+This project is powered by the [**Thermo Fisher Scientific RawFileReader**](https://github.com/thermofisherlsms/RawFileReader) (copyright © 2016-2026 Thermo Fisher Scientific, Inc.). All rights reserved.
 
-The `native-fisher-py` package includes the official RawFileReader libraries, which remain the property of Thermo Fisher Scientific. By using this software, you agree to the terms specified in their license.
+The `native-fisher-py` package includes the official RawFileReader libraries, which remain the property of Thermo Fisher Scientific. By using this software, you agree to the terms specified in their [license](https://github.com/thermofisherlsms/RawFileReader/blob/main/License.doc).
