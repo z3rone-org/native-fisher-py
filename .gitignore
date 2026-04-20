@@ -73,5 +73,5 @@ _build/
 venv3.11/pyvenv.cfg
 /scratch
 
-# Test data
+# Downloadable test data
 test_data/*.raw
