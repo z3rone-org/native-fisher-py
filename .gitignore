@@ -67,3 +67,4 @@ publish_output*.txt
 *.dylib*
 _build/
 /tmp/
+venv3.11/pyvenv.cfg
