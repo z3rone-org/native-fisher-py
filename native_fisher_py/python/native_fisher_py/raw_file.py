@@ -45,8 +45,9 @@ class RawFile(object):
         if not os.path.isfile(path):
             raise FileNotFoundError(f'No raw file with path "{path}" found.')
         res = open_raw_file(path)
-        if res != 0:
+        if res == -1:
             raise RawFileException(f"Could not open RAW file: {path}")
+        self._handle = res
         self._is_open = True
 
     @staticmethod
