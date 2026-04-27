@@ -141,22 +141,41 @@ fn is_centroid(scan_number: i32) -> PyResult<bool> {
 }
 
 #[pyfunction]
-fn get_centroid_stream(scan_number: i32, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>)> {
+fn get_centroid_stream(scan_number: i32, max_length: i32) -> PyResult<(Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<i32>, f64, f64)> {
     let lib = get_lib()?;
     let mut masses = vec![0.0f64; max_length as usize];
     let mut intensities = vec![0.0f64; max_length as usize];
-    
+    let mut baselines = vec![0.0f64; max_length as usize];
+    let mut noises = vec![0.0f64; max_length as usize];
+    let mut charges = vec![0i32; max_length as usize];
+    let mut noise_res = vec![0.0f64; 2];
+
     unsafe {
-        let func: Symbol<unsafe extern "C" fn(i32, *mut f64, *mut f64, i32) -> i32> = lib.get(b"get_centroid_stream")
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_centroid_stream: {}", e)))?;
-        let actual_len = func(scan_number, masses.as_mut_ptr(), intensities.as_mut_ptr(), max_length);
-        if actual_len < 0 {
-            return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_centroid_stream failed"));
-        }
+        let func: Symbol<unsafe extern "C" fn(i32, *mut f64, *mut f64, *mut f64, *mut f64, *mut i32, *mut f64, i32) -> i32> = 
+            lib.get(b"get_centroid_stream_full")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_centroid_stream_full: {}", e)))?;
+        
+        let actual_len = func(
+            scan_number, 
+            masses.as_mut_ptr(), 
+            intensities.as_mut_ptr(), 
+            baselines.as_mut_ptr(),
+            noises.as_mut_ptr(),
+            charges.as_mut_ptr(),
+            noise_res.as_mut_ptr(),
+            max_length
+        );
+        
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_centroid_stream_full failed")); }
+        
         let final_len = std::cmp::min(actual_len, max_length) as usize;
         masses.truncate(final_len);
         intensities.truncate(final_len);
-        Ok((masses, intensities))
+        baselines.truncate(final_len);
+        noises.truncate(final_len);
+        charges.truncate(final_len);
+
+        Ok((masses, intensities, baselines, noises, charges, noise_res[0], noise_res[1]))
     }
 }
 
@@ -1147,7 +1166,7 @@ fn get_scan_event_collision_energy(scan_number: i32, index: i32) -> PyResult<f64
 #[pyfunction]
 fn get_scan_stats(scan_number: i32) -> PyResult<Vec<f64>> {
     let lib = get_lib()?;
-    let mut data = vec![0.0f64; 7];
+    let mut data = vec![0.0f64; 8];
     unsafe {
         let func: Symbol<unsafe extern "C" fn(i32, *mut f64) -> i32> = lib.get(b"get_scan_stats")
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_stats: {}", e)))?;
@@ -1544,6 +1563,140 @@ fn get_instrument_is_tsq_quantum_file() -> PyResult<bool> {
         Ok(func() != 0)
     }
 }
+
+#[pyfunction]
+fn select_instrument(device_type: i32, device_number: i32) -> PyResult<()> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32)> = lib.get(b"select_instrument")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function select_instrument: {}", e)))?;
+        func(device_type, device_number);
+        Ok(())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_method_count() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_instrument_method_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_method_count: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_instrument_method(index: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 128 * 1024]; // 128KB buffer for method text
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_instrument_method")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_instrument_method: {}", e)))?;
+        let actual_len = func(index, buffer.as_mut_ptr(), 128 * 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_instrument_method failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_autosampler_tray_index() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_autosampler_tray_index")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_autosampler_tray_index: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_autosampler_vial_index() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_autosampler_vial_index")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_autosampler_vial_index: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_autosampler_tray_name() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_autosampler_tray_name")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_autosampler_tray_name: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_autosampler_tray_name failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_autosampler_tray_shape() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_autosampler_tray_shape")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_autosampler_tray_shape: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_autosampler_vials_per_tray() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_autosampler_vials_per_tray")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_autosampler_vials_per_tray: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_autosampler_vials_per_tray_x() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_autosampler_vials_per_tray_x")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_autosampler_vials_per_tray_x: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_autosampler_vials_per_tray_y() -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> i32> = lib.get(b"get_autosampler_vials_per_tray_y")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_autosampler_vials_per_tray_y: {}", e)))?;
+        Ok(func())
+    }
+}
+
+#[pyfunction]
+fn get_sample_instrument_method_file() -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(*mut u8, i32) -> i32> = lib.get(b"get_sample_instrument_method_file")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_instrument_method_file: {}", e)))?;
+        let actual_len = func(buffer.as_mut_ptr(), 1024);
+        if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_sample_instrument_method_file failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_injection_volume() -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn() -> f64> = lib.get(b"get_sample_injection_volume")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_injection_volume: {}", e)))?;
+        Ok(func())
+    }
+}
+
 #[pymodule]
 fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
@@ -1565,6 +1718,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_low_mass, m)?)?;
     m.add_function(wrap_pyfunction!(get_high_mass, m)?)?;
     m.add_function(wrap_pyfunction!(get_file_name, m)?)?;
+    m.add_function(wrap_pyfunction!(get_path, m)?)?;
     m.add_function(wrap_pyfunction!(get_ms_order, m)?)?;
     m.add_function(wrap_pyfunction!(get_mass_analyzer, m)?)?;
     m.add_function(wrap_pyfunction!(get_precursor_mass, m)?)?;
@@ -1588,6 +1742,8 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_creator_id, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_type, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_row_number, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_instrument_method_file, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_injection_volume, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_dilution_factor, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_model, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_name, m)?)?;
@@ -1671,6 +1827,16 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_filter_meta_filters, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_field_free_region, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_index_to_multiple_activation_index, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_method_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_instrument_method, m)?)?;
+    m.add_function(wrap_pyfunction!(select_instrument, m)?)?;
+    m.add_function(wrap_pyfunction!(get_autosampler_tray_index, m)?)?;
+    m.add_function(wrap_pyfunction!(get_autosampler_vial_index, m)?)?;
+    m.add_function(wrap_pyfunction!(get_autosampler_tray_name, m)?)?;
+    m.add_function(wrap_pyfunction!(get_autosampler_tray_shape, m)?)?;
+    m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray, m)?)?;
+    m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_x, m)?)?;
+    m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_y, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }
