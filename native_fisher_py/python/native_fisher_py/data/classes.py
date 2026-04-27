@@ -882,9 +882,15 @@ class Scan(CommonCoreDataObject):
     def tolerance_unit(self): return 0
 
 class CentroidStream(CommonCoreDataObject):
-    def __init__(self, masses=None, intensities=None):
+    def __init__(self, masses=None, intensities=None, baselines=None, noises=None, charges=None, base_peak_noise=0.0, base_peak_resolution=0.0, scan_number=0):
         self._masses = masses if masses is not None else np.array([])
         self._intensities = intensities if intensities is not None else np.array([])
+        self._baselines = baselines if baselines is not None else np.array([])
+        self._noises = noises if noises is not None else np.array([])
+        self._charges = charges if charges is not None else np.array([])
+        self._base_peak_noise = base_peak_noise
+        self._base_peak_resolution = base_peak_resolution
+        self._scan_number = scan_number
 
     @property
     def base_intensity(self): return np.max(self._intensities) if self._intensities.size > 0 else 0.0
@@ -893,57 +899,40 @@ class CentroidStream(CommonCoreDataObject):
     @property
     def base_peak_mass(self): return self._masses[np.argmax(self._intensities)] if self._intensities.size > 0 else 0.0
     @property
-    def base_peak_noise(self): raise NotImplementedError
+    def base_peak_noise(self): return self._base_peak_noise
     @property
-    def base_peak_resolution(self): raise NotImplementedError
+    def base_peak_resolution(self): return self._base_peak_resolution
     @property
-    def baselines(self): raise NotImplementedError
+    def baselines(self): return self._baselines
     @property
-    def charges(self): raise NotImplementedError
-    def clear(self): raise NotImplementedError
-    def clone(self): return self
+    def charges(self): return self._charges
     @property
-    def coefficients(self): 
-        if _IS_SPHINX: return np.array([])
-        raise NotImplementedError
+    def coefficients_count(self): return 0
     @property
-    def coefficients_count(self): 
-        if _IS_SPHINX: return 0
-        raise NotImplementedError
-    def deep_clone(self): 
-        if _IS_SPHINX: return self
-        raise NotImplementedError
+    def coefficients(self): return np.array([])
     @property
-    def flags(self): 
-        if _IS_SPHINX: return []
-        raise NotImplementedError
-    def get_centroids(self): 
-        if _IS_SPHINX: return []
-        raise NotImplementedError
-    def get_label_peak(self, i): 
-        if _IS_SPHINX: return None
-        raise NotImplementedError
-    def get_label_peaks(self): 
-        if _IS_SPHINX: return []
-        raise NotImplementedError
+    def flags(self): return 0
+    def get_centroids(self): return self._masses, self._intensities
+    def get_label_peak(self, index): return None
+    def get_label_peaks(self): return None
+    @property
+    def noises(self): return self._noises
     @property
     def intensities(self): return self._intensities
     @property
     def length(self): return len(self._masses) if self._masses is not None else 0
     @property
     def masses(self): return self._masses
-    @property
-    def noises(self): raise NotImplementedError
     def refresh_base_details(self): pass
     @property
     def resolutions(self): return np.array([])
     @property
-    def scan_number(self): return 0
-    def set_label_peaks(self, p): pass
+    def scan_number(self): return self._scan_number
+    def set_label_peaks(self, peaks): pass
     @property
-    def sum_intensities(self): return 0.0
+    def sum_intensities(self): return np.sum(self._intensities) if self._intensities.size > 0 else 0.0
     @property
-    def sum_masses(self): return 0.0
+    def sum_masses(self): return np.sum(self._masses) if self._masses.size > 0 else 0.0
     def to_scan(self): return None
     def to_segmented_scan(self): return None
     def to_simple_scan(self): return None
@@ -1059,12 +1048,10 @@ class SampleInformation(CommonCoreDataObject):
     def dilution_factor(self): return get_sample_dilution_factor()
     @property
     def injection_volume(self): 
-        if _IS_SPHINX: return 0.0
-        raise NotImplementedError
+        return get_sample_injection_volume()
     @property
     def instrument_method_file(self): 
-        if _IS_SPHINX: return ""
-        raise NotImplementedError
+        return get_sample_instrument_method_file()
     @property
     def istd_amount(self): 
         if _IS_SPHINX: return 0.0
@@ -1099,6 +1086,8 @@ class SampleInformation(CommonCoreDataObject):
     def raw_file_name(self) -> str: return get_file_name()
     @property
     def path(self) -> str: return get_path()
+    @property
+    def autosampler_information(self): return AutoSamplerInformation()
 
 class FileHeader(CommonCoreDataObject):
     @property
@@ -1145,36 +1134,28 @@ class FileError(CommonCoreDataObject):
 class AutoSamplerInformation(CommonCoreDataObject):
     @property
     def tray_index(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_tray_index()
     @property
     def tray_name(self): 
-        if _IS_SPHINX: return "Any"
-        raise NotImplementedError
+        return get_autosampler_tray_name()
     @property
     def tray_shape(self): 
-        if _IS_SPHINX: return TrayShape.Unknown
-        raise NotImplementedError
+        return TrayShape(get_autosampler_tray_shape())
     @property
     def tray_shape_as_string(self): 
-        if _IS_SPHINX: return "Unknown"
-        raise NotImplementedError
+        return str(self.tray_shape)
     @property
     def vial_index(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vial_index()
     @property
     def vials_per_tray(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vials_per_tray()
     @property
     def vials_per_tray_x(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vials_per_tray_x()
     @property
     def vials_per_tray_y(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vials_per_tray_y()
 
 class RunHeader(CommonCoreDataObject):
     def __init__(self, raw_file=None): self._raw_file = raw_file

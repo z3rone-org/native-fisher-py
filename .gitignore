@@ -54,6 +54,9 @@ coverage.xml
 venv/
 pip-log.txt
 pip-delete-this-directory.txt
+Pipfile
+Pipfile.lock
+.python-version
 
 # Rust
 target/
@@ -68,3 +71,7 @@ publish_output*.txt
 _build/
 /tmp/
 venv3.11/pyvenv.cfg
+/scratch
+
+# Test data
+test_data/*.raw
