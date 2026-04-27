@@ -72,6 +72,5 @@ _build/
 /tmp/
 venv3.11/pyvenv.cfg
 /scratch
-test_data/MS2_MS1_orbitrap.raw
-test_data/*.raw
-test_data/*.raw
+test_data/MS2_MS1_zoom.raw
+
