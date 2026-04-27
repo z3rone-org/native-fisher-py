@@ -17,6 +17,7 @@ namespace ThermoNativeReader
     {
         private static IRawDataPlus? _rawFile;
 
+
         private static string SafeGetFilterString(IScanFilter filter)
         {
             if (filter == null) return "";
@@ -39,6 +40,7 @@ namespace ThermoNativeReader
             // Force compiler to keep these types
             _dummyFilter = (ThermoFisher.CommonCore.Data.Interfaces.IScanFilter?)null;
             var t = typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType);
+            var t2 = typeof(ThermoFisher.CommonCore.Data.Business.CentroidStream);
         }
 
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
@@ -84,6 +86,7 @@ namespace ThermoNativeReader
             try
             {
                 var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
+                if (scanStatistics == null) return 0;
                 return scanStatistics.IsCentroidScan ? 1 : 0;
             }
             catch
@@ -120,28 +123,37 @@ namespace ThermoNativeReader
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_centroid_stream")]
-        public static unsafe int GetCentroidStream(int scanNumber, double* masses, double* intensities, int maxLength)
+        [UnmanagedCallersOnly(EntryPoint = "get_centroid_stream_full")]
+        public static unsafe int GetCentroidStreamFull(int scanNumber, double* masses, double* intensities, double* baselines, double* noises, int* charges, double* noiseRes, int maxLength)
         {
             if (_rawFile == null) return -1;
-            
             try 
             {
                 var scan = _rawFile.GetCentroidStream(scanNumber, false);
-                if (scan == null) { return -2; }
-                if (scan.Masses == null || scan.Intensities == null) { return -3; }
+                if (scan == null) return 0;
                 
                 int count = Math.Min(scan.Length, maxLength);
                 for (int i = 0; i < count; i++)
                 {
-                    masses[i] = scan.Masses[i];
-                    intensities[i] = scan.Intensities[i];
+                    if (masses != null && scan.Masses != null && i < scan.Masses.Length) masses[i] = scan.Masses[i];
+                    if (intensities != null && scan.Intensities != null && i < scan.Intensities.Length) intensities[i] = scan.Intensities[i];
+                    if (baselines != null && scan.Baselines != null && i < scan.Baselines.Length) baselines[i] = scan.Baselines[i];
+                    if (noises != null && scan.Noises != null && i < scan.Noises.Length) noises[i] = scan.Noises[i];
+                    if (charges != null && scan.Charges != null && i < scan.Charges.Length) charges[i] = (int)scan.Charges[i];
                 }
+                
+                if (noiseRes != null)
+                {
+                    noiseRes[0] = scan.BasePeakNoise;
+                    noiseRes[1] = scan.BasePeakResolution;
+                }
+                
                 return count;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return -1;
+                Console.WriteLine($"Native Error in GetCentroidStreamFull: {ex.Message}");
+                return -1; 
             }
         }
 
@@ -608,6 +620,25 @@ namespace ThermoNativeReader
         {
             if (_rawFile == null) return 1.0;
             return _rawFile.SampleInformation.DilutionFactor;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_injection_volume")]
+        public static double GetSampleInjectionVolume()
+        {
+            if (_rawFile == null) return 0.0;
+            return _rawFile.SampleInformation.InjectionVolume;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_instrument_method_file")]
+        public static unsafe int GetSampleInstrumentMethodFile(byte* buffer, int length)
+        {
+            if (_rawFile == null) return -1;
+            var str = _rawFile.SampleInformation.InstrumentMethodFile ?? "";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_ms_order")]
@@ -1096,7 +1127,8 @@ namespace ThermoNativeReader
                 data[4] = stats.BasePeakMass;
                 data[5] = stats.BasePeakIntensity;
                 data[6] = stats.PacketCount;
-                return 7;
+                data[7] = stats.IsCentroidScan ? 1.0 : 0.0;
+                return 8;
             }
             catch { return -1; }
         }
@@ -1470,6 +1502,103 @@ namespace ThermoNativeReader
         public static int GetScanFilterIndexToMultipleActivationIndex(int scanNumber)
         {
             return GetFilterInt(scanNumber, "IndexToMultipleActivationIndex");
+        }
+        [UnmanagedCallersOnly(EntryPoint = "select_instrument")]
+        public static void SelectInstrument(int deviceType, int deviceNumber)
+        {
+            if (_rawFile == null) return;
+            try {
+                _rawFile.SelectInstrument((Device)deviceType, deviceNumber);
+            } catch {}
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_method_count")]
+        public static int GetInstrumentMethodCount()
+        {
+            if (_rawFile == null) return 0;
+            try {
+                return _rawFile.InstrumentMethodsCount;
+            } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_method")]
+        public static unsafe int GetInstrumentMethod(int index, byte* buffer, int maxLength)
+        {
+            if (_rawFile == null) return -1;
+            try
+            {
+                string method = _rawFile.GetInstrumentMethod(index);
+                if (string.IsNullOrEmpty(method)) return 0;
+                
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(method);
+                int len = Math.Min(bytes.Length, maxLength - 1);
+                for (int i = 0; i < len; i++) buffer[i] = bytes[i];
+                buffer[len] = 0;
+                return len;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_index")]
+        public static int GetAutoSamplerTrayIndex()
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.AutoSamplerInformation.TrayIndex; } 
+            catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerTrayIndex: {ex.Message}"); return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vial_index")]
+        public static int GetAutoSamplerVialIndex()
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.AutoSamplerInformation.VialIndex; } 
+            catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerVialIndex: {ex.Message}"); return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_name")]
+        public static unsafe int GetAutoSamplerTrayName(byte* buffer, int maxLength)
+        {
+            if (_rawFile == null) return 0;
+            try
+            {
+                string name = _rawFile.AutoSamplerInformation.TrayName ?? "";
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(name);
+                int len = Math.Min(bytes.Length, maxLength - 1);
+                for (int i = 0; i < len; i++) buffer[i] = bytes[i];
+                buffer[len] = 0;
+                return len;
+            }
+            catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_shape")]
+        public static int GetAutoSamplerTrayShape()
+        {
+            if (_rawFile == null) return 0;
+            try { return (int)_rawFile.AutoSamplerInformation.TrayShape; } catch { return 0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray")]
+        public static int GetAutoSamplerVialsPerTray()
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.AutoSamplerInformation.VialsPerTray; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_x")]
+        public static int GetAutoSamplerVialsPerTrayX()
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.AutoSamplerInformation.VialsPerTrayX; } catch { return -1; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_y")]
+        public static int GetAutoSamplerVialsPerTrayY()
+        {
+            if (_rawFile == null) return -1;
+            try { return _rawFile.AutoSamplerInformation.VialsPerTrayY; } catch { return -1; }
         }
     }
 }

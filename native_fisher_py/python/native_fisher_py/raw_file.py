@@ -58,7 +58,7 @@ class RawFile(object):
         return self
 
     def select_instrument(self, device_type: int, device_number: int):
-        pass
+        select_instrument(device_type, device_number)
 
     def average_scans(self, start, end): return None
     def average_scans_in_scan_range(self, start, end, options): return None
@@ -66,10 +66,13 @@ class RawFile(object):
     def default_mass_options(self): return MassOptions()
     def dispose(self): self.close()
     def get_all_instrument_names_from_instrument_method(self): return []
-    def get_instrument_method(self, index): return ""
+    def get_instrument_method(self, index): 
+        return get_instrument_method(index)
+    def get_instrument_methods_count(self) -> int:
+        return get_instrument_method_count()
     def get_instrument_type(self): return 0
     def get_segment_event_table(self): return []
-    def has_instrument_method(self): return False
+    def has_instrument_method(self): return self.get_instrument_methods_count() > 0
     def is_centroid_scan_from_scan_number(self, scan_number):
         return is_centroid(scan_number)
     def refresh_view_of_file(self): pass
@@ -90,7 +93,7 @@ class RawFile(object):
 
     @property
     def path(self) -> str:
-        return get_path()
+        return self._path
 
     @property
     def number_of_scans(self) -> int:
@@ -196,8 +199,20 @@ class RawFile(object):
     def get_centroid_stream(self, scan_number: int, include_ref_peaks: bool = False):
         from .native_fisher_py_backend import get_centroid_stream
         from .data.classes import CentroidStream
-        masses, intensities = get_centroid_stream(scan_number, 1000000)
-        return CentroidStream(masses=masses, intensities=intensities)
+        import numpy as np
+        
+        masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(scan_number, 1000000)
+        
+        return CentroidStream(
+            masses=np.array(masses), 
+            intensities=np.array(intensities),
+            baselines=np.array(baselines),
+            noises=np.array(noises),
+            charges=np.array(charges),
+            base_peak_noise=bp_noise,
+            base_peak_resolution=bp_res,
+            scan_number=scan_number
+        )
 
     def get_segmented_scan_from_scan_number(self, scan_number: int, stats = None):
         from .native_fisher_py_backend import get_spectrum
@@ -216,7 +231,8 @@ class RawFile(object):
             tic=data[3],
             base_peak_mass=data[4],
             base_peak_intensity=data[5],
-            packet_count=int(data[6])
+            packet_count=int(data[6]),
+            is_centroid_scan=bool(data[7])
         )
 
     def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
