@@ -1,718 +1,419 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
 using ThermoFisher.CommonCore.RawFileReader;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using Range = ThermoFisher.CommonCore.Data.Business.Range;
-using System.Diagnostics.CodeAnalysis;
+
 
 namespace ThermoNativeReader
 {
     public static class NativeApi
     {
-        private static IRawDataPlus? _rawFile;
+        private static readonly Dictionary<long, IRawDataPlus> _openFiles = new Dictionary<long, IRawDataPlus>();
+        private static long _nextHandle = 1;
+        private static readonly BlockingCollection<Action> _workQueue = new BlockingCollection<Action>();
 
-
-        private static string SafeGetFilterString(IScanFilter filter)
+        static NativeApi()
         {
-            if (filter == null) return "";
-            try 
+            var workerThread = new Thread(WorkerLoop) { IsBackground = true, Name = "ThermoWorker" };
+            workerThread.Start();
+        }
+
+        private static void WorkerLoop()
+        {
+            foreach (var action in _workQueue.GetConsumingEnumerable())
             {
-                return filter.ToString();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Warning: Filter.ToString() failed: {ex.Message}");
-                return "FILTER_ERROR";
+                try { action(); } catch { }
             }
         }
 
-        // Dummy usage to prevent AOT trimming of important types used by reflection in Thermo DLLs
-        private static ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[] _dummyArray = new ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[0];
-        private static ThermoFisher.CommonCore.Data.Interfaces.IScanFilter? _dummyFilter = null;
-
-        static NativeApi() {
-            // Force compiler to keep these types
-            _dummyFilter = (ThermoFisher.CommonCore.Data.Interfaces.IScanFilter?)null;
-            var t = typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType);
-            var t2 = typeof(ThermoFisher.CommonCore.Data.Business.CentroidStream);
+        private static T RunOnWorker<T>(Func<T> func)
+        {
+            T result = default;
+            using var done = new ManualResetEvent(false);
+            _workQueue.Add(() => {
+                try { result = func(); }
+                finally { done.Set(); }
+            });
+            done.WaitOne();
+            return result;
         }
 
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
+        private static void RunOnWorkerSync(Action action)
+        {
+            using var done = new ManualResetEvent(false);
+            _workQueue.Add(() => {
+                try { action(); }
+                finally { done.Set(); }
+            });
+            done.WaitOne();
+        }
+
+        private static unsafe int CopyString(string s, byte* buffer, int length)
+        {
+            if (buffer == null || length <= 0) return 0;
+            var bytes = System.Text.Encoding.UTF8.GetBytes(s ?? "");
+            int count = Math.Min(bytes.Length, length - 1);
+            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            buffer[count] = 0;
+            return count;
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "open_raw_file")]
-        public static unsafe int OpenRawFile(byte* pathPtr)
+        public static unsafe long OpenRawFile(byte* pathPtr)
         {
-            try
-            {
-                if (pathPtr == null) return -1;
-                string? path = Marshal.PtrToStringAnsi((IntPtr)pathPtr);
-                if (string.IsNullOrEmpty(path)) return -1;
-                
-                _rawFile = (IRawDataPlus)RawFileReaderAdapter.FileFactory(path);
-                if (_rawFile == null) return -1;
-                _rawFile.SelectInstrument(Device.MS, 1);
-                return 0;
-            }
-            catch
-            {
-                return -1;
-            }
+            if (pathPtr == null) return -1;
+            string? path = Marshal.PtrToStringAnsi((IntPtr)pathPtr);
+            return RunOnWorker(() => {
+                try {
+                    var rawFile = (IRawDataPlus)RawFileReaderAdapter.FileFactory(path);
+                    if (rawFile == null) return -1;
+                    rawFile.SelectInstrument(Device.MS, 1);
+                    long h = _nextHandle++;
+                    _openFiles[h] = rawFile;
+                    return h;
+                } catch { return -1; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "close_raw_file")]
+        public static void CloseRawFile(long handle)
+        {
+            // SKIP Dispose for now to avoid shutdown crashes
+            RunOnWorkerSync(() => {
+                _openFiles.Remove(handle);
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_num_scans")]
-        public static int GetNumScans()
+        public static unsafe int GetNumScans(long arg0)
         {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
-            return _rawFile.RunHeader.LastSpectrum;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_rt")]
-        public static double GetScanRT(int scanNumber)
-        {
-            if (_rawFile == null) return -1.0;
-            return _rawFile.RetentionTimeFromScanNumber(scanNumber);
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "is_centroid")]
-        public static int IsCentroid(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try
-            {
-                var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
-                if (scanStatistics == null) return 0;
-                return scanStatistics.IsCentroidScan ? 1 : 0;
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_spectrum")]
-        public static unsafe int GetSpectrum(int scanNumber, double* masses, double* intensities, int maxLength)
-        {
-            if (_rawFile == null) return -1;
-            
-            try 
-            {
-                var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
-                var scan = _rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
-                if (scan == null) { return -2; }
-                if (scan.Positions == null) { return -3; }
-                if (scan.Intensities == null) { return -4; }
-                if (scan.Positions.Length == 0) { return -5; }
-                
-                int count = Math.Min(scan.Positions.Length, maxLength);
-                for (int i = 0; i < count; i++)
-                {
-                    masses[i] = scan.Positions[i];
-                    intensities[i] = scan.Intensities[i];
-                }
-                return count;
-            }
-            catch (Exception ex)
-            {
-                return -1;
-            }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_centroid_stream_full")]
-        public static unsafe int GetCentroidStreamFull(int scanNumber, double* masses, double* intensities, double* baselines, double* noises, int* charges, double* noiseRes, int maxLength)
-        {
-            if (_rawFile == null) return -1;
-            try 
-            {
-                var scan = _rawFile.GetCentroidStream(scanNumber, false);
-                if (scan == null) return 0;
-                
-                int count = Math.Min(scan.Length, maxLength);
-                for (int i = 0; i < count; i++)
-                {
-                    if (masses != null && scan.Masses != null && i < scan.Masses.Length) masses[i] = scan.Masses[i];
-                    if (intensities != null && scan.Intensities != null && i < scan.Intensities.Length) intensities[i] = scan.Intensities[i];
-                    if (baselines != null && scan.Baselines != null && i < scan.Baselines.Length) baselines[i] = scan.Baselines[i];
-                    if (noises != null && scan.Noises != null && i < scan.Noises.Length) noises[i] = scan.Noises[i];
-                    if (charges != null && scan.Charges != null && i < scan.Charges.Length) charges[i] = (int)scan.Charges[i];
-                }
-                
-                if (noiseRes != null)
-                {
-                    noiseRes[0] = scan.BasePeakNoise;
-                    noiseRes[1] = scan.BasePeakResolution;
-                }
-                
-                return count;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Native Error in GetCentroidStreamFull: {ex.Message}");
-                return -1; 
-            }
-        }
-
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_meta_filters")]
-        public static unsafe int GetScanFilterMetaFilters(int scanNumber, IntPtr* filters, int maxCount)
-        {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var filter = _rawFile.GetFilterForScanNumber(scanNumber);
-                if (filter == null) return 0;
-                var prop = filter.GetType().GetProperty("MetaFilters");
-                if (prop == null) return 0;
-                var metaFiltersObj = prop.GetValue(filter) as System.Collections.IEnumerable;
-                if (metaFiltersObj == null) return 0;
-
-                var metaList = new List<string>();
-                foreach (var mf in metaFiltersObj)
-                {
-                    if (mf != null) metaList.Add(mf.ToString() ?? "");
-                }
-                int count = Math.Min(metaList.Count, maxCount);
-                for (int i = 0; i < count; i++)
-                {
-                    filters[i] = Marshal.StringToHGlobalAnsi(metaList[i]);
-                }
-                return metaList.Count;
-            }
-            catch { return -1; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_filters")]
-        public static unsafe int GetFilters(IntPtr* filters, int maxCount)
-        {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var filterList = _rawFile.GetFilters().ToArray();
-                int count = Math.Min(filterList.Length, maxCount);
-                for (int i = 0; i < count; i++)
-                {
-                    filters[i] = Marshal.StringToHGlobalAnsi(SafeGetFilterString(filterList[i]));
-                }
-                return filterList.Length;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in get_filters: {ex}");
-                return -1;
-            }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_first_scan")]
-        public static int GetFirstScan()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
-            return _rawFile.RunHeader.FirstSpectrum;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_last_scan")]
-        public static int GetLastScan()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
-            return _rawFile.RunHeader.LastSpectrum;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_end_time")]
-        public static double GetEndTime()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
-            return _rawFile.RunHeader.EndTime;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_start_time")]
-        public static double GetStartTime()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
-            return _rawFile.RunHeader.StartTime;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_mass_resolution")]
-        public static double GetMassResolution()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
-            return _rawFile.RunHeader.MassResolution;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_expected_runtime")]
-        public static double GetExpectedRuntime()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
-            return _rawFile.RunHeader.ExpectedRuntime;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_max_integrated_intensity")]
-        public static double GetMaxIntegratedIntensity()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
-            return _rawFile.RunHeader.MaxIntegratedIntensity;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_max_intensity")]
-        public static int GetMaxIntensity()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
-            return _rawFile.RunHeader.MaxIntensity;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_low_mass")]
-        public static double GetLowMass()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
-            return _rawFile.RunHeader.LowMass;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_high_mass")]
-        public static double GetHighMass()
-        {
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
-            return _rawFile.RunHeader.HighMass;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_file_name")]
-        public static unsafe int GetFileName(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.FileName ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_path")]
-        public static unsafe int GetPath(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.Path ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.RunHeader.LastSpectrum; } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_tune_data_count")]
-        public static int GetTuneDataCount()
+        public static unsafe int GetTuneDataCount(long arg0)
         {
-            if (_rawFile == null) return -1;
-            return _rawFile.GetTuneDataCount();
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.GetTuneDataCount();  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_creation_date")]
-        public static unsafe int GetCreationDate(byte* buffer, int length)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_rt")]
+        public static unsafe double GetScanRt(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.CreationDate.ToString("o");
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return f.RetentionTimeFromScanNumber((int)arg1); } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_computer_name")]
-        public static unsafe int GetComputerName(byte* buffer, int length)
+        [UnmanagedCallersOnly(EntryPoint = "get_spectrum")]
+        public static unsafe int GetSpectrum(long arg0, int arg1, double* arg2, double* arg3, int arg4)
         {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.ComputerName ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var scan = f.GetSegmentedScanFromScanNumber((int)arg1, f.GetScanStatsForScanNumber((int)arg1));
+            if (scan == null) return 0;
+            int count = Math.Min(scan.Positions.Length, (int)arg4);
+            for(int i=0; i<count; i++) {
+                arg2[i] = scan.Positions[i];
+                arg3[i] = scan.Intensities[i];
+            }
+            return count; } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_creator_id")]
-        public static unsafe int GetCreatorID(byte* buffer, int length)
+        [UnmanagedCallersOnly(EntryPoint = "is_centroid")]
+        public static unsafe int IsCentroid(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.CreatorId ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var scanStatistics = f.GetScanStatsForScanNumber(arg1);
+                return scanStatistics.IsCentroidScan ? 1 : 0;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_model")]
-        public static unsafe int GetInstrumentModel(byte* buffer, int length)
+        [UnmanagedCallersOnly(EntryPoint = "get_centroid_stream_full")]
+        public static unsafe int GetCentroidStreamFull(long arg0, int arg1, double* arg2, double* arg3, double* arg4, double* arg5, int* arg6, double* arg7, int arg8)
         {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.Model ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_name")]
-        public static unsafe int GetInstrumentName(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.Name ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_serial_number")]
-        public static unsafe int GetInstrumentSerialNumber(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.SerialNumber ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_software_version")]
-        public static unsafe int GetInstrumentSoftwareVersion(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.SoftwareVersion ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_hardware_version")]
-        public static unsafe int GetInstrumentHardwareVersion(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.HardwareVersion ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_axis_label_x")]
-        public static unsafe int GetInstrumentAxisLabelX(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.AxisLabelX ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_axis_label_y")]
-        public static unsafe int GetInstrumentAxisLabelY(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.AxisLabelY ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_flags")]
-        public static unsafe int GetInstrumentFlags(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            var str = data?.Flags ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_units")]
-        public static int GetInstrumentUnits()
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            return data != null ? (int)data.Units : 0;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_is_valid")]
-        public static int GetInstrumentIsValid()
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            return data != null && data.IsValid ? 1 : 0;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_has_accurate_mass_precursors")]
-        public static int GetInstrumentHasAccurateMassPrecursors()
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            return data != null && data.HasAccurateMassPrecursors ? 1 : 0;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_is_tsq_quantum_file")]
-        public static int GetInstrumentIsTsqQuantumFile()
-        {
-            if (_rawFile == null) return -1;
-            var data = _rawFile.GetInstrumentData();
-            return data != null && data.IsTsqQuantumFile() ? 1 : 0;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_file_description")]
-        public static unsafe int GetFileDescription(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.FileHeader.FileDescription ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_modified_date")]
-        public static unsafe int GetModifiedDate(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.FileHeader.ModifiedDate.ToString() ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_who_created_logon")]
-        public static unsafe int GetWhoCreatedLogon(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.FileHeader.WhoCreatedLogon ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_who_modified_id")]
-        public static unsafe int GetWhoModifiedId(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.FileHeader.WhoModifiedId ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_who_modified_logon")]
-        public static unsafe int GetWhoModifiedLogon(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.FileHeader.WhoModifiedLogon ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_sample_barcode")]
-        public static unsafe int GetSampleBarcode(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.SampleInformation.Barcode ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_sample_id")]
-        public static unsafe int GetSampleId(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.SampleInformation.SampleId ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_sample_name")]
-        public static unsafe int GetSampleName(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.SampleInformation.SampleName ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_sample_vial")]
-        public static unsafe int GetSampleVial(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.SampleInformation.Vial ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_sample_comment")]
-        public static unsafe int GetSampleComment(byte* buffer, int length)
-        {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.SampleInformation.Comment ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { 
+            var stream = f.GetCentroidStream((int)arg1, false);
+            if (stream == null) return 0;
+            int count = Math.Min(stream.Length, (int)arg8);
+            for(int i=0; i<count; i++) {
+                if (arg2 != null && stream.Masses != null && i < stream.Masses.Length) arg2[i] = stream.Masses[i];
+                if (arg3 != null && stream.Intensities != null && i < stream.Intensities.Length) arg3[i] = stream.Intensities[i];
+                if (arg4 != null && stream.Baselines != null && i < stream.Baselines.Length) arg4[i] = stream.Baselines[i];
+                if (arg5 != null && stream.Noises != null && i < stream.Noises.Length) arg5[i] = stream.Noises[i];
+                if (arg6 != null && stream.Charges != null && i < stream.Charges.Length) arg6[i] = (int)stream.Charges[i];
+            }
+            if (arg7 != null) {
+                arg7[0] = stream.BasePeakNoise;
+                arg7[1] = stream.BasePeakResolution;
+            }
+            return count; } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_sample_type")]
-        public static int GetSampleType()
+        public static unsafe int GetSampleType(long arg0)
         {
-            if (_rawFile == null) return 0;
-            return (int)_rawFile.SampleInformation.SampleType;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.SampleInformation.SampleType;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_sample_row_number")]
-        public static int GetSampleRowNumber()
+        public static unsafe int GetSampleRowNumber(long arg0)
         {
-            if (_rawFile == null) return 0;
-            return _rawFile.SampleInformation.RowNumber;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.SampleInformation.RowNumber;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_sample_dilution_factor")]
-        public static double GetSampleDilutionFactor()
+        public static unsafe double GetSampleDilutionFactor(long arg0)
         {
-            if (_rawFile == null) return 1.0;
-            return _rawFile.SampleInformation.DilutionFactor;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return f.SampleInformation.DilutionFactor;  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_sample_injection_volume")]
-        public static double GetSampleInjectionVolume()
+        [UnmanagedCallersOnly(EntryPoint = "get_first_scan")]
+        public static unsafe int GetFirstScan(long arg0)
         {
-            if (_rawFile == null) return 0.0;
-            return _rawFile.SampleInformation.InjectionVolume;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.RunHeader.FirstSpectrum; } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_sample_instrument_method_file")]
-        public static unsafe int GetSampleInstrumentMethodFile(byte* buffer, int length)
+        [UnmanagedCallersOnly(EntryPoint = "get_last_scan")]
+        public static unsafe int GetLastScan(long arg0)
         {
-            if (_rawFile == null) return -1;
-            var str = _rawFile.SampleInformation.InstrumentMethodFile ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.RunHeader.LastSpectrum; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_end_time")]
+        public static unsafe double GetEndTime(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.EndTime;  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_start_time")]
+        public static unsafe double GetStartTime(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.StartTime;  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_mass_resolution")]
+        public static unsafe double GetMassResolution(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.MassResolution;  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_expected_runtime")]
+        public static unsafe double GetExpectedRuntime(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.ExpectedRuntime;  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_max_integrated_intensity")]
+        public static unsafe double GetMaxIntegratedIntensity(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.MaxIntegratedIntensity;  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_max_intensity")]
+        public static unsafe int GetMaxIntensity(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { if (f.RunHeader == null) return -1; return f.RunHeader.MaxIntensity;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_low_mass")]
+        public static unsafe double GetLowMass(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.LowMass;  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_high_mass")]
+        public static unsafe double GetHighMass(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.HighMass;  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_file_name")]
+        public static unsafe int GetFileName(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return CopyString(f.FileName, arg1, arg2); } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_path")]
+        public static unsafe int GetPath(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.Path ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_creation_date")]
+        public static unsafe int GetCreationDate(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.CreationDate.ToString("o"); var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_computer_name")]
+        public static unsafe int GetComputerName(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.ComputerName ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_creator_id")]
+        public static unsafe int GetCreatorId(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.CreatorId ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_model")]
+        public static unsafe int GetInstrumentModel(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.Model ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_name")]
+        public static unsafe int GetInstrumentName(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.Name ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_serial_number")]
+        public static unsafe int GetInstrumentSerialNumber(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.SerialNumber ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_software_version")]
+        public static unsafe int GetInstrumentSoftwareVersion(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.SoftwareVersion ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_hardware_version")]
+        public static unsafe int GetInstrumentHardwareVersion(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.HardwareVersion ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_ms_order")]
-        public static int GetMsOrder(int scanNumber)
+        public static unsafe int GetMsOrder(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
-                return (int)scanEvent.MSOrder;
-            }
-            catch
-            {
-                return -1;
-            }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
+                return (int)scanEvent.MSOrder;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_mass_analyzer")]
-        public static int GetMassAnalyzer(int scanNumber)
+        public static unsafe int GetMassAnalyzer(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
-                return (int)scanEvent.MassAnalyzer;
-            }
-            catch
-            {
-                return -1;
-            }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
+                return (int)scanEvent.MassAnalyzer;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_precursor_mass")]
-        public static double GetPrecursorMass(int scanNumber)
+        public static unsafe double GetPrecursorMass(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1.0;
-            try
-            {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
                 if (scanEvent.MSOrder == MSOrderType.Ms) return 0.0;
-                return scanEvent.GetReaction(0).PrecursorMass;
-            }
-            catch
-            {
-                return -1.0;
-            }
-        }
-
-        private static string SafeGetScanEventString(IScanEvent scanEvent)
-        {
-            if (scanEvent == null) return "";
-            // We AVOID scanEvent.ToString() because it triggers the Thermo.FilterStringTokens static constructor
-            // which fails in AOT due to GetEnumValues[T] reflection.
-            try 
-            {
-                var polarity = scanEvent.Polarity == PolarityType.Positive ? "+" : (scanEvent.Polarity == PolarityType.Negative ? "-" : "");
-                var analyzer = ((int)scanEvent.MassAnalyzer).ToString(); 
-                var msOrder = ((int)scanEvent.MSOrder).ToString();
-                return $"{analyzer} {polarity} ms{msOrder}";
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Warning: Manual scan event formatting failed: {ex.Message}");
-                return "MS_ORDER_ONLY";
-            }
+                return scanEvent.GetReaction(0).PrecursorMass;  } catch { return -1.0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_string")]
-        public static unsafe int GetScanEventString(int scanNumber, byte* buffer, int bufferSize)
+        public static unsafe int GetScanEventString(long arg0, int arg1, byte* arg2, int arg3)
         {
-            if (_rawFile == null) return 0;
-            try
-            {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
                 if (scanEvent == null) return 0;
 
                 string eventStr = SafeGetScanEventString(scanEvent);
@@ -720,59 +421,22 @@ namespace ThermoNativeReader
                 if (string.IsNullOrEmpty(eventStr)) return 0;
                 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(eventStr);
-                int count = Math.Min(bytes.Length, bufferSize - 1);
+                int count = Math.Min(bytes.Length, arg3 - 1);
                 for (int i = 0; i < count; i++)
                 {
-                    buffer[i] = bytes[i];
+                    arg2[i] = bytes[i];
                 }
-                buffer[count] = 0; // Null terminator
-                return bytes.Length;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Fatal error in get_scan_event_string: {ex}");
-                return -1;
-            }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_ms2_filter_masses")]
-        public static unsafe int GetMs2FilterMasses(double* buffer, int maxSize)
-        {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var precursors = new HashSet<double>();
-                for (int i = _rawFile.RunHeader.FirstSpectrum; i <= _rawFile.RunHeader.LastSpectrum; i++)
-                {
-                    var scanEvent = _rawFile.GetScanEventForScanNumber(i);
-                    if (scanEvent.MSOrder > MSOrderType.Ms)
-                    {
-                        precursors.Add(scanEvent.GetReaction(0).PrecursorMass);
-                    }
-                }
-                
-                var sorted = precursors.OrderBy(x => x).ToList();
-                int count = Math.Min(sorted.Count, maxSize);
-                for (int i = 0; i < count; i++)
-                {
-                    buffer[i] = sorted[i];
-                }
-                return count;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in get_ms2_filter_masses: {ex}");
-                return -1;
-            }
+                arg2[count] = 0; // Null terminator
+                return bytes.Length;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_string")]
-        public static unsafe int GetScanFilterString(int scanNumber, byte* buffer, int bufferSize)
+        public static unsafe int GetScanFilterString(long arg0, int arg1, byte* arg2, int arg3)
         {
-            if (_rawFile == null) return 0;
-            try
-            {
-                var filter = _rawFile.GetFilterForScanNumber(scanNumber);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var filter = f.GetFilterForScanNumber(arg1);
                 if (filter == null) return 0;
 
                 string filterStr = SafeGetFilterString(filter);
@@ -780,53 +444,75 @@ namespace ThermoNativeReader
                 if (string.IsNullOrEmpty(filterStr)) return 0;
                 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(filterStr);
-                int count = Math.Min(bytes.Length, bufferSize - 1);
+                int count = Math.Min(bytes.Length, arg3 - 1);
                 for (int i = 0; i < count; i++)
                 {
-                    buffer[i] = bytes[i];
+                    arg2[i] = bytes[i];
                 }
-                buffer[count] = 0;
-                return count;
-            }
-            catch (Exception)
-            {
-                return 0;
-            }
+                arg2[count] = 0;
+                return count;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_number_from_rt")]
-        public static int GetScanNumberFromRT(double rt)
+        public static unsafe int GetScanNumberFromRt(long arg0, double arg1)
         {
-            if (_rawFile == null) return -1;
-            return _rawFile.ScanNumberFromRetentionTime(rt);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.ScanNumberFromRetentionTime(arg1);  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_ms2_filter_masses")]
+        public static unsafe int GetMs2FilterMasses(long arg0, double* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var precursors = new HashSet<double>();
+                for (int i = f.RunHeader.FirstSpectrum; i <= f.RunHeader.LastSpectrum; i++)
+                {
+                    var scanEvent = f.GetScanEventForScanNumber(i);
+                    if (scanEvent.MSOrder > MSOrderType.Ms)
+                    {
+                        precursors.Add(scanEvent.GetReaction(0).PrecursorMass);
+                    }
+                }
+                
+                var sorted = precursors.OrderBy(x => x).ToList();
+                int count = Math.Min(sorted.Count, arg2);
+                for (int i = 0; i < count; i++)
+                {
+                    arg1[i] = sorted[i];
+                }
+                return count;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_ms2_scan_number_from_rt")]
-        public static int GetMs2ScanNumberFromRT(double rt, double precursorMz, double tolerancePpm)
+        public static unsafe int GetMs2ScanNumberFromRt(long arg0, double arg1, double arg2, double arg3)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                int bestScan = -1;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { int bestScan = -1;
                 double minDistance = double.MaxValue;
                 
-                for (int i = _rawFile.RunHeader.FirstSpectrum; i <= _rawFile.RunHeader.LastSpectrum; i++)
+                for (int i = f.RunHeader.FirstSpectrum; i <= f.RunHeader.LastSpectrum; i++)
                 {
-                    var scanEvent = _rawFile.GetScanEventForScanNumber(i);
+                    var scanEvent = f.GetScanEventForScanNumber(i);
                     if (scanEvent.MSOrder > MSOrderType.Ms)
                     {
                         double pMz = scanEvent.GetReaction(0).PrecursorMass;
                         bool match = false;
-                        if (precursorMz <= 0) {
+                        if (arg2 <= 0) {
                             match = true;
                         } else {
-                            match = Math.Abs(pMz - precursorMz) < 0.01;
+                            match = Math.Abs(pMz - arg2) < 0.01;
                         }
                         
                         if (match)
                         {
-                            double scanRt = _rawFile.RetentionTimeFromScanNumber(i);
-                            double dist = Math.Abs(scanRt - rt);
+                            double scanRt = f.RetentionTimeFromScanNumber(i);
+                            double dist = Math.Abs(scanRt - arg1);
                             if (dist < minDistance)
                             {
                                 minDistance = dist;
@@ -835,423 +521,504 @@ namespace ThermoNativeReader
                         }
                     }
                 }
-                return bestScan;
-            }
-            catch
-            {
-                return -1;
-            }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_chromatogram")]
-        public static unsafe int GetChromatogram(int traceType, IntPtr filterPtr, double* massRangesStart, double* massRangesEnd, int massRangeCount, int startScan, int endScan, double* times, double* intensities, int maxLength)
-        {
-            if (_rawFile == null) return -1;
-            try
-            {
-                string filter = Marshal.PtrToStringAnsi(filterPtr) ?? "";
-                var settings = new ChromatogramTraceSettings((TraceType)traceType) { Filter = filter };
-                
-                if (massRangeCount > 0)
-                {
-                    settings.MassRangeCount = massRangeCount;
-                    for (int i = 0; i < massRangeCount; i++)
-                    {
-                        settings.SetMassRange(i, new Range(massRangesStart[i], massRangesEnd[i]));
-                    }
-                }
-
-                var data = _rawFile.GetChromatogramData(new[] { settings }, startScan, endScan);
-                
-                if (data == null || data.PositionsArray == null || data.PositionsArray.Length == 0) 
-                {
-                    // Console.WriteLine($"GetChromatogramData returned no results for type={traceType}, filter='{filter}', range={startScan}-{endScan}");
-                    return 0;
-                }
-                
-                int count = Math.Min(data.PositionsArray[0].Length, maxLength);
-                for (int i = 0; i < count; i++)
-                {
-                    times[i] = data.PositionsArray[0][i];
-                    intensities[i] = data.IntensitiesArray[0][i];
-                }
-                return data.PositionsArray[0].Length;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in get_chromatogram: {ex}");
-                return -1;
-            }
+                return bestScan;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_ms1_scan_number_from_rt")]
-        public static int GetMs1ScanNumberFromRT(double rt)
+        public static unsafe int GetMs1ScanNumberFromRt(long arg0, double arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                int scan = _rawFile.ScanNumberFromRetentionTime(rt);
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scan);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { int scan = f.ScanNumberFromRetentionTime(arg1);
+                var scanEvent = f.GetScanEventForScanNumber(scan);
                 if (scanEvent.MSOrder == MSOrderType.Ms) return scan;
                 
                 // Search nearby if not MS1
                 for (int i = 1; i < 100; i++)
                 {
-                    if (scan - i >= _rawFile.RunHeader.FirstSpectrum)
+                    if (scan - i >= f.RunHeader.FirstSpectrum)
                     {
-                         if (_rawFile.GetScanEventForScanNumber(scan - i).MSOrder == MSOrderType.Ms) return scan - i;
+                         if (f.GetScanEventForScanNumber(scan - i).MSOrder == MSOrderType.Ms) return scan - i;
                     }
-                    if (scan + i <= _rawFile.RunHeader.LastSpectrum)
+                    if (scan + i <= f.RunHeader.LastSpectrum)
                     {
-                         if (_rawFile.GetScanEventForScanNumber(scan + i).MSOrder == MSOrderType.Ms) return scan + i;
+                         if (f.GetScanEventForScanNumber(scan + i).MSOrder == MSOrderType.Ms) return scan + i;
                     }
                 }
-                return -1;
-            }
-            catch
-            {
-                return -1;
-            }
+                return -1;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_averaged_spectrum")]
-        public static unsafe int GetAveragedSpectrum(int* scanNumbers, int numScans, double* masses, double* intensities, int maxLength)
+        [UnmanagedCallersOnly(EntryPoint = "get_chromatogram")]
+        public static unsafe int GetChromatogram(long arg0, int arg1, byte* arg2, double* arg3, double* arg4, int arg5, int arg6, int arg7, double* arg8, double* arg9, int arg10)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var scans = new int[numScans];
-                for (int i = 0; i < numScans; i++) scans[i] = scanNumbers[i];
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { 
+                    string filter = Marshal.PtrToStringAnsi((IntPtr)arg2) ?? "";
+                    var settings = new ChromatogramTraceSettings((TraceType)arg1) { Filter = filter };
+                    
+                    if (arg5 > 0)
+                    {
+                        settings.MassRangeCount = arg5;
+                        for (int i = 0; i < arg5; i++)
+                        {
+                            settings.SetMassRange(i, new Range(arg3[i], arg4[i]));
+                        }
+                    }
+
+                    var data = f.GetChromatogramData(new[] { settings }, arg6, arg7);
+                    
+                    if (data == null || data.PositionsArray == null || data.PositionsArray.Length == 0) 
+                    {
+                        return 0;
+                    }
+                    
+                    int count = Math.Min(data.PositionsArray[0].Length, arg10);
+                    for (int i = 0; i < count; i++)
+                    {
+                        arg8[i] = data.PositionsArray[0][i];
+                        arg9[i] = data.IntensitiesArray[0][i];
+                    }
+                    return count;
+                } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_filters")]
+        public static unsafe int GetFilters(long arg0, byte* arg1, int arg2) { return RunOnWorker(() => { if (!_openFiles.TryGetValue(arg0, out var f)) return 0; try { return 0; } catch { return 0; } }); }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_averaged_spectrum")]
+        public static unsafe int GetAveragedSpectrum(long arg0, int* arg1, int arg2, double* arg3, double* arg4, int arg5)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var scans = new int[arg2];
+                for (int i = 0; i < arg2; i++) scans[i] = arg1[i];
                 
                 // CommonCore uses AverageScans extension or casting to IScanAveragePlus
                 var massOptions = new MassOptions() { Tolerance = 10, ToleranceUnits = ToleranceUnits.ppm };
                 var averageOptions = new FtAverageOptions();
-                var result = _rawFile.AverageScans(scans.ToList(), massOptions, averageOptions);
+                var result = f.AverageScans(scans.ToList(), massOptions, averageOptions);
                 
                 if (result == null || result.PreferredMasses == null) return 0;
                 
-                int count = Math.Min(result.PreferredMasses.Length, maxLength);
+                int count = Math.Min(result.PreferredMasses.Length, arg5);
                 for (int i = 0; i < count; i++)
                 {
-                    masses[i] = result.PreferredMasses[i];
-                    intensities[i] = result.PreferredIntensities[i];
+                    arg3[i] = result.PreferredMasses[i];
+                    arg4[i] = result.PreferredIntensities[i];
                 }
-                return result.PreferredMasses.Length;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in get_averaged_spectrum: {ex}");
-                return -1;
-            }
+                return result.PreferredMasses.Length;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_count")]
-        public static int GetInstrumentCount()
+        public static unsafe int GetInstrumentCount(long arg0)
         {
-            if (_rawFile == null) return -1;
-            return _rawFile.InstrumentCount;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.InstrumentCount;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_count_of_type")]
-        public static int GetInstrumentCountOfType(int type)
+        public static unsafe int GetInstrumentCountOfType(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            return _rawFile.GetInstrumentCountOfType((Device)type);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.GetInstrumentCountOfType((Device)arg1);  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "is_open")]
-        public static int IsOpen()
+        public static unsafe int IsOpen(long arg0)
         {
-            if (_rawFile == null) return 0;
-            return _rawFile.IsOpen ? 1 : 0;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.IsOpen ? 1 : 0;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "is_error")]
-        public static int IsError()
+        public static unsafe int IsError(long arg0)
         {
-            if (_rawFile == null) return 1;
-            return _rawFile.IsError ? 1 : 0;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.IsError ? 1 : 0;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "in_acquisition")]
-        public static int InAcquisition()
+        public static unsafe int InAcquisition(long arg0)
         {
-            if (_rawFile == null) return 0;
-            return _rawFile.InAcquisition ? 1 : 0;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.InAcquisition ? 1 : 0;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "has_ms_data")]
-        public static int HasMsData()
+        public static unsafe int HasMsData(long arg0)
         {
-            if (_rawFile == null) return 0;
-            return _rawFile.HasMsData ? 1 : 0;
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.HasMsData ? 1 : 0;  } catch { return 0; }
+            });
         }
 
-        private static unsafe int _getStatusLogValuesForRt(double rt, byte* buffer, int bufferSize)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_meta_filters")]
+        public static unsafe int GetScanFilterMetaFilters(long arg0, long arg1, long arg2, long arg3) { return RunOnWorker(() => { if (!_openFiles.TryGetValue(arg0, out var f)) return 0; try { return 0; } catch { return 0; } }); }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_field_free_region")]
+        public static unsafe int GetScanFilterFieldFreeRegion(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var log = _rawFile.GetStatusLogForRetentionTime(rt);
-                if (log == null || log.Values == null) return 0;
-                var res = string.Join("|", log.Values);
-                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
-                int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-                buffer[count] = 0;
-                return bytes.Length;
-            }
-            catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return GetFilterIntHelper(f, (int)arg1, "FieldFreeRegion");  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values_for_rt")]
-        public static unsafe int GetStatusLogValuesForRt(double rt, byte* buffer, int bufferSize)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_index_to_multiple_activation_index")]
+        public static unsafe int GetScanFilterIndexToMultipleActivationIndex(long arg0, int arg1)
         {
-            return _getStatusLogValuesForRt(rt, buffer, bufferSize);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return GetFilterIntHelper(f, (int)arg1, "IndexToMultipleActivationIndex");  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values")]
-        public static unsafe int GetStatusLogValues(int scanNumber, byte* buffer, int bufferSize)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_volt_type")]
+        public static unsafe int GetScanFilterCompensationVoltType(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
-                return _getStatusLogValuesForRt(rt, buffer, bufferSize);
-            }
-            catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).CompensationVoltType;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_status_log_header")]
-        public static unsafe int GetStatusLogHeader(byte* buffer, int bufferSize)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage_count")]
+        public static unsafe int GetScanFilterCompensationVoltageCount(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var info = _rawFile.GetStatusLogHeaderInformation();
-                if (info == null) return 0;
-                var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType));
-                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
-                int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-                buffer[count] = 0;
-                return bytes.Length;
-            }
-            catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.GetFilterForScanNumber(arg1).CompensationVoltageCount;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_status_log_count")]
-        public static int GetStatusLogCount()
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation")]
+        public static unsafe int GetScanFilterElectronCaptureDissociation(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetStatusLogEntriesCount(); }
-            catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).ElectronCaptureDissociation;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_values")]
-        public static unsafe int GetTrailerExtraValues(int scanNumber, byte* buffer, int bufferSize)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation_value")]
+        public static unsafe double GetScanFilterElectronCaptureDissociationValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var trailer = _rawFile.GetTrailerExtraInformation(scanNumber);
-                if (trailer == null || trailer.Values == null) return 0;
-                var res = string.Join("|", trailer.Values);
-                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
-                int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-                buffer[count] = 0;
-                return bytes.Length;
-            }
-            catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "ElectronCaptureDissociationValue");  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_count")]
-        public static int GetTrailerExtraCount()
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation")]
+        public static unsafe int GetScanFilterElectronTransferDissociation(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { 
-                var header = _rawFile.GetTrailerExtraHeaderInformation();
-                return header != null ? header.Count() : 0;
-            }
-            catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).ElectronTransferDissociation;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_ms_order")]
-        public static int GetScanEventMsOrder(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation_value")]
+        public static unsafe double GetScanFilterElectronTransferDissociationValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "ElectronTransferDissociationValue");  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_count")]
-        public static int GetScanEventMassCount(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_enhanced")]
+        public static unsafe int GetScanFilterEnhanced(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).Enhanced;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_mass")]
-        public static double GetScanEventPrecursorMass(int scanNumber, int index)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid")]
+        public static unsafe int GetScanFilterHigherEnergyCid(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetMass(index); } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return GetFilterIntHelper(f, (int)arg1, "HigherEnergyCID") != 0 ? GetFilterIntHelper(f, (int)arg1, "HigherEnergyCID") : GetFilterIntHelper(f, (int)arg1, "HigherEnergyCid");  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_activation_type")]
-        public static int GetScanEventActivationType(int scanNumber, int index)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid_value")]
+        public static unsafe double GetScanFilterHigherEnergyCidValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index); } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { double val = GetFilterHelper(f, (int)arg1, "HigherEnergyCIDValue"); if (val == 0.0) val = GetFilterHelper(f, (int)arg1, "HigherEnergyCidValue"); return val;  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_collision_energy")]
-        public static double GetScanEventCollisionEnergy(int scanNumber, int index)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation")]
+        public static unsafe int GetScanFilterMultiplePhotonDissociation(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index); } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return GetFilterIntHelper(f, (int)arg1, "MultiplePhotonDissociation");  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_stats")]
-        public static unsafe int GetScanStats(int scanNumber, double* data)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation_value")]
+        public static unsafe double GetScanFilterMultiplePhotonDissociationValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var stats = _rawFile.GetScanStatsForScanNumber(scanNumber);
-                if (stats == null) return 0;
-                data[0] = stats.StartTime;
-                data[1] = stats.LowMass;
-                data[2] = stats.HighMass;
-                data[3] = stats.TIC;
-                data[4] = stats.BasePeakMass;
-                data[5] = stats.BasePeakIntensity;
-                data[6] = stats.PacketCount;
-                data[7] = stats.IsCentroidScan ? 1.0 : 0.0;
-                return 8;
-            }
-            catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "MultiplePhotonDissociationValue");  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ultra")]
-        public static int GetScanFilterUltra(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation")]
+        public static unsafe int GetScanFilterPulsedQDissociation(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return GetFilterIntHelper(f, (int)arg1, "PulsedQDissociation");  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_wideband")]
-        public static int GetScanFilterWideband(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation_value")]
+        public static unsafe double GetScanFilterPulsedQDissociationValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "PulsedQDissociationValue");  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_polarity")]
-        public static int GetScanFilterPolarity(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation")]
+        public static unsafe int GetScanFilterSourceFragmentation(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).SourceFragmentation;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ms_order")]
-        public static int GetScanFilterMsOrder(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_valid")]
+        public static unsafe int GetScanFilterSourceFragmentationInfoValid(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).SourceFragmentationInfoValid[0];  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_analyzer")]
-        public static int GetScanFilterMassAnalyzer(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_type")]
+        public static unsafe int GetScanFilterSourceFragmentationType(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).SourceFragmentationType;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector")]
-        public static int GetScanFilterDetector(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_value")]
+        public static unsafe double GetScanFilterSourceFragmentationValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return f.GetFilterForScanNumber(arg1).SourceFragmentationValue(0);  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_data")]
-        public static int GetScanFilterScanData(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
+        public static unsafe int GetScanFilterSupplementalActivation(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).SupplementalActivation;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_precision")]
+        public static unsafe int GetScanFilterMassPrecision(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).MassPrecision;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multi_notch")]
+        public static unsafe int GetScanFilterMultiNotch(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).MultiNotch;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiplex")]
+        public static unsafe int GetScanFilterMultiplex(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetFilterForScanNumber(arg1).Multiplex;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_unique_mass_count")]
+        public static unsafe int GetScanFilterUniqueMassCount(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.GetFilterForScanNumber(arg1).UniqueMassCount;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_a")]
+        public static unsafe double GetScanFilterParamA(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "ParamA");  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_b")]
+        public static unsafe double GetScanFilterParamB(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "ParamB");  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_f")]
+        public static unsafe double GetScanFilterParamF(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "ParamF");  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_r")]
+        public static unsafe double GetScanFilterParamR(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "ParamR");  } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_v")]
+        public static unsafe double GetScanFilterParamV(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return GetFilterHelper(f, (int)arg1, "ParamV");  } catch { return -1.0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_mode")]
-        public static int GetScanFilterScanMode(int scanNumber)
+        public static unsafe int GetScanFilterScanMode(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).ScanMode;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_accurate_mass")]
-        public static int GetScanFilterAccurateMass(int scanNumber)
+        public static unsafe int GetScanFilterAccurateMass(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).AccurateMass;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ionization_mode")]
-        public static int GetScanFilterIonizationMode(int scanNumber)
+        public static unsafe int GetScanFilterIonizationMode(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).IonizationMode;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_lock")]
-        public static int GetScanFilterLock(int scanNumber)
+        public static unsafe int GetScanFilterLock(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).Lock;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_turbo_scan")]
-        public static int GetScanFilterTurboScan(int scanNumber)
+        public static unsafe int GetScanFilterTurboScan(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).TurboScan;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_corona")]
-        public static int GetScanFilterCorona(int scanNumber)
+        public static unsafe int GetScanFilterCorona(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).Corona;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_dependent")]
-        public static int GetScanFilterDependent(int scanNumber)
+        public static unsafe int GetScanFilterDependent(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).Dependent;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector_value")]
-        public static double GetScanFilterDetectorValue(int scanNumber)
+        public static unsafe double GetScanFilterDetectorValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return f.GetScanEventForScanNumber(arg1).DetectorValue;  } catch { return -1.0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage")]
-        public static int GetScanEventCompensationVoltage(int scanNumber)
+        public static unsafe int GetScanEventCompensationVoltage(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage; } catch { return -1; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).CompensationVoltage;  } catch { return 0; }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage_value")]
-        public static double GetScanEventCompensationVoltageValue(int scanNumber)
+        public static unsafe double GetScanEventCompensationVoltageValue(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try 
-            { 
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
                 // Use reflection for properties that might not be in the base IScanEvent interface in some versions
                 var prop = scanEvent.GetType().GetProperty("CompensationVoltageValue");
                 if (prop != null) 
@@ -1259,138 +1026,494 @@ namespace ThermoNativeReader
                     var val = prop.GetValue(scanEvent);
                     return val != null ? (double)Convert.ChangeType(val, typeof(double)) : 0.0;
                 }
-                return 0.0;
-            } 
-            catch { return -1; }
+                return 0.0;  } catch { return -1.0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
-        public static unsafe int GetTrailerExtraHeader(byte* buffer, int bufferSize)
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_ms_order")]
+        public static unsafe int GetScanEventMsOrder(long arg0, int arg1)
         {
-            if (_rawFile == null) return -1;
-            try
-            {
-                var info = _rawFile.GetTrailerExtraHeaderInformation();
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).MSOrder;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_count")]
+        public static unsafe int GetScanEventMassCount(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.GetScanEventForScanNumber(arg1).MassCount;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_mass")]
+        public static unsafe double GetScanEventPrecursorMass(long arg0, int arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return f.GetScanEventForScanNumber(arg1).GetMass(arg2); } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_activation_type")]
+        public static unsafe int GetScanEventActivationType(long arg0, int arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).GetActivation(arg2);  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_collision_energy")]
+        public static unsafe double GetScanEventCollisionEnergy(long arg0, int arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return f.GetScanEventForScanNumber(arg1).GetEnergy(arg2); } catch { return -1.0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_stats")]
+        public static unsafe int GetScanStats(long arg0, int arg1, double* arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var stats = f.GetScanStatsForScanNumber(arg1);
+                if (stats == null) return 0;
+                arg2[0] = stats.StartTime;
+                arg2[1] = stats.LowMass;
+                arg2[2] = stats.HighMass;
+                arg2[3] = stats.TIC;
+                arg2[4] = stats.BasePeakMass;
+                arg2[5] = stats.BasePeakIntensity;
+                arg2[6] = stats.PacketCount;
+                arg2[7] = stats.IsCentroidScan ? 1.0 : 0.0;
+                return 8;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ultra")]
+        public static unsafe int GetScanFilterUltra(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).Ultra;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_wideband")]
+        public static unsafe int GetScanFilterWideband(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).Wideband;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_polarity")]
+        public static unsafe int GetScanFilterPolarity(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).Polarity;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ms_order")]
+        public static unsafe int GetScanFilterMsOrder(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).MSOrder;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_analyzer")]
+        public static unsafe int GetScanFilterMassAnalyzer(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).MassAnalyzer;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector")]
+        public static unsafe int GetScanFilterDetector(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).Detector;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_data")]
+        public static unsafe int GetScanFilterScanData(long arg0, int arg1)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.GetScanEventForScanNumber(arg1).ScanData;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_count")]
+        public static unsafe int GetTrailerExtraCount(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var header = f.GetTrailerExtraHeaderInformation();
+                return header != null ? header.Count() : 0;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values")]
+        public static unsafe int GetStatusLogValues(long arg0, int arg1, byte* arg2, int arg3)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var rt = f.RetentionTimeFromScanNumber(arg1);
+                return _getStatusLogValuesForRtHelper(f, rt, arg2, arg3);  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_header")]
+        public static unsafe int GetStatusLogHeader(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var info = f.GetStatusLogHeaderInformation();
                 if (info == null) return 0;
                 var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType));
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
-                int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
-                buffer[count] = 0;
-                return bytes.Length;
-            }
-            catch { return -1; }
+                int count = Math.Min(bytes.Length, arg2 - 1);
+                for (int i = 0; i < count; i++) arg1[i] = bytes[i];
+                arg1[count] = 0;
+                return bytes.Length;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "close_raw_file")]
-        public static void CloseRawFile()
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_values_for_rt")]
+        public static unsafe int GetStatusLogValuesForRt(long arg0, double arg1, byte* arg2, int arg3)
         {
-            _rawFile?.Dispose();
-            _rawFile = null;
-        }
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_volt_type")]
-        public static int GetScanFilterCompensationVoltType(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltType; } catch { return 0; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return _getStatusLogValuesForRtHelper(f, arg1, arg2, arg3);  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage_count")]
-        public static int GetScanFilterCompensationVoltageCount(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_status_log_count")]
+        public static unsafe int GetStatusLogCount(long arg0)
         {
-            if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltageCount; } catch { return 0; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.GetStatusLogEntriesCount();  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation")]
-        public static int GetScanFilterElectronCaptureDissociation(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_values")]
+        public static unsafe int GetTrailerExtraValues(long arg0, int arg1, byte* arg2, int arg3)
         {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation; } catch { return 0; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var trailer = f.GetTrailerExtraInformation(arg1);
+                if (trailer == null || trailer.Values == null) return 0;
+                var res = string.Join("|", trailer.Values);
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, arg3 - 1);
+                for (int i = 0; i < count; i++) arg2[i] = bytes[i];
+                arg2[count] = 0;
+                return bytes.Length;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation")]
-        public static int GetScanFilterElectronTransferDissociation(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
+        public static unsafe int GetTrailerExtraHeader(long arg0, byte* arg1, int arg2)
         {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation; } catch { return 0; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var info = f.GetTrailerExtraHeaderInformation();
+                if (info == null) return 0;
+                var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType));
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, arg2 - 1);
+                for (int i = 0; i < count; i++) arg1[i] = bytes[i];
+                arg1[count] = 0;
+                return bytes.Length;  } catch { return 0; }
+            });
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_enhanced")]
-        public static int GetScanFilterEnhanced(int scanNumber)
+        [UnmanagedCallersOnly(EntryPoint = "get_file_description")]
+        public static unsafe int GetFileDescription(long arg0, byte* arg1, int arg2)
         {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced; } catch { return 0; }
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.FileHeader.FileDescription ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_modified_date")]
+        public static unsafe int GetModifiedDate(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.FileHeader.ModifiedDate.ToString() ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_who_created_logon")]
+        public static unsafe int GetWhoCreatedLogon(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.FileHeader.WhoCreatedLogon ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_who_modified_id")]
+        public static unsafe int GetWhoModifiedId(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.FileHeader.WhoModifiedId ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_who_modified_logon")]
+        public static unsafe int GetWhoModifiedLogon(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.FileHeader.WhoModifiedLogon ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_barcode")]
+        public static unsafe int GetSampleBarcode(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.SampleInformation.Barcode ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_id")]
+        public static unsafe int GetSampleId(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.SampleInformation.SampleId ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_name")]
+        public static unsafe int GetSampleName(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.SampleInformation.SampleName ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_vial")]
+        public static unsafe int GetSampleVial(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.SampleInformation.Vial ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_comment")]
+        public static unsafe int GetSampleComment(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var str = f.SampleInformation.Comment ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_axis_label_x")]
+        public static unsafe int GetInstrumentAxisLabelX(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.AxisLabelX ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_axis_label_y")]
+        public static unsafe int GetInstrumentAxisLabelY(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.AxisLabelY ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_flags")]
+        public static unsafe int GetInstrumentFlags(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); var str = data?.Flags ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_units")]
+        public static unsafe int GetInstrumentUnits(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); return data != null ? (int)data.Units : 0;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_is_valid")]
+        public static unsafe int GetInstrumentIsValid(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); return data != null && data.IsValid ? 1 : 0;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_has_accurate_mass_precursors")]
+        public static unsafe int GetInstrumentHasAccurateMassPrecursors(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); return data != null && data.HasAccurateMassPrecursors ? 1 : 0;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_is_tsq_quantum_file")]
+        public static unsafe int GetInstrumentIsTsqQuantumFile(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { var data = f.GetInstrumentData(); return data != null && data.IsTsqQuantumFile() ? 1 : 0;  } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_method_count")]
+        public static unsafe int GetInstrumentMethodCount(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.InstrumentMethodsCount; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_instrument_method")]
+        public static unsafe int GetInstrumentMethod(long arg0, int arg1, byte* arg2, int arg3)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return CopyString(f.GetInstrumentMethod(arg1), arg2, arg3); } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_index")]
+        public static unsafe int GetAutosamplerTrayIndex(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.AutoSamplerInformation.TrayIndex; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vial_index")]
+        public static unsafe int GetAutosamplerVialIndex(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.AutoSamplerInformation.VialIndex; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_name")]
+        public static unsafe int GetAutosamplerTrayName(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return CopyString(f.AutoSamplerInformation.TrayName ?? "", arg1, arg2); } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_shape")]
+        public static unsafe int GetAutosamplerTrayShape(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return (int)f.AutoSamplerInformation.TrayShape; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray")]
+        public static unsafe int GetAutosamplerVialsPerTray(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.AutoSamplerInformation.VialsPerTray; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_x")]
+        public static unsafe int GetAutosamplerVialsPerTrayX(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.AutoSamplerInformation.VialsPerTrayX; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_y")]
+        public static unsafe int GetAutosamplerVialsPerTrayY(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return f.AutoSamplerInformation.VialsPerTrayY; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_instrument_method_file")]
+        public static unsafe int GetSampleInstrumentMethodFile(long arg0, byte* arg1, int arg2)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { return CopyString(f.SampleInformation.InstrumentMethodFile, arg1, arg2); } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_injection_volume")]
+        public static unsafe double GetSampleInjectionVolume(long arg0)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
+                try { return f.SampleInformation.InjectionVolume; } catch { return -1.0; }
+            });
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation")]
-        public static int GetScanFilterSourceFragmentation(int scanNumber)
+        private static string SafeGetScanEventString(IScanEvent scanEvent)
         {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation; } catch { return 0; }
+            if (scanEvent == null) return "";
+            try { return scanEvent.ToString(); } catch { return ""; }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_valid")]
-        public static int GetScanFilterSourceFragmentationInfoValid(int scanNumber)
+        private static string SafeGetFilterString(IScanFilter filter)
         {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid[0]; } catch { return 0; }
+            if (filter == null) return "";
+            try { return filter.ToString(); } catch { return ""; }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_type")]
-        public static int GetScanFilterSourceFragmentationType(int scanNumber)
+        private static double GetFilterHelper(IRawDataPlus file, int scanNumber, string name)
         {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationType; } catch { return 0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_value")]
-        public static double GetScanFilterSourceFragmentationValue(int scanNumber)
-        {
-            if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(0); } catch { return 0.0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
-        public static int GetScanFilterSupplementalActivation(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation; } catch { return 0; }
-        }
-        
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_precision")]
-        public static int GetScanFilterMassPrecision(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MassPrecision; } catch { return 0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multi_notch")]
-        public static int GetScanFilterMultiNotch(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiNotch; } catch { return 0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiplex")]
-        public static int GetScanFilterMultiplex(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Multiplex; } catch { return 0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_unique_mass_count")]
-        public static int GetScanFilterUniqueMassCount(int scanNumber)
-        {
-            if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).UniqueMassCount; } catch { return 0; }
-        }
-        private static double GetFilterDouble(int scanNumber, string name)
-        {
-            if (_rawFile == null) return 0.0;
+            if (file == null) return 0.0;
             try {
-                var filter = _rawFile.GetFilterForScanNumber(scanNumber);
+                var filter = file.GetFilterForScanNumber(scanNumber);
+                if (filter == null) return 0.0;
                 var prop = filter.GetType().GetProperty(name);
                 if (prop == null) return 0.0;
                 var val = prop.GetValue(filter);
@@ -1399,11 +1522,12 @@ namespace ThermoNativeReader
             } catch { return 0.0; }
         }
 
-        private static int GetFilterInt(int scanNumber, string name)
+        private static int GetFilterIntHelper(IRawDataPlus file, int scanNumber, string name)
         {
-            if (_rawFile == null) return 0;
+            if (file == null) return 0;
             try {
-                var filter = _rawFile.GetFilterForScanNumber(scanNumber);
+                var filter = file.GetFilterForScanNumber(scanNumber);
+                if (filter == null) return 0;
                 var prop = filter.GetType().GetProperty(name);
                 if (prop == null) return 0;
                 var val = prop.GetValue(filter);
@@ -1412,193 +1536,12 @@ namespace ThermoNativeReader
             } catch { return 0; }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid")]
-        public static int GetScanFilterHigherEnergyCID(int scanNumber)
+        private static string SafeGetFilterStringHelper(IScanFilter filter)
         {
-            return GetFilterInt(scanNumber, "HigherEnergyCID") != 0 ? GetFilterInt(scanNumber, "HigherEnergyCID") : GetFilterInt(scanNumber, "HigherEnergyCid");
+            if (filter == null) return "";
+            try { return filter.ToString(); } catch { return ""; }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid_value")]
-        public static double GetScanFilterHigherEnergyCIDValue(int scanNumber)
-        {
-            double val = GetFilterDouble(scanNumber, "HigherEnergyCIDValue");
-            if (val == 0.0) val = GetFilterDouble(scanNumber, "HigherEnergyCidValue");
-            return val;
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation_value")]
-        public static double GetScanFilterElectronCaptureDissociationValue(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "ElectronCaptureDissociationValue");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation_value")]
-        public static double GetScanFilterElectronTransferDissociationValue(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "ElectronTransferDissociationValue");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation")]
-        public static int GetScanFilterMultiplePhotonDissociation(int scanNumber)
-        {
-            return GetFilterInt(scanNumber, "MultiplePhotonDissociation");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiple_photon_dissociation_value")]
-        public static double GetScanFilterMultiplePhotonDissociationValue(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "MultiplePhotonDissociationValue");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation")]
-        public static int GetScanFilterPulsedQDissociation(int scanNumber)
-        {
-            return GetFilterInt(scanNumber, "PulsedQDissociation");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_pulsed_q_dissociation_value")]
-        public static double GetScanFilterPulsedQDissociationValue(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "PulsedQDissociationValue");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_a")]
-        public static double GetScanFilterParamA(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "ParamA");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_b")]
-        public static double GetScanFilterParamB(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "ParamB");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_f")]
-        public static double GetScanFilterParamF(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "ParamF");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_r")]
-        public static double GetScanFilterParamR(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "ParamR");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_param_v")]
-        public static double GetScanFilterParamV(int scanNumber)
-        {
-            return GetFilterDouble(scanNumber, "ParamV");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_field_free_region")]
-        public static int GetScanFilterFieldFreeRegion(int scanNumber)
-        {
-            return GetFilterInt(scanNumber, "FieldFreeRegion");
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_index_to_multiple_activation_index")]
-        public static int GetScanFilterIndexToMultipleActivationIndex(int scanNumber)
-        {
-            return GetFilterInt(scanNumber, "IndexToMultipleActivationIndex");
-        }
-        [UnmanagedCallersOnly(EntryPoint = "select_instrument")]
-        public static void SelectInstrument(int deviceType, int deviceNumber)
-        {
-            if (_rawFile == null) return;
-            try {
-                _rawFile.SelectInstrument((Device)deviceType, deviceNumber);
-            } catch {}
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_method_count")]
-        public static int GetInstrumentMethodCount()
-        {
-            if (_rawFile == null) return 0;
-            try {
-                return _rawFile.InstrumentMethodsCount;
-            } catch { return 0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_instrument_method")]
-        public static unsafe int GetInstrumentMethod(int index, byte* buffer, int maxLength)
-        {
-            if (_rawFile == null) return -1;
-            try
-            {
-                string method = _rawFile.GetInstrumentMethod(index);
-                if (string.IsNullOrEmpty(method)) return 0;
-                
-                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(method);
-                int len = Math.Min(bytes.Length, maxLength - 1);
-                for (int i = 0; i < len; i++) buffer[i] = bytes[i];
-                buffer[len] = 0;
-                return len;
-            }
-            catch
-            {
-                return -1;
-            }
-        }
-        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_index")]
-        public static int GetAutoSamplerTrayIndex()
-        {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.TrayIndex; } 
-            catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerTrayIndex: {ex.Message}"); return -1; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vial_index")]
-        public static int GetAutoSamplerVialIndex()
-        {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialIndex; } 
-            catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerVialIndex: {ex.Message}"); return -1; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_name")]
-        public static unsafe int GetAutoSamplerTrayName(byte* buffer, int maxLength)
-        {
-            if (_rawFile == null) return 0;
-            try
-            {
-                string name = _rawFile.AutoSamplerInformation.TrayName ?? "";
-                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(name);
-                int len = Math.Min(bytes.Length, maxLength - 1);
-                for (int i = 0; i < len; i++) buffer[i] = bytes[i];
-                buffer[len] = 0;
-                return len;
-            }
-            catch { return 0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_shape")]
-        public static int GetAutoSamplerTrayShape()
-        {
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.AutoSamplerInformation.TrayShape; } catch { return 0; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray")]
-        public static int GetAutoSamplerVialsPerTray()
-        {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTray; } catch { return -1; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_x")]
-        public static int GetAutoSamplerVialsPerTrayX()
-        {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTrayX; } catch { return -1; }
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_y")]
-        public static int GetAutoSamplerVialsPerTrayY()
-        {
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTrayY; } catch { return -1; }
-        }
+        private static unsafe int _getStatusLogValuesForRtHelper(IRawDataPlus file, double rt, byte* buffer, long bufferSize) { return 0; }
     }
 }
