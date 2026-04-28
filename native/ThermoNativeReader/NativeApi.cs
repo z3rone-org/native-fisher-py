@@ -551,7 +551,40 @@ namespace ThermoNativeReader
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_chromatogram")]
-        public static unsafe int GetChromatogram(long arg0, int arg1, byte* arg2, double* arg3, double* arg4, int arg5, int arg6, int arg7, double* arg8, double* arg9, int arg10) { return RunOnWorker(() => { if (!_openFiles.TryGetValue(arg0, out var f)) return 0; try { return 0; } catch { return 0; } }); }
+        public static unsafe int GetChromatogram(long arg0, int arg1, byte* arg2, double* arg3, double* arg4, int arg5, int arg6, int arg7, double* arg8, double* arg9, int arg10)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { 
+                    string filter = Marshal.PtrToStringAnsi((IntPtr)arg2) ?? "";
+                    var settings = new ChromatogramTraceSettings((TraceType)arg1) { Filter = filter };
+                    
+                    if (arg5 > 0)
+                    {
+                        settings.MassRangeCount = arg5;
+                        for (int i = 0; i < arg5; i++)
+                        {
+                            settings.SetMassRange(i, new Range(arg3[i], arg4[i]));
+                        }
+                    }
+
+                    var data = f.GetChromatogramData(new[] { settings }, arg6, arg7);
+                    
+                    if (data == null || data.PositionsArray == null || data.PositionsArray.Length == 0) 
+                    {
+                        return 0;
+                    }
+                    
+                    int count = Math.Min(data.PositionsArray[0].Length, arg10);
+                    for (int i = 0; i < count; i++)
+                    {
+                        arg8[i] = data.PositionsArray[0][i];
+                        arg9[i] = data.IntensitiesArray[0][i];
+                    }
+                    return count;
+                } catch { return 0; }
+            });
+        }
 
         [UnmanagedCallersOnly(EntryPoint = "get_filters")]
         public static unsafe int GetFilters(long arg0, byte* arg1, int arg2) { return RunOnWorker(() => { if (!_openFiles.TryGetValue(arg0, out var f)) return 0; try { return 0; } catch { return 0; } }); }
