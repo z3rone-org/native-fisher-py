@@ -122,7 +122,14 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var scan = f.GetSegmentedScanFromScanNumber((int)arg1, f.GetScanStatsForScanNumber((int)arg1));
+            if (scan == null) return 0;
+            int count = Math.Min(scan.Positions.Length, (int)arg4);
+            for(int i=0; i<count; i++) {
+                arg2[i] = scan.Positions[i];
+                arg3[i] = scan.Intensities[i];
+            }
+            return count; } catch { return 0; }
             });
         }
 
@@ -132,6 +139,30 @@ namespace ThermoNativeReader
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
                 try { return 0; } catch { return 0; }
+            });
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_centroid_stream_full")]
+        public static unsafe int GetCentroidStreamFull(long arg0, int arg1, double* arg2, double* arg3, double* arg4, double* arg5, int* arg6, double* arg7, int arg8)
+        {
+            return RunOnWorker(() => {
+                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
+                try { 
+            var stream = f.GetCentroidStream((int)arg1, false);
+            if (stream == null) return 0;
+            int count = Math.Min(stream.Length, (int)arg8);
+            for(int i=0; i<count; i++) {
+                if (arg2 != null && stream.Masses != null && i < stream.Masses.Length) arg2[i] = stream.Masses[i];
+                if (arg3 != null && stream.Intensities != null && i < stream.Intensities.Length) arg3[i] = stream.Intensities[i];
+                if (arg4 != null && stream.Baselines != null && i < stream.Baselines.Length) arg4[i] = stream.Baselines[i];
+                if (arg5 != null && stream.Noises != null && i < stream.Noises.Length) arg5[i] = stream.Noises[i];
+                if (arg6 != null && stream.Charges != null && i < stream.Charges.Length) arg6[i] = (int)stream.Charges[i];
+            }
+            if (arg7 != null) {
+                arg7[0] = stream.BasePeakNoise;
+                arg7[1] = stream.BasePeakResolution;
+            }
+            return count; } catch { return 0; }
             });
         }
 
@@ -167,7 +198,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.RunHeader.FirstSpectrum; } catch { return 0; }
             });
         }
 
@@ -176,7 +207,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.RunHeader.LastSpectrum; } catch { return 0; }
             });
         }
 
@@ -505,7 +536,7 @@ namespace ThermoNativeReader
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_meta_filters")]
-        public static unsafe int GetScanFilterMetaFilters(long arg0, int arg1, byte* arg2, int arg3)
+        public static unsafe int GetScanFilterMetaFilters(long arg0, long arg1, long arg2, long arg3)
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
@@ -1198,7 +1229,7 @@ namespace ThermoNativeReader
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_method_count")]
-        public static unsafe int GetInstrumentMethodCount(long arg0)
+        public static unsafe int GetInstrumentMethodCount(long arg0, int arg1, long arg2, long arg3, long arg4, long arg5, long arg6)
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
