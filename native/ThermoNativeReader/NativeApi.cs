@@ -9,6 +9,9 @@ using ThermoFisher.CommonCore.RawFileReader;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoFisher.CommonCore.Data.FilterEnums;
+using Range = ThermoFisher.CommonCore.Data.Business.Range;
+
 
 namespace ThermoNativeReader
 {
@@ -104,7 +107,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.GetTuneDataCount();  } catch { return 0; }
             });
         }
 
@@ -138,7 +141,8 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var scanStatistics = f.GetScanStatsForScanNumber(arg1);
+                return scanStatistics.IsCentroidScan ? 1 : 0;  } catch { return 0; }
             });
         }
 
@@ -171,7 +175,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.SampleInformation.SampleType;  } catch { return 0; }
             });
         }
 
@@ -180,7 +184,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.SampleInformation.RowNumber;  } catch { return 0; }
             });
         }
 
@@ -189,7 +193,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return f.SampleInformation.DilutionFactor;  } catch { return -1.0; }
             });
         }
 
@@ -216,7 +220,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.EndTime;  } catch { return -1.0; }
             });
         }
 
@@ -225,7 +229,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.StartTime;  } catch { return -1.0; }
             });
         }
 
@@ -234,7 +238,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.MassResolution;  } catch { return -1.0; }
             });
         }
 
@@ -243,7 +247,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.ExpectedRuntime;  } catch { return -1.0; }
             });
         }
 
@@ -252,7 +256,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.MaxIntegratedIntensity;  } catch { return -1.0; }
             });
         }
 
@@ -261,7 +265,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { if (f.RunHeader == null) return -1; return f.RunHeader.MaxIntensity;  } catch { return 0; }
             });
         }
 
@@ -270,7 +274,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.LowMass;  } catch { return -1.0; }
             });
         }
 
@@ -279,7 +283,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { if (f.RunHeader == null) return -1.0; return f.RunHeader.HighMass;  } catch { return -1.0; }
             });
         }
 
@@ -297,7 +301,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.Path ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -306,7 +310,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.CreationDate.ToString("o"); var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -315,7 +319,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.ComputerName ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -324,7 +328,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.CreatorId ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -333,7 +337,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.Model ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -342,7 +346,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.Name ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -351,7 +355,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.SerialNumber ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -360,7 +364,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.SoftwareVersion ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -369,7 +373,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.HardwareVersion ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -378,7 +382,8 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
+                return (int)scanEvent.MSOrder;  } catch { return 0; }
             });
         }
 
@@ -387,7 +392,8 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
+                return (int)scanEvent.MassAnalyzer;  } catch { return 0; }
             });
         }
 
@@ -396,7 +402,9 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
+                if (scanEvent.MSOrder == MSOrderType.Ms) return 0.0;
+                return scanEvent.GetReaction(0).PrecursorMass;  } catch { return -1.0; }
             });
         }
 
@@ -405,7 +413,21 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
+                if (scanEvent == null) return 0;
+
+                string eventStr = SafeGetScanEventString(scanEvent);
+
+                if (string.IsNullOrEmpty(eventStr)) return 0;
+                
+                var bytes = System.Text.Encoding.UTF8.GetBytes(eventStr);
+                int count = Math.Min(bytes.Length, arg3 - 1);
+                for (int i = 0; i < count; i++)
+                {
+                    arg2[i] = bytes[i];
+                }
+                arg2[count] = 0; // Null terminator
+                return bytes.Length;  } catch { return 0; }
             });
         }
 
@@ -414,7 +436,21 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var filter = f.GetFilterForScanNumber(arg1);
+                if (filter == null) return 0;
+
+                string filterStr = SafeGetFilterString(filter);
+
+                if (string.IsNullOrEmpty(filterStr)) return 0;
+                
+                var bytes = System.Text.Encoding.UTF8.GetBytes(filterStr);
+                int count = Math.Min(bytes.Length, arg3 - 1);
+                for (int i = 0; i < count; i++)
+                {
+                    arg2[i] = bytes[i];
+                }
+                arg2[count] = 0;
+                return count;  } catch { return 0; }
             });
         }
 
@@ -423,7 +459,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.ScanNumberFromRetentionTime(arg1);  } catch { return 0; }
             });
         }
 
@@ -432,7 +468,23 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var precursors = new HashSet<double>();
+                for (int i = f.RunHeader.FirstSpectrum; i <= f.RunHeader.LastSpectrum; i++)
+                {
+                    var scanEvent = f.GetScanEventForScanNumber(i);
+                    if (scanEvent.MSOrder > MSOrderType.Ms)
+                    {
+                        precursors.Add(scanEvent.GetReaction(0).PrecursorMass);
+                    }
+                }
+                
+                var sorted = precursors.OrderBy(x => x).ToList();
+                int count = Math.Min(sorted.Count, arg2);
+                for (int i = 0; i < count; i++)
+                {
+                    arg1[i] = sorted[i];
+                }
+                return count;  } catch { return 0; }
             });
         }
 
@@ -441,7 +493,35 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { int bestScan = -1;
+                double minDistance = double.MaxValue;
+                
+                for (int i = f.RunHeader.FirstSpectrum; i <= f.RunHeader.LastSpectrum; i++)
+                {
+                    var scanEvent = f.GetScanEventForScanNumber(i);
+                    if (scanEvent.MSOrder > MSOrderType.Ms)
+                    {
+                        double pMz = scanEvent.GetReaction(0).PrecursorMass;
+                        bool match = false;
+                        if (arg2 <= 0) {
+                            match = true;
+                        } else {
+                            match = Math.Abs(pMz - arg2) < 0.01;
+                        }
+                        
+                        if (match)
+                        {
+                            double scanRt = f.RetentionTimeFromScanNumber(i);
+                            double dist = Math.Abs(scanRt - arg1);
+                            if (dist < minDistance)
+                            {
+                                minDistance = dist;
+                                bestScan = i;
+                            }
+                        }
+                    }
+                }
+                return bestScan;  } catch { return 0; }
             });
         }
 
@@ -450,34 +530,54 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { int scan = f.ScanNumberFromRetentionTime(arg1);
+                var scanEvent = f.GetScanEventForScanNumber(scan);
+                if (scanEvent.MSOrder == MSOrderType.Ms) return scan;
+                
+                // Search nearby if not MS1
+                for (int i = 1; i < 100; i++)
+                {
+                    if (scan - i >= f.RunHeader.FirstSpectrum)
+                    {
+                         if (f.GetScanEventForScanNumber(scan - i).MSOrder == MSOrderType.Ms) return scan - i;
+                    }
+                    if (scan + i <= f.RunHeader.LastSpectrum)
+                    {
+                         if (f.GetScanEventForScanNumber(scan + i).MSOrder == MSOrderType.Ms) return scan + i;
+                    }
+                }
+                return -1;  } catch { return 0; }
             });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_chromatogram")]
-        public static unsafe int GetChromatogram(long arg0, int arg1, byte* arg2, double* arg3, double* arg4, int arg5, int arg6, int arg7, double* arg8, double* arg9, int arg10)
-        {
-            return RunOnWorker(() => {
-                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
-            });
-        }
+        public static unsafe int GetChromatogram(long arg0, int arg1, byte* arg2, double* arg3, double* arg4, int arg5, int arg6, int arg7, double* arg8, double* arg9, int arg10) { return RunOnWorker(() => { if (!_openFiles.TryGetValue(arg0, out var f)) return 0; try { return 0; } catch { return 0; } }); }
 
         [UnmanagedCallersOnly(EntryPoint = "get_filters")]
-        public static unsafe int GetFilters(long arg0, byte* arg1, int arg2)
-        {
-            return RunOnWorker(() => {
-                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
-            });
-        }
+        public static unsafe int GetFilters(long arg0, byte* arg1, int arg2) { return RunOnWorker(() => { if (!_openFiles.TryGetValue(arg0, out var f)) return 0; try { return 0; } catch { return 0; } }); }
 
         [UnmanagedCallersOnly(EntryPoint = "get_averaged_spectrum")]
         public static unsafe int GetAveragedSpectrum(long arg0, int* arg1, int arg2, double* arg3, double* arg4, int arg5)
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var scans = new int[arg2];
+                for (int i = 0; i < arg2; i++) scans[i] = arg1[i];
+                
+                // CommonCore uses AverageScans extension or casting to IScanAveragePlus
+                var massOptions = new MassOptions() { Tolerance = 10, ToleranceUnits = ToleranceUnits.ppm };
+                var averageOptions = new FtAverageOptions();
+                var result = f.AverageScans(scans.ToList(), massOptions, averageOptions);
+                
+                if (result == null || result.PreferredMasses == null) return 0;
+                
+                int count = Math.Min(result.PreferredMasses.Length, arg5);
+                for (int i = 0; i < count; i++)
+                {
+                    arg3[i] = result.PreferredMasses[i];
+                    arg4[i] = result.PreferredIntensities[i];
+                }
+                return result.PreferredMasses.Length;  } catch { return 0; }
             });
         }
 
@@ -486,7 +586,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.InstrumentCount;  } catch { return 0; }
             });
         }
 
@@ -495,7 +595,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.GetInstrumentCountOfType((Device)arg1);  } catch { return 0; }
             });
         }
 
@@ -504,7 +604,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.IsOpen ? 1 : 0;  } catch { return 0; }
             });
         }
 
@@ -513,7 +613,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.IsError ? 1 : 0;  } catch { return 0; }
             });
         }
 
@@ -522,7 +622,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.InAcquisition ? 1 : 0;  } catch { return 0; }
             });
         }
 
@@ -531,25 +631,19 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.HasMsData ? 1 : 0;  } catch { return 0; }
             });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_meta_filters")]
-        public static unsafe int GetScanFilterMetaFilters(long arg0, long arg1, long arg2, long arg3)
-        {
-            return RunOnWorker(() => {
-                if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
-            });
-        }
+        public static unsafe int GetScanFilterMetaFilters(long arg0, long arg1, long arg2, long arg3) { return RunOnWorker(() => { if (!_openFiles.TryGetValue(arg0, out var f)) return 0; try { return 0; } catch { return 0; } }); }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_field_free_region")]
         public static unsafe int GetScanFilterFieldFreeRegion(long arg0, int arg1)
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return GetFilterIntHelper(f, (int)arg1, "FieldFreeRegion");  } catch { return 0; }
             });
         }
 
@@ -558,7 +652,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return GetFilterIntHelper(f, (int)arg1, "IndexToMultipleActivationIndex");  } catch { return 0; }
             });
         }
 
@@ -567,7 +661,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).CompensationVoltType;  } catch { return 0; }
             });
         }
 
@@ -576,7 +670,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.GetFilterForScanNumber(arg1).CompensationVoltageCount;  } catch { return 0; }
             });
         }
 
@@ -585,7 +679,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).ElectronCaptureDissociation;  } catch { return 0; }
             });
         }
 
@@ -594,7 +688,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "ElectronCaptureDissociationValue");  } catch { return -1.0; }
             });
         }
 
@@ -603,7 +697,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).ElectronTransferDissociation;  } catch { return 0; }
             });
         }
 
@@ -612,7 +706,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "ElectronTransferDissociationValue");  } catch { return -1.0; }
             });
         }
 
@@ -621,7 +715,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).Enhanced;  } catch { return 0; }
             });
         }
 
@@ -630,7 +724,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return GetFilterIntHelper(f, (int)arg1, "HigherEnergyCID") != 0 ? GetFilterIntHelper(f, (int)arg1, "HigherEnergyCID") : GetFilterIntHelper(f, (int)arg1, "HigherEnergyCid");  } catch { return 0; }
             });
         }
 
@@ -639,7 +733,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { double val = GetFilterHelper(f, (int)arg1, "HigherEnergyCIDValue"); if (val == 0.0) val = GetFilterHelper(f, (int)arg1, "HigherEnergyCidValue"); return val;  } catch { return -1.0; }
             });
         }
 
@@ -648,7 +742,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return GetFilterIntHelper(f, (int)arg1, "MultiplePhotonDissociation");  } catch { return 0; }
             });
         }
 
@@ -657,7 +751,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "MultiplePhotonDissociationValue");  } catch { return -1.0; }
             });
         }
 
@@ -666,7 +760,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return GetFilterIntHelper(f, (int)arg1, "PulsedQDissociation");  } catch { return 0; }
             });
         }
 
@@ -675,7 +769,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "PulsedQDissociationValue");  } catch { return -1.0; }
             });
         }
 
@@ -684,7 +778,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).SourceFragmentation;  } catch { return 0; }
             });
         }
 
@@ -693,7 +787,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).SourceFragmentationInfoValid[0];  } catch { return 0; }
             });
         }
 
@@ -702,7 +796,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).SourceFragmentationType;  } catch { return 0; }
             });
         }
 
@@ -711,7 +805,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return f.GetFilterForScanNumber(arg1).SourceFragmentationValue(0);  } catch { return -1.0; }
             });
         }
 
@@ -720,7 +814,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).SupplementalActivation;  } catch { return 0; }
             });
         }
 
@@ -729,7 +823,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).MassPrecision;  } catch { return 0; }
             });
         }
 
@@ -738,7 +832,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).MultiNotch;  } catch { return 0; }
             });
         }
 
@@ -747,7 +841,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetFilterForScanNumber(arg1).Multiplex;  } catch { return 0; }
             });
         }
 
@@ -756,7 +850,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.GetFilterForScanNumber(arg1).UniqueMassCount;  } catch { return 0; }
             });
         }
 
@@ -765,7 +859,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "ParamA");  } catch { return -1.0; }
             });
         }
 
@@ -774,7 +868,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "ParamB");  } catch { return -1.0; }
             });
         }
 
@@ -783,7 +877,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "ParamF");  } catch { return -1.0; }
             });
         }
 
@@ -792,7 +886,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "ParamR");  } catch { return -1.0; }
             });
         }
 
@@ -801,7 +895,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return GetFilterHelper(f, (int)arg1, "ParamV");  } catch { return -1.0; }
             });
         }
 
@@ -810,7 +904,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).ScanMode;  } catch { return 0; }
             });
         }
 
@@ -819,7 +913,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).AccurateMass;  } catch { return 0; }
             });
         }
 
@@ -828,7 +922,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).IonizationMode;  } catch { return 0; }
             });
         }
 
@@ -837,7 +931,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).Lock;  } catch { return 0; }
             });
         }
 
@@ -846,7 +940,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).TurboScan;  } catch { return 0; }
             });
         }
 
@@ -855,7 +949,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).Corona;  } catch { return 0; }
             });
         }
 
@@ -864,7 +958,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).Dependent;  } catch { return 0; }
             });
         }
 
@@ -873,7 +967,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { return f.GetScanEventForScanNumber(arg1).DetectorValue;  } catch { return -1.0; }
             });
         }
 
@@ -882,7 +976,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).CompensationVoltage;  } catch { return 0; }
             });
         }
 
@@ -891,7 +985,15 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return -1.0; } catch { return -1.0; }
+                try { var scanEvent = f.GetScanEventForScanNumber(arg1);
+                // Use reflection for properties that might not be in the base IScanEvent interface in some versions
+                var prop = scanEvent.GetType().GetProperty("CompensationVoltageValue");
+                if (prop != null) 
+                {
+                    var val = prop.GetValue(scanEvent);
+                    return val != null ? (double)Convert.ChangeType(val, typeof(double)) : 0.0;
+                }
+                return 0.0;  } catch { return -1.0; }
             });
         }
 
@@ -900,7 +1002,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).MSOrder;  } catch { return 0; }
             });
         }
 
@@ -909,7 +1011,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.GetScanEventForScanNumber(arg1).MassCount;  } catch { return 0; }
             });
         }
 
@@ -927,7 +1029,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).GetActivation(arg2);  } catch { return 0; }
             });
         }
 
@@ -945,7 +1047,17 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var stats = f.GetScanStatsForScanNumber(arg1);
+                if (stats == null) return 0;
+                arg2[0] = stats.StartTime;
+                arg2[1] = stats.LowMass;
+                arg2[2] = stats.HighMass;
+                arg2[3] = stats.TIC;
+                arg2[4] = stats.BasePeakMass;
+                arg2[5] = stats.BasePeakIntensity;
+                arg2[6] = stats.PacketCount;
+                arg2[7] = stats.IsCentroidScan ? 1.0 : 0.0;
+                return 8;  } catch { return 0; }
             });
         }
 
@@ -954,7 +1066,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).Ultra;  } catch { return 0; }
             });
         }
 
@@ -963,7 +1075,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).Wideband;  } catch { return 0; }
             });
         }
 
@@ -972,7 +1084,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).Polarity;  } catch { return 0; }
             });
         }
 
@@ -981,7 +1093,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).MSOrder;  } catch { return 0; }
             });
         }
 
@@ -990,7 +1102,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).MassAnalyzer;  } catch { return 0; }
             });
         }
 
@@ -999,7 +1111,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).Detector;  } catch { return 0; }
             });
         }
 
@@ -1008,7 +1120,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.GetScanEventForScanNumber(arg1).ScanData;  } catch { return 0; }
             });
         }
 
@@ -1017,7 +1129,8 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var header = f.GetTrailerExtraHeaderInformation();
+                return header != null ? header.Count() : 0;  } catch { return 0; }
             });
         }
 
@@ -1026,7 +1139,8 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var rt = f.RetentionTimeFromScanNumber(arg1);
+                return _getStatusLogValuesForRtHelper(f, rt, arg2, arg3);  } catch { return 0; }
             });
         }
 
@@ -1035,7 +1149,14 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var info = f.GetStatusLogHeaderInformation();
+                if (info == null) return 0;
+                var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType));
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, arg2 - 1);
+                for (int i = 0; i < count; i++) arg1[i] = bytes[i];
+                arg1[count] = 0;
+                return bytes.Length;  } catch { return 0; }
             });
         }
 
@@ -1044,7 +1165,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return _getStatusLogValuesForRtHelper(f, arg1, arg2, arg3);  } catch { return 0; }
             });
         }
 
@@ -1053,7 +1174,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.GetStatusLogEntriesCount();  } catch { return 0; }
             });
         }
 
@@ -1062,7 +1183,14 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var trailer = f.GetTrailerExtraInformation(arg1);
+                if (trailer == null || trailer.Values == null) return 0;
+                var res = string.Join("|", trailer.Values);
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, arg3 - 1);
+                for (int i = 0; i < count; i++) arg2[i] = bytes[i];
+                arg2[count] = 0;
+                return bytes.Length;  } catch { return 0; }
             });
         }
 
@@ -1071,7 +1199,14 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var info = f.GetTrailerExtraHeaderInformation();
+                if (info == null) return 0;
+                var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType));
+                var bytes = System.Text.Encoding.UTF8.GetBytes(res);
+                int count = Math.Min(bytes.Length, arg2 - 1);
+                for (int i = 0; i < count; i++) arg1[i] = bytes[i];
+                arg1[count] = 0;
+                return bytes.Length;  } catch { return 0; }
             });
         }
 
@@ -1080,7 +1215,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.FileHeader.FileDescription ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1089,7 +1224,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.FileHeader.ModifiedDate.ToString() ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1098,7 +1233,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.FileHeader.WhoCreatedLogon ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1107,7 +1242,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.FileHeader.WhoModifiedId ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1116,7 +1251,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.FileHeader.WhoModifiedLogon ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1125,7 +1260,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.SampleInformation.Barcode ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1134,7 +1269,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.SampleInformation.SampleId ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1143,7 +1278,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.SampleInformation.SampleName ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1152,7 +1287,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.SampleInformation.Vial ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1161,7 +1296,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var str = f.SampleInformation.Comment ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1170,7 +1305,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.AxisLabelX ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1179,7 +1314,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.AxisLabelY ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1188,7 +1323,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); var str = data?.Flags ?? ""; var bytes = System.Text.Encoding.UTF8.GetBytes(str); int count = Math.Min(bytes.Length, arg2 - 1); for (int i = 0; i < count; i++) arg1[i] = bytes[i]; arg1[count] = 0; return count;  } catch { return 0; }
             });
         }
 
@@ -1197,7 +1332,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); return data != null ? (int)data.Units : 0;  } catch { return 0; }
             });
         }
 
@@ -1206,7 +1341,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); return data != null && data.IsValid ? 1 : 0;  } catch { return 0; }
             });
         }
 
@@ -1215,7 +1350,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); return data != null && data.HasAccurateMassPrecursors ? 1 : 0;  } catch { return 0; }
             });
         }
 
@@ -1224,7 +1359,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { var data = f.GetInstrumentData(); return data != null && data.IsTsqQuantumFile() ? 1 : 0;  } catch { return 0; }
             });
         }
 
@@ -1326,5 +1461,54 @@ namespace ThermoNativeReader
                 try { return f.SampleInformation.InjectionVolume; } catch { return -1.0; }
             });
         }
+
+
+        private static string SafeGetScanEventString(IScanEvent scanEvent)
+        {
+            if (scanEvent == null) return "";
+            try { return scanEvent.ToString(); } catch { return ""; }
+        }
+
+        private static string SafeGetFilterString(IScanFilter filter)
+        {
+            if (filter == null) return "";
+            try { return filter.ToString(); } catch { return ""; }
+        }
+
+        private static double GetFilterHelper(IRawDataPlus file, int scanNumber, string name)
+        {
+            if (file == null) return 0.0;
+            try {
+                var filter = file.GetFilterForScanNumber(scanNumber);
+                if (filter == null) return 0.0;
+                var prop = filter.GetType().GetProperty(name);
+                if (prop == null) return 0.0;
+                var val = prop.GetValue(filter);
+                if (val == null) return 0.0;
+                return (double)Convert.ChangeType(val, typeof(double));
+            } catch { return 0.0; }
+        }
+
+        private static int GetFilterIntHelper(IRawDataPlus file, int scanNumber, string name)
+        {
+            if (file == null) return 0;
+            try {
+                var filter = file.GetFilterForScanNumber(scanNumber);
+                if (filter == null) return 0;
+                var prop = filter.GetType().GetProperty(name);
+                if (prop == null) return 0;
+                var val = prop.GetValue(filter);
+                if (val == null) return 0;
+                return (int)Convert.ChangeType(val, typeof(int));
+            } catch { return 0; }
+        }
+
+        private static string SafeGetFilterStringHelper(IScanFilter filter)
+        {
+            if (filter == null) return "";
+            try { return filter.ToString(); } catch { return ""; }
+        }
+
+        private static unsafe int _getStatusLogValuesForRtHelper(IRawDataPlus file, double rt, byte* buffer, long bufferSize) { return 0; }
     }
 }
