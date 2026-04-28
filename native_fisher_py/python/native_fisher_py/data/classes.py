@@ -814,8 +814,8 @@ class Scan(CommonCoreDataObject):
     @classmethod
     def from_file(cls, f, s):
         scan = cls()
-        segmented_scan = f.get_segmented_scan_from_scan_number(s)
-        centroid_stream = f.get_centroid_stream(s)
+        segmented_scan = f.get_segmented_scan_from_scan_number(self._handle, s)
+        centroid_stream = f.get_centroid_stream(self._handle, s)
         scan._centroid_stream = centroid_stream
         
         # Original reader preference: if centroids are present (FTMS), use them for preferred data

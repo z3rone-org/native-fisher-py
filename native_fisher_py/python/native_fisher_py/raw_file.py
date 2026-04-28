@@ -59,7 +59,7 @@ class RawFile(object):
         return self
 
     def select_instrument(self, device_type: int, device_number: int):
-        select_instrument(device_type, device_number)
+        select_instrument(self._handle, device_type, device_number)
 
     def average_scans(self, start, end): return None
     def average_scans_in_scan_range(self, start, end, options): return None
@@ -68,14 +68,14 @@ class RawFile(object):
     def dispose(self): self.close()
     def get_all_instrument_names_from_instrument_method(self): return []
     def get_instrument_method(self, index): 
-        return get_instrument_method(index)
+        return get_instrument_method(self._handle, index)
     def get_instrument_methods_count(self) -> int:
-        return get_instrument_method_count()
+        return get_instrument_method_count(self._handle)
     def get_instrument_type(self): return 0
     def get_segment_event_table(self): return []
     def has_instrument_method(self): return self.get_instrument_methods_count() > 0
     def is_centroid_scan_from_scan_number(self, scan_number):
-        return is_centroid(scan_number)
+        return is_centroid(self._handle, scan_number)
     def refresh_view_of_file(self): pass
     @property
     def selected_instrument(self): return 0
@@ -87,7 +87,7 @@ class RawFile(object):
 
     @property
     def scan_events(self) -> List[str]:
-        return [self.get_scan_event_string_for_scan_number(i) for i in range(self.first_scan, min(self.first_scan + 10, self.last_scan + 1))]
+        return [self.get_scan_event_string_for_scan_number(self._handle, i) for i in range(self.first_scan, min(self.first_scan + 10, self.last_scan + 1))]
 
     def __repr__(self):
         return f"<RawFile path='{self.path}' scans={self.number_of_scans}>"
@@ -98,31 +98,31 @@ class RawFile(object):
 
     @property
     def number_of_scans(self) -> int:
-        return get_num_scans()
+        return get_num_scans(self._handle)
 
     @property
     def first_scan(self) -> int:
-        return get_first_scan()
+        return get_first_scan(self._handle)
 
     @property
     def last_scan(self) -> int:
-        return get_last_scan()
+        return get_last_scan(self._handle)
 
     @property
     def file_name(self) -> str:
-        return get_file_name()
+        return get_file_name(self._handle)
 
     @property
     def creation_date(self) -> str:
-        return get_creation_date()
+        return get_creation_date(self._handle)
 
     @property
     def computer_name(self) -> str:
-        return get_computer_name()
+        return get_computer_name(self._handle)
 
     @property
     def creator_id(self) -> str:
-        return get_creator_id()
+        return get_creator_id(self._handle)
 
     def get_instrument_data(self) -> InstrumentData:
         return InstrumentData()
@@ -137,7 +137,7 @@ class RawFile(object):
 
     @property
     def sample_information(self) -> SampleInformation:
-        return SampleInformation()
+        return SampleInformation(self._handle)
 
     @property
     def instrument_selection(self) -> InstrumentSelection:
@@ -153,7 +153,7 @@ class RawFile(object):
 
     @property
     def auto_sampler_information(self):
-        return AutoSamplerInformation()
+        return AutoSamplerInformation(self._handle)
 
     @property
     def include_reference_and_exception_data(self) -> bool:
@@ -165,44 +165,44 @@ class RawFile(object):
 
     @property
     def is_open(self) -> bool:
-        return is_open()
+        return is_open(self._handle)
 
     @property
     def is_error(self) -> bool:
-        return is_error()
+        return is_error(self._handle)
 
     @property
     def in_acquisition(self) -> bool:
-        return in_acquisition()
+        return in_acquisition(self._handle)
 
     def retention_time_from_scan_number(self, scan_number: int) -> float:
-        return get_scan_rt(scan_number)
+        return get_scan_rt(self._handle, scan_number)
 
     def scan_number_from_retention_time(self, rt: float) -> int:
-        return get_scan_number_from_rt(rt)
+        return get_scan_number_from_rt(self._handle, rt)
 
     def get_scan_event_for_scan_number(self, scan_number: int):
         from .data.classes import ScanEvent
-        return ScanEvent(scan_number)
+        return ScanEvent(self._handle, scan_number)
 
     def get_status_log_for_retention_time(self, rt: float):
         from .data.classes import LogEntry
         scan = self.scan_number_from_retention_time(rt)
-        return LogEntry(get_status_log_values(scan))
+        return LogEntry(get_status_log_values(self._handle, scan))
 
     def get_status_log_for_scan_number(self, scan_number: int):
         from .data.classes import LogEntry
-        return LogEntry(get_status_log_values(scan_number))
+        return LogEntry(get_status_log_values(self._handle, scan_number))
 
     def get_scan_event_string_for_scan_number(self, scan_number: int):
-        return get_scan_event_string(scan_number)
+        return get_scan_event_string(self._handle, scan_number)
 
     def get_centroid_stream(self, scan_number: int, include_ref_peaks: bool = False):
         from .native_fisher_py_backend import get_centroid_stream
         from .data.classes import CentroidStream
         import numpy as np
         
-        masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(scan_number, 1000000)
+        masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(self._handle, scan_number, 1000000)
         
         return CentroidStream(
             masses=np.array(masses), 
@@ -218,13 +218,13 @@ class RawFile(object):
     def get_segmented_scan_from_scan_number(self, scan_number: int, stats = None):
         from .native_fisher_py_backend import get_spectrum
         from .data.classes import SegmentedScan
-        masses, intensities = get_spectrum(scan_number, 1000000)
+        masses, intensities = get_spectrum(self._handle, scan_number, 1000000)
         return SegmentedScan(masses=masses, intensities=intensities)
 
     def get_scan_stats_for_scan_number(self, scan_number: int):
         from .data.classes import ScanStatistics
         from .native_fisher_py_backend import get_scan_stats
-        data = get_scan_stats(scan_number)
+        data = get_scan_stats(self._handle, scan_number)
         return ScanStatistics(
             start_time=data[0],
             low_mass=data[1],
@@ -251,7 +251,7 @@ class RawFile(object):
             starts = [float(r.low) for r in s.mass_ranges]
             ends = [float(r.high) for r in s.mass_ranges]
             
-            times, intensities = get_chromatogram(trace_type, filter_str, starts, ends, start_scan, end_scan, 1000000)
+            times, intensities = get_chromatogram(self._handle, trace_type, filter_str, starts, ends, start_scan, end_scan, 1000000)
             all_times.append(times)
             all_intensities.append(intensities)
             all_scans.append([]) # Empty scans for now
@@ -259,50 +259,50 @@ class RawFile(object):
         return ChromatogramData(all_times, all_intensities, all_scans)
 
     def get_instrument_count_of_type(self, device_type):
-        return get_instrument_count_of_type(device_type)
+        return get_instrument_count_of_type(self._handle, device_type)
 
     def get_trailer_extra_information(self, scan_number): 
         from .data.classes import LogEntry
-        labels = [h.label for h in self.get_trailer_extra_header_information()]
-        return LogEntry(get_trailer_extra_values(scan_number), labels)
+        labels = [h.label for h in self.get_trailer_extra_header_information(self._handle)]
+        return LogEntry(get_trailer_extra_values(self._handle, scan_number), labels)
 
     def get_trailer_extra_header_information(self): 
         from .data.classes import HeaderItem
-        return [HeaderItem(h) for h in get_trailer_extra_header()]
+        return [HeaderItem(h) for h in get_trailer_extra_header(self._handle)]
 
     def get_trailer_extra_values(self, scan_number, formatted=False): 
-        return get_trailer_extra_values(scan_number)
+        return get_trailer_extra_values(self._handle, scan_number)
 
     def get_status_log_header_information(self): 
         from .data.classes import HeaderItem
-        return [HeaderItem(h) for h in get_status_log_header()]
+        return [HeaderItem(h) for h in get_status_log_header(self._handle)]
 
     def get_status_log_values(self, scan_number, formatted=False):
         from .data.classes import LogEntry
-        labels = [h.label for h in self.get_status_log_header_information()]
-        return LogEntry(get_status_log_values(scan_number), labels)
+        labels = [h.label for h in self.get_status_log_header_information(self._handle)]
+        return LogEntry(get_status_log_values(self._handle, scan_number), labels)
 
     def get_status_log_entries_count(self): 
-        return get_status_log_count()
+        return get_status_log_count(self._handle)
 
     def get_status_log_for_retention_time(self, rt):
         from .data.classes import LogEntry
-        labels = [h.label for h in self.get_status_log_header_information()]
-        return LogEntry(get_status_log_values_for_rt(rt), labels)
+        labels = [h.label for h in self.get_status_log_header_information(self._handle)]
+        return LogEntry(get_status_log_values_for_rt(self._handle, rt), labels)
     def get_tune_data_count(self): 
-        return get_tune_data_count()
+        return get_tune_data_count(self._handle)
     def get_tune_data(self, index): return None
     def get_filters(self): return get_filters()
     def get_auto_filters(self): return []
     def get_filter_for_scan_number(self, scan_number):
         from .data.classes import ScanFilter
-        return ScanFilter(scan_number)
+        return ScanFilter(self._handle, scan_number)
     def get_scan_events(self, start, end): return []
     def get_scan_dependents(self, scan_number, precision): return ScanDependents()
 
     @property
     def has_ms_data(self) -> bool:
-        return has_ms_data()
+        return has_ms_data(self._handle)
 
     def get_scan_type(self, scan_number: int):
         return ""
@@ -324,53 +324,53 @@ class RawFile(object):
 
     @property
     def instrument_count(self) -> int:
-        return get_instrument_count()
+        return get_instrument_count(self._handle)
 
     @property
     def total_time_min(self) -> float:
-        return get_end_time()
+        return get_end_time(self._handle)
 
     def get_chromatogram(self, mass: float = 0.0, tolerance: float = 0.0, trace_type: int = 1, ms_filter: str = 'ms') -> Tuple[np.ndarray, np.ndarray]:
         starts = [mass - tolerance] if mass > 0 else []
         ends = [mass + tolerance] if mass > 0 else []
-        times, intensities = get_chromatogram(int(trace_type), ms_filter, starts, ends, -1, -1, 1000000)
+        times, intensities = get_chromatogram(self._handle, int(trace_type), ms_filter, starts, ends, -1, -1, 1000000)
         return np.array(times), np.array(intensities)
 
     def get_averaged_ms2_scans(self, scan_numbers: List[int]) -> Tuple[np.ndarray, np.ndarray, int]:
         if not scan_numbers:
             return np.array([]), np.array([]), 0
-        masses, intensities = get_averaged_spectrum(scan_numbers, 1000000)
+        masses, intensities = get_averaged_spectrum(self._handle, scan_numbers, 1000000)
         return np.array(masses), np.array(intensities), scan_numbers[0]
 
     def get_ms1_scan_number_from_retention_time(self, rt: float) -> Tuple[int, float]:
-        scan_number = get_ms1_scan_number_from_rt(rt)
+        scan_number = get_ms1_scan_number_from_rt(self._handle, rt)
         if scan_number < 1: return 0, 0.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
     def get_ms2_scan_number_from_retention_time(self, rt: float, precursor_mz: float = None) -> Tuple[int, float]:
         pmz = precursor_mz if precursor_mz is not None else 0.0
-        scan_number = get_ms2_scan_number_from_rt(rt, pmz, 1.0)
+        scan_number = get_ms2_scan_number_from_rt(self._handle, rt, pmz, 1.0)
         if scan_number < 1: return 0, 0.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
     def get_scan_event_str_from_scan_number(self, scan_number: int) -> str:
-        return self.get_scan_event_string_for_scan_number(scan_number)
+        return self.get_scan_event_string_for_scan_number(self._handle, scan_number)
 
     def get_retention_time_from_scan_number(self, scan_number: int) -> float:
         return self.retention_time_from_scan_number(scan_number)
 
     def get_scan(self, scan_number: int):
-        return self.get_scan_from_scan_number(scan_number)
+        return self.get_scan_from_scan_number(self._handle, scan_number)
 
     def get_scan_ms1(self, scan_number: int):
-        return self.get_scan_from_scan_number(scan_number)
+        return self.get_scan_from_scan_number(self._handle, scan_number)
 
     def get_scan_ms2(self, *args):
         if len(args) == 1:
-            return self.get_scan_from_scan_number(args[0])
+            return self.get_scan_from_scan_number(self._handle, args[0])
         elif len(args) >= 2:
-            scan, _ = self.get_ms2_scan_number_from_retention_time(args[0], args[1])
-            return self.get_scan_from_scan_number(scan)
+            scan, _ = self.get_ms2_scan_number_from_retention_time(self._handle, args[0], args[1])
+            return self.get_scan_from_scan_number(self._handle, scan)
         return np.array([]), np.array([]), np.array([]), ""
 
     def get_tic_ms2(self):
@@ -384,23 +384,23 @@ class RawFile(object):
         if not hasattr(self, "_ms2_filter_masses_cache"):
             mass_set = set()
             for i in range(self.first_scan, self.last_scan + 1):
-                if get_ms_order(i) == 2:
-                    mass_set.add(get_precursor_mass(i))
+                if get_ms_order(self._handle, i) == 2:
+                    mass_set.add(get_precursor_mass(self._handle, i))
             self._ms2_filter_masses_cache = sorted(list(mass_set))
         return self._ms2_filter_masses_cache
 
     def get_precursor_mz(self, scan_number: int) -> float:
-        return get_precursor_mass(scan_number)
+        return get_precursor_mass(self._handle, scan_number)
 
     def get_scan_from_scan_number(self, scan_number: int):
         # Use get_centroid_stream to match behavior for parity
-        masses, intensities = get_centroid_stream(scan_number, 1000000)
+        masses, intensities = get_centroid_stream(self._handle, scan_number, 1000000)
         charges = np.zeros_like(masses)
-        event_str = self.get_scan_event_string_for_scan_number(scan_number)
+        event_str = self.get_scan_event_string_for_scan_number(self._handle, scan_number)
         return np.array(masses), np.array(intensities), charges, event_str
 
     def get_scan_number_from_retention_time(self, rt: float) -> int:
-        return get_scan_number_from_rt(rt)
+        return get_scan_number_from_rt(self._handle, rt)
 
     def __enter__(self):
         return self
@@ -409,4 +409,4 @@ class RawFile(object):
         self.close()
 
     def close(self):
-        close_raw_file()
+        close_raw_file(self._handle)
