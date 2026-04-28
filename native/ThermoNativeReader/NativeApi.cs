@@ -1053,7 +1053,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { return 100.0; } catch { return -1.0; }
+                try { return f.GetScanEventForScanNumber(arg1).GetMass(arg2); } catch { return -1.0; }
             });
         }
 
@@ -1071,7 +1071,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return -1.0;
-                try { if (arg1 == 2) return 28.0; return 30.0; } catch { return -1.0; }
+                try { return f.GetScanEventForScanNumber(arg1).GetEnergy(arg2); } catch { return -1.0; }
             });
         }
 
@@ -1397,7 +1397,7 @@ namespace ThermoNativeReader
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_method_count")]
-        public static unsafe int GetInstrumentMethodCount(long arg0, int arg1, long arg2, long arg3, long arg4, long arg5, long arg6)
+        public static unsafe int GetInstrumentMethodCount(long arg0)
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
@@ -1419,7 +1419,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return -1; } catch { return 0; }
+                try { return f.AutoSamplerInformation.TrayIndex; } catch { return 0; }
             });
         }
 
@@ -1428,7 +1428,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return -1; } catch { return 0; }
+                try { return f.AutoSamplerInformation.VialIndex; } catch { return 0; }
             });
         }
 
@@ -1437,7 +1437,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return CopyString("R", arg1, arg2); } catch { return 0; }
+                try { return CopyString(f.AutoSamplerInformation.TrayName ?? "", arg1, arg2); } catch { return 0; }
             });
         }
 
@@ -1446,7 +1446,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return (int)f.AutoSamplerInformation.TrayShape; } catch { return 0; }
             });
         }
 
@@ -1455,7 +1455,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.AutoSamplerInformation.VialsPerTray; } catch { return 0; }
             });
         }
 
@@ -1464,7 +1464,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.AutoSamplerInformation.VialsPerTrayX; } catch { return 0; }
             });
         }
 
@@ -1473,7 +1473,7 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { return 0; } catch { return 0; }
+                try { return f.AutoSamplerInformation.VialsPerTrayY; } catch { return 0; }
             });
         }
 
