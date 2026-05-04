@@ -51,7 +51,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.14'
+        python-version: '3.12'
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -65,6 +65,8 @@ jobs:
 
     - name: Decompress test data
       run: gunzip -d -k test_data/*.gz
+    - name: Download test data
+      run: wget -P test_data ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2026/02/PXD066718/20250411_Ast0_500SPD_EVO685_JVO_EV1107_050ng_HEK-CPR_380-980_2Th_1P5ms_OFF_05_20250413081131.raw 
 
     - name: Build and test
       run: |

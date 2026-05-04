@@ -73,4 +73,5 @@ _build/
 venv3.11/pyvenv.cfg
 /scratch
 test_data/MS2_MS1_zoom.raw
-
+test_data/MS2_MS1_astral.raw
+test_data/20250411_Ast0_500SPD_EVO685_JVO_EV1107_050ng_HEK-CPR_380-980_2Th_1P5ms_OFF_05_20250413081131.raw
