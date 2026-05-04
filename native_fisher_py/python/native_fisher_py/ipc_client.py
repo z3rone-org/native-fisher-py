@@ -40,10 +40,17 @@ class ThermoIPCClient:
             return cls._instance
 
     def _start_server(self):
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        pkg_dir = os.path.dirname(os.path.abspath(__file__))
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(pkg_dir))))
         native_root = os.path.join(base_dir, "native")
+        
+        # Binary name depends on platform
+        bin_name = "ThermoNativeReader.exe" if sys.platform == "win32" else "ThermoNativeReader"
+        
         bin_paths = [
-            os.path.join(native_root, "ThermoNativeReader/bin/Release/net8.0/osx-x64/publish/ThermoNativeReader"),
+            os.path.join(pkg_dir, bin_name), # Bundled in package
+            os.path.join(native_root, "ThermoNativeReader/bin/Release/net8.0/osx-x64/publish", bin_name),
+            os.path.join(native_root, "ThermoNativeReader/bin/Release/net8.0/linux-x64/publish", bin_name),
         ]
         
         self.bin_path = next((p for p in bin_paths if os.path.exists(p)), None)

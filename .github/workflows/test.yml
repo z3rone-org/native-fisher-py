@@ -1,4 +1,4 @@
-name: Test
+name:Test
 
 on:
   push:
@@ -37,13 +37,13 @@ jobs:
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           ARCH=$(uname -m)
           if [[ "$ARCH" == "arm64" ]]; then RID="osx-arm64"; else RID="osx-x64"; fi
-          LIB_FILE="ThermoNativeReader.dylib"
+          LIB_FILE="ThermoNativeReader"
         elif [[ "${{ runner.os }}" == "Linux" ]]; then
           RID="linux-x64"
-          LIB_FILE="ThermoNativeReader.so"
+          LIB_FILE="ThermoNativeReader"
         else
           RID="win-x64"
-          LIB_FILE="ThermoNativeReader.dll"
+          LIB_FILE="ThermoNativeReader.exe"
         fi
         dotnet publish -r $RID -c Release -p:PublishAot=true
         echo "DYLIB_PATH=$(pwd)/bin/Release/net8.0/$RID/publish/$LIB_FILE" >> $GITHUB_ENV
