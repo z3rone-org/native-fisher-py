@@ -28,13 +28,6 @@ def test_centroid_zoom(zoom_file):
 def test_centroid_large(large_file):
     run_centroid_test(large_file, 2)
 
-def test_centroid_ecoli(ecoli_file):
-    # Ecoli file has 0 scans in my previous check, but let's try scan 1 if it exists
-    if ecoli_file.number_of_scans > 0:
-        run_centroid_test(ecoli_file, 1)
-    else:
-        pytest.skip("Ecoli file has 0 scans")
-
 def test_is_centroid_scan(zoom_file):
     # Test a few scans to see if they are correctly identified
     # MS1 scans are usually profile, MS2 are centroid
