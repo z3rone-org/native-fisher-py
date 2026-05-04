@@ -34,7 +34,7 @@ def _init_native_backend():
         set_dylib_path(dev_path)
         os.environ["THERMO_NATIVE_LIB"] = dev_path
 
-_init_native_backend()
+# _init_native_backend()
 
 from .data import (
     CommonCoreDataObject, Device, MSOrder, MassAnalyzer, TraceType, 

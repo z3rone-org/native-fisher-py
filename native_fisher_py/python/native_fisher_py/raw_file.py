@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from typing import List, Tuple
-from .native_fisher_py_backend import *
+from .ipc_client import *
 from .data import (
     CommonCoreDataObject, InstrumentData, RunHeader, RunHeaderEx, SampleInformation, 
     InstrumentSelection, FileHeader, FileError, AutoSamplerInformation, ScanEvent, 
@@ -44,8 +44,8 @@ class RawFile(object):
         self._path = path
         if not os.path.isfile(path):
             raise FileNotFoundError(f'No raw file with path "{path}" found.')
-        abs_path = os.path.abspath(path)
-        res = open_raw_file(abs_path)
+        # Avoid abspath because long paths cause segfaults in Thermo SDK on macOS
+        res = open_raw_file(path)
         if res == -1:
             raise RawFileException(f"Could not open RAW file: {path}")
         self._handle = res
@@ -199,7 +199,6 @@ class RawFile(object):
         return get_scan_event_string(self._handle, scan_number)
 
     def get_centroid_stream(self, scan_number: int, include_ref_peaks: bool = False):
-        from .native_fisher_py_backend import get_centroid_stream
         from .data.classes import CentroidStream
         import numpy as np
         
@@ -224,7 +223,6 @@ class RawFile(object):
 
     def get_scan_stats_for_scan_number(self, scan_number: int):
         from .data.classes import ScanStatistics
-        from .native_fisher_py_backend import get_scan_stats
         data = get_scan_stats(self._handle, scan_number)
         return ScanStatistics(
             start_time=data[0],
