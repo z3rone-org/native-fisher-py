@@ -23,13 +23,13 @@ def run_centroid_test(raw_file, scan_number):
     assert len(cs.baselines) == len(cs.masses)
 
 def test_centroid_zoom(zoom_file):
-    run_centroid_test(zoom_file, 1)
+    run_centroid_test(zoom_file, 2)
 
 def test_centroid_astral(pxd066718_file):
     run_centroid_test(pxd066718_file, 2)
 
 def test_centroid_astral_zoom(pxd066944_file):
-    run_centroid_test(pxd066944_file, 2)
+    run_centroid_test(pxd066944_file, 5)
 
 def test_is_centroid_scan(zoom_file):
     # Test a few scans to see if they are correctly identified
