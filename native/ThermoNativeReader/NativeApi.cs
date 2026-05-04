@@ -51,6 +51,7 @@ namespace ThermoNativeReader
         static NativeApi()
         {
             var workerThread = new Thread(WorkerLoop, 8 * 1024 * 1024) { IsBackground = true, Name = "ThermoWorker" };
+            try { workerThread.SetApartmentState(ApartmentState.STA); } catch { }
             workerThread.Start();
         }
 
@@ -98,17 +99,26 @@ namespace ThermoNativeReader
         public static unsafe long OpenRawFile(byte* pathPtr)
         {
             if (pathPtr == null) return -1;
-            string? path = Marshal.PtrToStringAnsi((IntPtr)pathPtr);
-            
-            try {
-                var rawFile = (IRawDataPlus)RawFileReaderAdapter.FileFactory(path);
-                if (rawFile == null) return -1;
-                rawFile.SelectInstrument(Device.MS, 1);
-                
-                long h = _nextHandle++;
-                _openFiles[h] = rawFile;
-                return h;
-            } catch { return -1; }
+            string path = Marshal.PtrToStringAnsi((IntPtr)pathPtr) ?? "";
+            if (string.IsNullOrEmpty(path)) return -1;
+
+            return RunOnWorker(() => {
+                try {
+                    string fullPath = Path.GetFullPath(path);
+                    var rawFile = (IRawDataPlus)RawFileReaderAdapter.FileFactory(fullPath);
+                    if (rawFile == null) return -1;
+                    
+                    try {
+                        rawFile.SelectInstrument(Device.MS, 1);
+                    } catch {}
+                    
+                    long h = Interlocked.Increment(ref _nextHandle);
+                    _openFiles[h] = rawFile;
+                    return h;
+                } catch { 
+                    return -1; 
+                }
+            });
         }
 
         [UnmanagedCallersOnly(EntryPoint = "close_raw_file")]
@@ -167,14 +177,17 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { var scan = f.GetSegmentedScanFromScanNumber((int)arg1, f.GetScanStatsForScanNumber((int)arg1));
-            if (scan == null) return 0;
-            int count = Math.Min(scan.Positions.Length, (int)arg4);
-            for(int i=0; i<count; i++) {
-                arg2[i] = scan.Positions[i];
-                arg3[i] = scan.Intensities[i];
-            }
-            return count; } catch { return 0; }
+                try { 
+                    var stats = f.GetScanStatsForScanNumber(arg1);
+                    if (stats == null) return 0;
+                    var scan = f.GetSegmentedScanFromScanNumber(arg1, stats);
+                    if (scan == null || scan.Positions == null || scan.Intensities == null) return 0;
+                    
+                    int count = Math.Min(scan.Positions.Length, arg4);
+                    Marshal.Copy(scan.Positions, 0, (IntPtr)arg2, count);
+                    Marshal.Copy(scan.Intensities, 0, (IntPtr)arg3, count);
+                    return count; 
+                } catch { return 0; }
             });
         }
 
@@ -196,39 +209,22 @@ namespace ThermoNativeReader
         {
             return RunOnWorker(() => {
                 if (!_openFiles.TryGetValue(arg0, out var f)) return 0;
-                try { 
+                try {
                     var stream = f.GetCentroidStream(arg1, false);
                     if (stream == null) return 0;
                     
                     int count = Math.Min(stream.Length, p->MaxLength);
-                    
-                    if (p->Masses != null && stream.Masses != null) {
-                        int loop = Math.Min(count, stream.Masses.Length);
-                        for (int i = 0; i < loop; i++) p->Masses[i] = stream.Masses[i];
-                    }
-                    if (p->Intensities != null && stream.Intensities != null) {
-                        int loop = Math.Min(count, stream.Intensities.Length);
-                        for (int i = 0; i < loop; i++) p->Intensities[i] = stream.Intensities[i];
-                    }
-                    if (p->Baselines != null && stream.Baselines != null) {
-                        int loop = Math.Min(count, stream.Baselines.Length);
-                        for (int i = 0; i < loop; i++) p->Baselines[i] = stream.Baselines[i];
-                    }
-                    if (p->Noises != null && stream.Noises != null) {
-                        int loop = Math.Min(count, stream.Noises.Length);
-                        for (int i = 0; i < loop; i++) p->Noises[i] = stream.Noises[i];
-                    }
-                    if (p->Charges != null && stream.Charges != null) {
-                        int loop = Math.Min(count, (int)stream.Charges.Length);
-                        for (int i = 0; i < loop; i++) p->Charges[i] = (int)stream.Charges[i];
-                    }
+                    if (p->Masses != null && stream.Masses != null) Marshal.Copy(stream.Masses, 0, (IntPtr)p->Masses, count);
+                    if (p->Intensities != null && stream.Intensities != null) Marshal.Copy(stream.Intensities, 0, (IntPtr)p->Intensities, count);
                     
                     if (p->NoiseRes != null) {
                         p->NoiseRes[0] = stream.BasePeakNoise;
                         p->NoiseRes[1] = stream.BasePeakResolution;
                     }
-                    return count; 
-                } catch { return 0; }
+                    return count;
+                } catch { 
+                    return 0; 
+                }
             });
         }
 
