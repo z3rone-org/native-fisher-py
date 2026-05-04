@@ -75,3 +75,4 @@ venv3.11/pyvenv.cfg
 test_data/MS2_MS1_zoom.raw
 test_data/MS2_MS1_astral.raw
 test_data/20250411_Ast0_500SPD_EVO685_JVO_EV1107_050ng_HEK-CPR_380-980_2Th_1P5ms_OFF_05_20250413081131.raw
+test_data/20250307_AST0_NEO5_JVO_MV50_DR_100SPD_10ng_HEK_Ref_DDA_2Th_1p5ms_10ms_v2Ref_cycle_03.raw

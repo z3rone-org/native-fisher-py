@@ -27,3 +27,8 @@ def test_gradient_astral(pxd066718_file):
     # 549MB Evosep file has no gradient in the method text
     expected = []
     verify_gradient(pxd066718_file, expected)
+
+def test_gradient_astral_zoom(pxd066944_file):
+    # cycle_03.raw file has 8 points
+    expected = [(0.0, 4.0), (0.0, 4.0), (0.1, 4.0), (1.6, 12.0), (9.7, 58.5), (11.2, 90.0), (11.5, 99.0), (11.8, 99.0)]
+    verify_gradient(pxd066944_file, expected)

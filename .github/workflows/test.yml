@@ -66,7 +66,9 @@ jobs:
     - name: Decompress test data
       run: gunzip -d -k test_data/*.gz
     - name: Download test data
-      run: wget -P test_data ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2026/02/PXD066718/20250411_Ast0_500SPD_EVO685_JVO_EV1107_050ng_HEK-CPR_380-980_2Th_1P5ms_OFF_05_20250413081131.raw 
+      run: |
+        wget -P test_data ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2026/02/PXD066718/20250411_Ast0_500SPD_EVO685_JVO_EV1107_050ng_HEK-CPR_380-980_2Th_1P5ms_OFF_05_20250413081131.raw
+        wget -P test_data https://ftp.pride.ebi.ac.uk/pride/data/archive/2026/02/PXD066944/20250307_AST0_NEO5_JVO_MV50_DR_100SPD_10ng_HEK_Ref_DDA_2Th_1p5ms_10ms_v2Ref_cycle_03.raw
 
     - name: Build and test
       run: |

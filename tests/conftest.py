@@ -19,6 +19,12 @@ def pxd066718_file():
     yield raw
     raw.close()
 
+@pytest.fixture(scope="session")
+def pxd066944_file():
+    raw = get_raw_file("20250307_AST0_NEO5_JVO_MV50_DR_100SPD_10ng_HEK_Ref_DDA_2Th_1p5ms_10ms_v2Ref_cycle_03.raw")
+    yield raw
+    raw.close()
+
 # For backward compatibility with existing generic tests
 @pytest.fixture(scope="function")
 def zoom_raw_file(zoom_file): return zoom_file
