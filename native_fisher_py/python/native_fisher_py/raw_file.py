@@ -42,9 +42,10 @@ class RawFile(object):
         Open a Thermo RAW file.
         """
         self._path = path
-        if not os.path.isfile(path):
+        real_path = os.path.realpath(path)
+        if not os.path.isfile(real_path):
             raise FileNotFoundError(f'No raw file with path "{path}" found.')
-        res = open_raw_file(path)
+        res = open_raw_file(real_path)
         if res != 0:
             raise RawFileException(f"Could not open RAW file: {path}")
         self._is_open = True
