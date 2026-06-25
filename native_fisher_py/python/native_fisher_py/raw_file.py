@@ -393,7 +393,7 @@ class RawFile(object):
 
     def get_scan_from_scan_number(self, scan_number: int):
         # Use get_centroid_stream to match behavior for parity
-        masses, intensities = get_centroid_stream(scan_number, 1000000)
+        masses, intensities, *_ = get_centroid_stream(scan_number, 1000000)
         charges = np.zeros_like(masses)
         event_str = self.get_scan_event_string_for_scan_number(scan_number)
         return np.array(masses), np.array(intensities), charges, event_str
