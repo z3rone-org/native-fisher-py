@@ -40,3 +40,26 @@ def test_reaction_collision_energy(raw_file):
     scan_event = raw_file.get_scan_event_for_scan_number(scan_num)
     reaction = scan_event.get_reaction(0)
     assert reaction.collision_energy == pytest.approx(28.0)
+
+
+def test_isolation_width(raw_file):
+    # Test values obtained from a reference run
+    width_expectations = {
+        2: 1.6,
+        3: 1.6,
+        4: 1.6,
+        6: 1.6,
+        8: 1.6
+    }
+
+    for scan_num, expected_width in width_expectations.items():
+        scan_event = raw_file.get_scan_event_for_scan_number(scan_num)
+        
+        # Test ScanEvent.get_isolation_width
+        actual_width = scan_event.get_isolation_width(0)
+        assert actual_width == pytest.approx(expected_width), f"Scan {scan_num} ScanEvent isolation width mismatch"
+        
+        # Test Reaction.isolation_width
+        reaction = scan_event.get_reaction(0)
+        assert reaction.isolation_width == pytest.approx(expected_width), f"Scan {scan_num} Reaction isolation width mismatch"
+        assert reaction.isolation_width_offset == pytest.approx(0.0), f"Scan {scan_num} Reaction isolation width offset mismatch"

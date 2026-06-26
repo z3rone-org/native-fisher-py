@@ -2173,12 +2173,14 @@ class ScanEvent(CommonCoreDataObject):
     def get_isolation_width(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_isolation_width")
+        from ..native_fisher_py_backend import get_scan_event_isolation_width
+        return get_scan_event_isolation_width(self._handle, self._scan_number, index)
 
     def get_isolation_width_offset(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_isolation_width_offset")
+        from ..native_fisher_py_backend import get_scan_event_isolation_width_offset
+        return get_scan_event_isolation_width_offset(self._handle, self._scan_number, index)
 
     def get_is_multiple_activation(self, index):
         if _IS_SPHINX:
