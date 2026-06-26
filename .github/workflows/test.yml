@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches: [ main, fix/method-extraction ]  # FIXME: Remove this branch when the tests pass
+    branches: [ main ]
   pull_request:
     branches: [ main, development ]
 
