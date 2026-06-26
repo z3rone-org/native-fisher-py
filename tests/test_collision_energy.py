@@ -65,20 +65,26 @@ def test_isolation_width(raw_file):
         assert reaction.isolation_width_offset == pytest.approx(0.0), f"Scan {scan_num} Reaction isolation width offset mismatch"
 
 
-@pytest.fixture(scope="session")
-def angiotensin_raw_file():
-    path = os.path.join("test_data", "Angiotensin_AllScans.raw")
-    if not os.path.exists(path):
-        pytest.skip(f"Test file {path} not found")
-    raw = RawFile(path)
-    yield raw
-    raw.close()
-
 def test_isolation_width_angiotensin(angiotensin_raw_file):
-    scan_event = angiotensin_raw_file.get_scan_event_for_scan_number(3)
-    actual_width = scan_event.get_isolation_width(0)
-    assert actual_width == pytest.approx(2.0), "Scan 3 ScanEvent isolation width mismatch"
-    
-    reaction = scan_event.get_reaction(0)
-    assert reaction.isolation_width == pytest.approx(2.0), "Scan 3 Reaction isolation width mismatch"
-    assert reaction.isolation_width_offset == pytest.approx(0.0), "Scan 3 Reaction isolation width offset mismatch"
+    # Check values on scan 3 (IW 2.0, CE 30.0)
+    scan_event_3 = angiotensin_raw_file.get_scan_event_for_scan_number(3)
+    assert scan_event_3.get_isolation_width(0) == pytest.approx(2.0), "Scan 3 ScanEvent isolation width mismatch"
+    reaction_3 = scan_event_3.get_reaction(0)
+    assert reaction_3.isolation_width == pytest.approx(2.0), "Scan 3 Reaction isolation width mismatch"
+    assert reaction_3.isolation_width_offset == pytest.approx(0.0), "Scan 3 Reaction isolation width offset mismatch"
+    assert reaction_3.collision_energy == pytest.approx(30.0), "Scan 3 CE mismatch"
+    assert reaction_3.precursor_mass == pytest.approx(432.9000244140625)
+
+    # Check values on scan 10 (Different CE)
+    scan_event_10 = angiotensin_raw_file.get_scan_event_for_scan_number(10)
+    reaction_10 = scan_event_10.get_reaction(0)
+    assert reaction_10.isolation_width == pytest.approx(2.0)
+    assert reaction_10.collision_energy == pytest.approx(53.98562240600586)
+    assert reaction_10.precursor_mass == pytest.approx(433.90216064453125)
+
+    # Check values on scan 1000 (IW 1.6, Different CE)
+    scan_event_1000 = angiotensin_raw_file.get_scan_event_for_scan_number(1000)
+    reaction_1000 = scan_event_1000.get_reaction(0)
+    assert reaction_1000.isolation_width == pytest.approx(1.600000023841858)
+    assert reaction_1000.collision_energy == pytest.approx(121.46764373779297)
+    assert reaction_1000.precursor_mass == pytest.approx(649.8494262695312)
