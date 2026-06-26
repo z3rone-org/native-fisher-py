@@ -59,10 +59,7 @@ namespace ThermoNativeReader
                 _rawFile.SelectInstrument(Device.MS, 1);
                 return 0;
             }
-            catch
-            {
-                return -1;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in UnknownMethod (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_num_scans")]
@@ -89,10 +86,7 @@ namespace ThermoNativeReader
                 if (scanStatistics == null) return 0;
                 return scanStatistics.IsCentroidScan ? 1 : 0;
             }
-            catch
-            {
-                return 0;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in IsCentroid (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_spectrum")]
@@ -184,7 +178,7 @@ namespace ThermoNativeReader
                 }
                 return metaList.Count;
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in IsCentroid (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_filters")]
@@ -650,10 +644,7 @@ namespace ThermoNativeReader
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
                 return (int)scanEvent.MSOrder;
             }
-            catch
-            {
-                return -1;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMsOrder (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_mass_analyzer")]
@@ -665,10 +656,7 @@ namespace ThermoNativeReader
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
                 return (int)scanEvent.MassAnalyzer;
             }
-            catch
-            {
-                return -1;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMassAnalyzer (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_precursor_mass")]
@@ -681,10 +669,7 @@ namespace ThermoNativeReader
                 if (scanEvent.MSOrder == MSOrderType.Ms) return 0.0;
                 return scanEvent.GetReaction(0).PrecursorMass;
             }
-            catch
-            {
-                return -1.0;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetPrecursorMass (fallback -1.0): " + ex.Message); return -1.0; }
         }
 
         private static string SafeGetScanEventString(IScanEvent scanEvent)
@@ -837,10 +822,7 @@ namespace ThermoNativeReader
                 }
                 return bestScan;
             }
-            catch
-            {
-                return -1;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMs2ScanNumberFromRT (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_chromatogram")]
@@ -908,10 +890,7 @@ namespace ThermoNativeReader
                 }
                 return -1;
             }
-            catch
-            {
-                return -1;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMs1ScanNumberFromRT (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_averaged_spectrum")]
@@ -1001,7 +980,7 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_values_for_rt")]
@@ -1019,7 +998,7 @@ namespace ThermoNativeReader
                 var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
                 return _getStatusLogValuesForRt(rt, buffer, bufferSize);
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_header")]
@@ -1037,7 +1016,7 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_count")]
@@ -1045,7 +1024,7 @@ namespace ThermoNativeReader
         {
             if (_rawFile == null) return -1;
             try { return _rawFile.GetStatusLogEntriesCount(); }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_values")]
@@ -1063,7 +1042,7 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_count")]
@@ -1074,42 +1053,42 @@ namespace ThermoNativeReader
                 var header = _rawFile.GetTrailerExtraHeaderInformation();
                 return header != null ? header.Count() : 0;
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetTrailerExtraCount (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_ms_order")]
         public static int GetScanEventMsOrder(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMsOrder (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_count")]
         public static int GetScanEventMassCount(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount; } catch { return -1; }
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassCount (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_mass")]
         public static double GetScanEventPrecursorMass(int scanNumber, int index)
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetMass(index); } catch { return -1; }
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetMass(index); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventPrecursorMass (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_activation_type")]
         public static int GetScanEventActivationType(int scanNumber, int index)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index); } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventActivationType (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_collision_energy")]
         public static double GetScanEventCollisionEnergy(int scanNumber, int index)
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index); } catch { return -1; }
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_stats")]
@@ -1130,119 +1109,119 @@ namespace ThermoNativeReader
                 data[7] = stats.IsCentroidScan ? 1.0 : 0.0;
                 return 8;
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ultra")]
         public static int GetScanFilterUltra(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUltra (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_wideband")]
         public static int GetScanFilterWideband(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterWideband (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_polarity")]
         public static int GetScanFilterPolarity(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterPolarity (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ms_order")]
         public static int GetScanFilterMsOrder(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMsOrder (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_analyzer")]
         public static int GetScanFilterMassAnalyzer(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassAnalyzer (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector")]
         public static int GetScanFilterDetector(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetector (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_data")]
         public static int GetScanFilterScanData(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanData (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_mode")]
         public static int GetScanFilterScanMode(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanMode (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_accurate_mass")]
         public static int GetScanFilterAccurateMass(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterAccurateMass (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ionization_mode")]
         public static int GetScanFilterIonizationMode(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterIonizationMode (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_lock")]
         public static int GetScanFilterLock(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterLock (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_turbo_scan")]
         public static int GetScanFilterTurboScan(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterTurboScan (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_corona")]
         public static int GetScanFilterCorona(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCorona (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_dependent")]
         public static int GetScanFilterDependent(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDependent (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector_value")]
         public static double GetScanFilterDetectorValue(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue; } catch { return -1; }
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetectorValue (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage")]
         public static int GetScanEventCompensationVoltage(int scanNumber)
         {
             if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage; } catch { return -1; }
+            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltage (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage_value")]
@@ -1261,7 +1240,7 @@ namespace ThermoNativeReader
                 }
                 return 0.0;
             } 
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltageValue (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
@@ -1279,7 +1258,7 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch { return -1; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltageValue (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "close_raw_file")]
@@ -1292,35 +1271,35 @@ namespace ThermoNativeReader
         public static int GetScanFilterCompensationVoltType(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltType; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltType; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltType (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage_count")]
         public static int GetScanFilterCompensationVoltageCount(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltageCount; } catch { return 0; }
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltageCount; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltageCount (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation")]
         public static int GetScanFilterElectronCaptureDissociation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronCaptureDissociation (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation")]
         public static int GetScanFilterElectronTransferDissociation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronTransferDissociation (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_enhanced")]
         public static int GetScanFilterEnhanced(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterEnhanced (fallback 0): " + ex.Message); return 0; }
         }
 
 
@@ -1328,63 +1307,63 @@ namespace ThermoNativeReader
         public static int GetScanFilterSourceFragmentation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentation (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_valid")]
         public static int GetScanFilterSourceFragmentationInfoValid(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid[0]; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid[0]; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationInfoValid (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_type")]
         public static int GetScanFilterSourceFragmentationType(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationType; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationType; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationType (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_value")]
         public static double GetScanFilterSourceFragmentationValue(int scanNumber)
         {
             if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(0); } catch { return 0.0; }
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(0); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationValue (fallback 0.0): " + ex.Message); return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
         public static int GetScanFilterSupplementalActivation(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSupplementalActivation (fallback 0): " + ex.Message); return 0; }
         }
         
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_precision")]
         public static int GetScanFilterMassPrecision(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MassPrecision; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MassPrecision; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassPrecision (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multi_notch")]
         public static int GetScanFilterMultiNotch(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiNotch; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiNotch; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiNotch (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiplex")]
         public static int GetScanFilterMultiplex(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Multiplex; } catch { return 0; }
+            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Multiplex; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiplex (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_unique_mass_count")]
         public static int GetScanFilterUniqueMassCount(int scanNumber)
         {
             if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).UniqueMassCount; } catch { return 0; }
+            try { return _rawFile.GetFilterForScanNumber(scanNumber).UniqueMassCount; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message); return 0; }
         }
         private static double GetFilterDouble(int scanNumber, string name)
         {
@@ -1396,7 +1375,7 @@ namespace ThermoNativeReader
                 var val = prop.GetValue(filter);
                 if (val == null) return 0.0;
                 return (double)Convert.ChangeType(val, typeof(double));
-            } catch { return 0.0; }
+            } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0.0): " + ex.Message); return 0.0; }
         }
 
         private static int GetFilterInt(int scanNumber, string name)
@@ -1409,7 +1388,7 @@ namespace ThermoNativeReader
                 var val = prop.GetValue(filter);
                 if (val == null) return 0;
                 return (int)Convert.ChangeType(val, typeof(int));
-            } catch { return 0; }
+            } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid")]
@@ -1509,7 +1488,7 @@ namespace ThermoNativeReader
             if (_rawFile == null) return;
             try {
                 _rawFile.SelectInstrument((Device)deviceType, deviceNumber);
-            } catch {}
+            } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in SelectInstrument (ignored): " + ex.Message); }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_method_count")]
@@ -1518,7 +1497,7 @@ namespace ThermoNativeReader
             if (_rawFile == null) return 0;
             try {
                 return _rawFile.InstrumentMethodsCount;
-            } catch { return 0; }
+            } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetInstrumentMethodCount (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_method")]
@@ -1536,10 +1515,7 @@ namespace ThermoNativeReader
                 buffer[len] = 0;
                 return len;
             }
-            catch
-            {
-                return -1;
-            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetInstrumentMethodCount (fallback -1): " + ex.Message); return -1; }
         }
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_index")]
         public static int GetAutoSamplerTrayIndex()
@@ -1570,35 +1546,35 @@ namespace ThermoNativeReader
                 buffer[len] = 0;
                 return len;
             }
-            catch { return 0; }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialIndex (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_shape")]
         public static int GetAutoSamplerTrayShape()
         {
             if (_rawFile == null) return 0;
-            try { return (int)_rawFile.AutoSamplerInformation.TrayShape; } catch { return 0; }
+            try { return (int)_rawFile.AutoSamplerInformation.TrayShape; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerTrayShape (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray")]
         public static int GetAutoSamplerVialsPerTray()
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTray; } catch { return -1; }
+            try { return _rawFile.AutoSamplerInformation.VialsPerTray; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTray (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_x")]
         public static int GetAutoSamplerVialsPerTrayX()
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTrayX; } catch { return -1; }
+            try { return _rawFile.AutoSamplerInformation.VialsPerTrayX; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayX (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_y")]
         public static int GetAutoSamplerVialsPerTrayY()
         {
             if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTrayY; } catch { return -1; }
+            try { return _rawFile.AutoSamplerInformation.VialsPerTrayY; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayY (fallback -1): " + ex.Message); return -1; }
         }
     }
 }
