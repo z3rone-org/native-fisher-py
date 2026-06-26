@@ -75,7 +75,9 @@ jobs:
         cp ${{ env.DYLIB_PATH }} native_fisher_py/python/native_fisher_py/
         
         # Install the package
-        pip install ./native_fisher_py
+        cd native_fisher_py
+        maturin develop
+        cd ..
         
         # Parity tests will automatically fall back to ground_truth.json if fisher-py fails
         python -m pytest tests
