@@ -25,15 +25,25 @@ def patch_fisher_py():
         with open(init_file, 'r') as f:
             content = f.read()
             
-        # Add import System.Reflection if needed
-        if "from System.Reflection import Assembly" not in content:
-            content = content.replace("from System import Environment", "from System import Environment\nfrom System.Reflection import Assembly")
+        # Add import sys if needed
+        if "import sys" not in content:
+            content = "import sys\n" + content
             
-        # Replace clr.AddReference(os.path.join(dll_path, '...')) 
-        # with Assembly.LoadFrom(os.path.realpath(os.path.join(dll_path, '...')))
+        # Ensure sys.path.append(dll_path) is added
+        if "sys.path.append(os.path.realpath(dll_path))" not in content:
+            content = content.replace("clr.AddReference('mscorlib')", "clr.AddReference('mscorlib')\nsys.path.append(os.path.realpath(dll_path))")
+
+        # Replace clr.AddReference(os.path.join(dll_path, 'AssemblyName.dll'))
+        # with clr.AddReference('AssemblyName')
         content = re.sub(
-            r"clr\.AddReference\((os\.path\.join\(dll_path, '[^']+'\))\)",
-            r"Assembly.LoadFrom(os.path.realpath(\1))",
+            r"clr\.AddReference\((?:os\.path\.join\()?dll_path,\s*'([^']+)\.dll'(?:\))?\)",
+            r"clr.AddReference('\1')",
+            content
+        )
+        # Also clean up any lingering Assembly.LoadFrom from previous patches just in case
+        content = re.sub(
+            r"Assembly\.LoadFrom\(os\.path\.realpath\(os\.path\.join\(dll_path,\s*'([^']+)\.dll'\)\)\)",
+            r"clr.AddReference('\1')",
             content
         )
         
