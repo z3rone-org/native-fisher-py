@@ -411,6 +411,7 @@ for name in ["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9
     setattr(MsOrderType, name, MsOrderType(["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9", "Ms10", "Ng", "Nl", "Par"].index(name)))
     getattr(MsOrderType, name).name = name
 MSOrder = MsOrderType
+MsOrderType.Ms = MsOrderType.Ms1
 
 class MassAnalyzer(EnumBase):
     Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2
@@ -721,10 +722,19 @@ class LogEntry(CommonCoreDataObject):
 
 class HeaderItem(CommonCoreDataObject):
     def __init__(self, data):
+        self._string_length_or_precision = 0
         if "###TYPE###" in data:
             parts = data.split("###TYPE###")
             self._label = parts[0]
-            try: self._data_type = GenericDataTypes(int(parts[1]))
+            rest = parts[1]
+            if "###LEN###" in rest:
+                subparts = rest.split("###LEN###")
+                type_val = subparts[0]
+                try: self._string_length_or_precision = int(subparts[1])
+                except: pass
+            else:
+                type_val = rest
+            try: self._data_type = GenericDataTypes(int(type_val))
             except: self._data_type = GenericDataTypes.NULL
         else:
             self._label = data
@@ -732,6 +742,8 @@ class HeaderItem(CommonCoreDataObject):
     
     @property
     def label(self): return self._label
+    @property
+    def string_length_or_precision(self): return self._string_length_or_precision
     @property
     def data_type(self): return self._data_type
     @property
@@ -891,6 +903,18 @@ class CentroidStream(CommonCoreDataObject):
         self._base_peak_noise = base_peak_noise
         self._base_peak_resolution = base_peak_resolution
         self._scan_number = scan_number
+
+    def clear(self):
+        self._masses = np.array([])
+        self._intensities = np.array([])
+        self._baselines = np.array([])
+        self._noises = np.array([])
+        self._charges = np.array([])
+        
+    def clone(self): return self
+    def deep_clone(self): 
+        import copy
+        return copy.deepcopy(self)
 
     @property
     def base_intensity(self): return np.max(self._intensities) if self._intensities.size > 0 else 0.0
