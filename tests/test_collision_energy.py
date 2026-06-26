@@ -63,3 +63,22 @@ def test_isolation_width(raw_file):
         reaction = scan_event.get_reaction(0)
         assert reaction.isolation_width == pytest.approx(expected_width), f"Scan {scan_num} Reaction isolation width mismatch"
         assert reaction.isolation_width_offset == pytest.approx(0.0), f"Scan {scan_num} Reaction isolation width offset mismatch"
+
+
+@pytest.fixture(scope="session")
+def angiotensin_raw_file():
+    path = os.path.join("test_data", "Angiotensin_AllScans.raw")
+    if not os.path.exists(path):
+        pytest.skip(f"Test file {path} not found")
+    raw = RawFile(path)
+    yield raw
+    raw.close()
+
+def test_isolation_width_angiotensin(angiotensin_raw_file):
+    scan_event = angiotensin_raw_file.get_scan_event_for_scan_number(3)
+    actual_width = scan_event.get_isolation_width(0)
+    assert actual_width == pytest.approx(2.0), "Scan 3 ScanEvent isolation width mismatch"
+    
+    reaction = scan_event.get_reaction(0)
+    assert reaction.isolation_width == pytest.approx(2.0), "Scan 3 Reaction isolation width mismatch"
+    assert reaction.isolation_width_offset == pytest.approx(0.0), "Scan 3 Reaction isolation width offset mismatch"
