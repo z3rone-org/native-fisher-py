@@ -1,11 +1,11 @@
 import sys
 import os
 from ..data import (
-    data, ScanDependents, AutoSamplerInformation, CentroidStream, 
-    ChromatogramTraceSettings, Device, ErrorLogEntry, FileError, 
-    FileHeader, FtAverageOptions, HeaderItem, InstrumentData, 
-    InstrumentSelection, LogEntry, MassOptions, RunHeader, 
-    SampleInformation, Scan, ScanEvent, ScanEvents, ScanFilter, 
+    data, ScanDependents, AutoSamplerInformation, CentroidStream,
+    ChromatogramTraceSettings, Device, ErrorLogEntry, FileError,
+    FileHeader, FtAverageOptions, HeaderItem, InstrumentData,
+    InstrumentSelection, LogEntry, MassOptions, RunHeader,
+    SampleInformation, Scan, ScanEvent, ScanEvents, ScanFilter,
     ScanStatistics, SegmentedScan, StatusLogValues, TuneDataValues,
     Reaction, RawFileClassification, ScanDependentDetails, WrappedRunHeader,
     ChromatogramData
@@ -25,11 +25,12 @@ wrapped_run_header = WrappedRunHeader
 data_model = data
 data_model.WrappedRunHeader = WrappedRunHeader
 data_model.wrapped_run_header = WrappedRunHeader
-raw_file_access = None 
-raw_file_reader_adapter = None 
-scan_dependents = None 
-RawFileAccess = None 
-RawFileReaderAdapter = None 
+raw_file_access = None
+raw_file_reader_adapter = None
+scan_dependents = None
+RawFileAccess = None
+RawFileReaderAdapter = None
+
 
 def _init_reader_(raw_file_cls):
     global RawFileAccess, RawFileReaderAdapter, raw_file_access, raw_file_reader_adapter, scan_dependents
@@ -38,6 +39,7 @@ def _init_reader_(raw_file_cls):
     raw_file_access = sys.modules[__name__]
     raw_file_reader_adapter = sys.modules[__name__]
     scan_dependents = sys.modules[__name__]
+
 
 os = os
 

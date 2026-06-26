@@ -1,4 +1,3 @@
-import pytest
 import thermo_raw_native
 
 

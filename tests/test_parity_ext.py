@@ -17,21 +17,24 @@ import unittest
 import fisher_py
 import native_fisher_py
 import inspect
-import os
 from typing import Set, Any
+
 
 class TestAPIParity(unittest.TestCase):
     def compare_obj(self, name: str, orig_obj: Any, native_obj: Any, seen: Set[int] = None):
         if name.endswith('.net_wrapping') or name.endswith('.utils') or 'data_model' in name:
             return
-        if seen is None: seen = set()
-        if id(orig_obj) in seen: return
+        if seen is None:
+            seen = set()
+        if id(orig_obj) in seen:
+            return
         seen.add(id(orig_obj))
 
         def get_real_members(obj):
             members = set()
             for n in dir(obj):
-                if n.startswith("_") or n == "_raw_file_access": continue
+                if n.startswith("_") or n == "_raw_file_access":
+                    continue
                 try:
                     v = getattr(obj, n, None)
                 except Exception:
@@ -41,27 +44,28 @@ class TestAPIParity(unittest.TestCase):
                     continue
 
                 if inspect.ismodule(v):
-                    # FIXME: Placeholder - We are intentionally skipping traversal of submodules (like .data.business) 
+                    # FIXME: Placeholder - We are intentionally skipping traversal of submodules (like .data.business)
                     # to focus on the public-facing API (like RawFileAccess) rather than internal file structure.
                     # A stricter parity test would map fisher_py's internal modules to native_fisher_py's flattened data.classes.
                     continue
                 if inspect.isclass(v) or inspect.isfunction(v):
                     mod = getattr(v, '__module__', None)
-                    if mod in ('typing', 'enum', 'builtins'): continue
+                    if mod in ('typing', 'enum', 'builtins'):
+                        continue
                     # Only assert on things that belong to fisher_py/native_fisher_py or were defined here
                     if mod and not mod.startswith('fisher_py') and not mod.startswith('native_fisher_py') and mod != getattr(obj, '__name__', None):
                         continue
                 members.add(n)
             return members
-            
+
         orig_members = get_real_members(orig_obj)
         native_members = get_real_members(native_obj)
-        
+
         # Explicitly filter out known .NET imports or standard library imports that native_fisher_py avoids by design
         ignored_imports = {'NetWrapperBase', 'ThermoFisher', 'ToleranceUnits', 'WrappedRunHeader', 'Array', 'Tuple'}
         orig_members = orig_members - ignored_imports
         native_members = native_members - ignored_imports
-        
+
         missing_in_native = orig_members - native_members
         if missing_in_native:
             assert False, f"{name} is missing: {sorted(list(missing_in_native))}"
@@ -84,14 +88,15 @@ class TestAPIParity(unittest.TestCase):
                     orig_m = getattr(orig_obj, member_name)
                     native_m = getattr(native_obj, member_name)
                     if inspect.isclass(orig_m) or inspect.ismodule(orig_m):
-                        self.compare_obj(f"{name}.{member_name}", orig_m, native_m, seen)                
+                        self.compare_obj(f"{name}.{member_name}", orig_m, native_m, seen)
                 else:
                     assert False, f"Missing member: {member_name}"
 
     def test_global_parity(self):
         self.compare_obj("fisher_py", fisher_py, native_fisher_py)
         if hasattr(fisher_py, "raw_file_reader") and hasattr(fisher_py.raw_file_reader, "RawFileAccess"):
-             self.compare_obj("RawFileAccess", fisher_py.raw_file_reader.RawFileAccess, native_fisher_py.RawFile)
+            self.compare_obj("RawFileAccess", fisher_py.raw_file_reader.RawFileAccess, native_fisher_py.RawFile)
+
 
 if __name__ == "__main__":
     unittest.main()

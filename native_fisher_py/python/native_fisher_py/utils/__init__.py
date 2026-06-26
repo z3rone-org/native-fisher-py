@@ -2,6 +2,7 @@ from typing import List, Tuple, Any
 import datetime as dt_factory
 from datetime import timezone
 
+
 class DateTime(object):
     @property
     def Date(self): return self
@@ -29,7 +30,7 @@ class DateTime(object):
     def TimeOfDay(self): return self
     @property
     def Year(self): return 2024
-    
+
     Now = None
     Today = None
     UtcNow = None
@@ -39,7 +40,7 @@ class DateTime(object):
 
     @staticmethod
     def Overloads(*args): return None
-    
+
     def Add(self, *args): return self
     def AddDays(self, *args): return self
     def AddHours(self, *args): return self
@@ -72,7 +73,7 @@ class DateTime(object):
     def ToString(self, *args): return ""
     def ToUniversalTime(self): return self
     def TryFormat(self, *args): return True
-    
+
     # get_ prefix for properties
     def get_Date(self): return self
     def get_Day(self): return 1
@@ -117,7 +118,7 @@ class DateTime(object):
     def TryParse(*args): return True, DateTime()
     @staticmethod
     def TryParseExact(*args): return True, DateTime()
-    
+
     def op_Addition(self, *args): return self
     def op_Equality(self, *args): return True
     def op_GreaterThan(self, *args): return False
@@ -127,12 +128,14 @@ class DateTime(object):
     def op_LessThanOrEqual(self, *args): return True
     def op_Subtraction(self, *args): return self
 
+
 DateTime.Now = DateTime()
 DateTime.Today = DateTime()
 DateTime.UtcNow = DateTime()
 DateTime.UnixEpoch = DateTime()
 DateTime.MaxValue = DateTime()
 DateTime.MinValue = DateTime()
+
 
 class Array(object):
     @property
@@ -149,7 +152,7 @@ class Array(object):
     def Rank(self): return 1
     @property
     def SyncRoot(self): return self
-    
+
     def Equals(self, *args): return True
     def Finalize(self): pass
     def GetEnumerator(self): return None
@@ -168,7 +171,7 @@ class Array(object):
     def ReferenceEquals(*args): return True
     def SetValue(self, *args): pass
     def ToString(self): return "Array"
-    
+
     def append(self, x): pass
     def clear(self): pass
     def count(self): return 0
@@ -178,7 +181,7 @@ class Array(object):
     def pop(self, i=-1): return None
     def remove(self, x): pass
     def reverse(self): pass
-    
+
     def get_IsFixedSize(self): return True
     def get_IsReadOnly(self): return True
     def get_IsSynchronized(self): return False
@@ -236,6 +239,7 @@ class Array(object):
     @staticmethod
     def TrueForAll(*args, **kwargs): return True
 
+
 class Double(object):
     Epsilon = 4.94065645841247E-324
     MaxValue = 1.7976931348623157E+308
@@ -243,7 +247,7 @@ class Double(object):
     NaN = float('nan')
     NegativeInfinity = float('-inf')
     PositiveInfinity = float('inf')
-    
+
     def CompareTo(self, *args): return 0
     def Equals(self, *args): return True
     def Finalize(self): pass
@@ -285,8 +289,10 @@ class Double(object):
     @staticmethod
     def TryParse(s): return True, float(s)
 
+
 def datetime_net_to_py(dt_val: int) -> dt_factory.datetime:
     return dt_factory.datetime.fromtimestamp(dt_val)
+
 
 def is_number(s: Any) -> bool:
     try:
@@ -295,10 +301,13 @@ def is_number(s: Any) -> bool:
     except:
         return False
 
+
 def to_net_list(py_list: list) -> list:
     return py_list
 
 # clr stubs
+
+
 class clr_stub(object):
     @staticmethod
     def AddReference(p): pass
@@ -313,11 +322,13 @@ class clr_stub(object):
     ThermoFisher = None
     @staticmethod
     def clrmethod(*args): return None
+
     class clrproperty_inner(object):
         @staticmethod
         def getter(): return None
         @staticmethod
         def setter(v): pass
+
     @staticmethod
     def clrproperty(*args): return clr_stub.clrproperty_inner()
     @staticmethod
@@ -325,6 +336,7 @@ class clr_stub(object):
     loader = None
     @staticmethod
     def setPreload(p): pass
+
 
 # Parity aliases
 Any = Any
@@ -335,7 +347,9 @@ DateTime = DateTime
 Double = Double
 Array = Array
 clr = clr_stub
-datetime_py_to_net = lambda x: 0
+def datetime_py_to_net(x): return 0
+
+
 generic = object
-to_net_array = lambda x: x
-to_py_list = lambda x: x
+def to_net_array(x): return x
+def to_py_list(x): return x

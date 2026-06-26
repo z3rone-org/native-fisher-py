@@ -1,17 +1,16 @@
-import os
-import threading
-_chdir_lock = threading.Lock()
-import numpy as np
-from typing import List, Tuple
-from .native_fisher_py_backend import *
+from .exceptions import RawFileException
 from .data import (
-    CommonCoreDataObject, InstrumentData, RunHeader, RunHeaderEx, SampleInformation, 
-    InstrumentSelection, FileHeader, FileError, AutoSamplerInformation, ScanEvent, 
-    ScanEvents, ScanStatistics, SegmentedScan, CentroidStream, ScanDependents, 
+    InstrumentData, RunHeader, RunHeaderEx, SampleInformation,
+    InstrumentSelection, FileHeader, FileError, AutoSamplerInformation, ScanDependents,
     MassOptions, Range, TraceType, Device, MassAnalyzerType, MsOrderType,
     ChromatogramTraceSettings, FtAverageOptions, ToleranceUnits
 )
-from .exceptions import RawFileException
+from .native_fisher_py_backend import *
+from typing import List, Tuple
+import numpy as np
+import os
+import threading
+_chdir_lock = threading.Lock()
 
 # Aliases for parity
 ToleranceUnits = ToleranceUnits
@@ -25,26 +24,31 @@ MassOptions = MassOptions
 ChromatogramTraceSettings = ChromatogramTraceSettings
 FtAverageOptions = FtAverageOptions
 Device = Device
+
+
 class RawFileReaderAdapter(object):
     @staticmethod
     def file_factory(path: str):
         return RawFile(path)
 
+
 __all__ = [
-    'RawFile', 'MsOrderType', 'MassAnalyzerType', 'Range', 
+    'RawFile', 'MsOrderType', 'MassAnalyzerType', 'Range',
     'ToleranceUnits', 'TraceType', 'np', 'RawFileException'
 ]
+
 
 class RawFile(object):
     """
     A high-level wrapper to provide a drop-in replacement for fisher_py.RawFile
     """
+
     def __init__(self, path: str):
         self._path = path
         real_path = os.path.realpath(path)
         if not os.path.isfile(real_path):
             raise FileNotFoundError(f'No raw file with path "{path}" found.')
-        
+
         dll_dir = os.path.dirname(__file__)
         with _chdir_lock:
             original_cwd = os.getcwd()
@@ -53,7 +57,7 @@ class RawFile(object):
                 self._handle = open_raw_file(real_path)
             finally:
                 os.chdir(original_cwd)
-                
+
         if getattr(self, "_handle", -1) < 0:
             raise RawFileException(f"Could not open RAW file: {path}")
         self._is_open = True
@@ -75,15 +79,20 @@ class RawFile(object):
     def default_mass_options(self): return MassOptions()
     def dispose(self): self.close()
     def get_all_instrument_names_from_instrument_method(self): return []
-    def get_instrument_method(self, index): 
+
+    def get_instrument_method(self, index):
         return get_instrument_method(self._handle, index)
+
     def get_instrument_methods_count(self) -> int:
         return get_instrument_method_count(self._handle)
+
     def get_instrument_type(self): return 0
     def get_segment_event_table(self): return []
     def has_instrument_method(self): return self.get_instrument_methods_count() > 0
+
     def is_centroid_scan_from_scan_number(self, scan_number):
         return is_centroid(self._handle, scan_number)
+
     def refresh_view_of_file(self): pass
     @property
     def selected_instrument(self): return 0
@@ -209,11 +218,13 @@ class RawFile(object):
         from .native_fisher_py_backend import get_centroid_stream
         from .data.classes import CentroidStream
         import numpy as np
-        
-        print(f"Calling get_centroid_stream with handle={self._handle}, scan={scan_number}"); masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(self._handle, scan_number, 1000000)
-        
+
+        print(f"Calling get_centroid_stream with handle={self._handle}, scan={scan_number}")
+        masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(
+            self._handle, scan_number, 1000000)
+
         return CentroidStream(
-            masses=np.array(masses), 
+            masses=np.array(masses),
             intensities=np.array(intensities),
             baselines=np.array(baselines),
             noises=np.array(noises),
@@ -223,7 +234,7 @@ class RawFile(object):
             scan_number=scan_number
         )
 
-    def get_segmented_scan_from_scan_number(self, scan_number: int, stats = None):
+    def get_segmented_scan_from_scan_number(self, scan_number: int, stats=None):
         from .native_fisher_py_backend import get_spectrum
         from .data.classes import SegmentedScan
         masses, intensities = get_spectrum(self._handle, scan_number, 1000000)
@@ -244,44 +255,45 @@ class RawFile(object):
             is_centroid_scan=bool(data[7])
         )
 
-    def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
+    def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance=None):
         from .data.classes import ChromatogramData
         if not isinstance(settings, list):
             settings = [settings]
-        
+
         all_times = []
         all_intensities = []
         all_scans = []
         for s in settings:
             trace_type = s.trace.value if hasattr(s.trace, 'value') else int(s.trace)
             filter_str = s.filter if s.filter else ""
-            
+
             starts = [float(r.low) for r in s.mass_ranges]
             ends = [float(r.high) for r in s.mass_ranges]
-            
-            times, intensities = get_chromatogram(self._handle, trace_type, filter_str, starts, ends, start_scan, end_scan, 1000000)
+
+            times, intensities = get_chromatogram(self._handle, trace_type, filter_str,
+                                                  starts, ends, start_scan, end_scan, 1000000)
             all_times.append(times)
             all_intensities.append(intensities)
-            all_scans.append([]) # Empty scans for now
-            
+            all_scans.append([])  # Empty scans for now
+
         return ChromatogramData(all_times, all_intensities, all_scans)
 
     def get_instrument_count_of_type(self, device_type):
         return get_instrument_count_of_type(self._handle, device_type)
 
-    def get_trailer_extra_information(self, scan_number): 
+    def get_trailer_extra_information(self, scan_number):
         from .data.classes import LogEntry
         labels = [h.label for h in self.get_trailer_extra_header_information()]
         return LogEntry(get_trailer_extra_values(self._handle, scan_number), labels)
 
-    def get_trailer_extra_header_information(self): 
+    def get_trailer_extra_header_information(self):
         from .data.classes import HeaderItem
         return [HeaderItem(h) for h in get_trailer_extra_header(self._handle)]
 
-    def get_trailer_extra_values(self, scan_number, formatted=False): 
+    def get_trailer_extra_values(self, scan_number, formatted=False):
         return get_trailer_extra_values(self._handle, scan_number)
 
-    def get_status_log_header_information(self): 
+    def get_status_log_header_information(self):
         from .data.classes import HeaderItem
         return [HeaderItem(h) for h in get_status_log_header(self._handle)]
 
@@ -290,21 +302,25 @@ class RawFile(object):
         labels = [h.label for h in self.get_status_log_header_information()]
         return LogEntry(get_status_log_values(self._handle, scan_number), labels)
 
-    def get_status_log_entries_count(self): 
+    def get_status_log_entries_count(self):
         return get_status_log_count(self._handle)
 
     def get_status_log_for_retention_time(self, rt):
         from .data.classes import LogEntry
         labels = [h.label for h in self.get_status_log_header_information()]
         return LogEntry(get_status_log_values_for_rt(self._handle, rt), labels)
-    def get_tune_data_count(self): 
+
+    def get_tune_data_count(self):
         return get_tune_data_count(self._handle)
+
     def get_tune_data(self, index): return None
     def get_filters(self): return get_filters(self._handle)
     def get_auto_filters(self): return []
+
     def get_filter_for_scan_number(self, scan_number):
         from .data.classes import ScanFilter
         return ScanFilter(self._handle, scan_number)
+
     def get_scan_events(self, start, end): return []
     def get_scan_dependents(self, scan_number, precision): return ScanDependents()
 
@@ -325,7 +341,7 @@ class RawFile(object):
     def get_tune_data_values(self, index: int):
         from .data.classes import TuneDataValues
         return TuneDataValues(self._handle)
-    
+
     @property
     def instrument_methods_count(self) -> int:
         return 0
@@ -352,13 +368,15 @@ class RawFile(object):
 
     def get_ms1_scan_number_from_retention_time(self, rt: float) -> Tuple[int, float]:
         scan_number = get_ms1_scan_number_from_rt(self._handle, rt)
-        if scan_number < 1: return 0, 0.0
+        if scan_number < 1:
+            return 0, 0.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
     def get_ms2_scan_number_from_retention_time(self, rt: float, precursor_mz: float = None) -> Tuple[int, float]:
         pmz = precursor_mz if precursor_mz is not None else 0.0
         scan_number = get_ms2_scan_number_from_rt(self._handle, rt, pmz, 1.0)
-        if scan_number < 1: return 0, 0.0
+        if scan_number < 1:
+            return 0, 0.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
     def get_scan_event_str_from_scan_number(self, scan_number: int) -> str:
