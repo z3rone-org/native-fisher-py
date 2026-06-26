@@ -74,6 +74,13 @@ def test_isolation_width_angiotensin(angiotensin_raw_file):
     assert reaction_3.isolation_width_offset == pytest.approx(0.0), "Scan 3 Reaction isolation width offset mismatch"
     assert reaction_3.collision_energy == pytest.approx(30.0), "Scan 3 CE mismatch"
     assert reaction_3.precursor_mass == pytest.approx(432.9000244140625)
+    
+    # Test auxiliary Reaction properties to ensure they correctly return hardware defaults instead of NotImplementedError
+    assert reaction_3.collision_energy_valid is True
+    assert reaction_3.first_precursor_mass == 0.0
+    assert reaction_3.last_precursor_mass == 0.0
+    assert reaction_3.multiple_activation is False
+    assert reaction_3.precursor_range_is_valid is False
 
     # Check values on scan 10 (Different CE)
     scan_event_10 = angiotensin_raw_file.get_scan_event_for_scan_number(10)
@@ -81,6 +88,11 @@ def test_isolation_width_angiotensin(angiotensin_raw_file):
     assert reaction_10.isolation_width == pytest.approx(2.0)
     assert reaction_10.collision_energy == pytest.approx(53.98562240600586)
     assert reaction_10.precursor_mass == pytest.approx(433.90216064453125)
+    assert reaction_10.collision_energy_valid is True
+    assert reaction_10.first_precursor_mass == 0.0
+    assert reaction_10.last_precursor_mass == 0.0
+    assert reaction_10.multiple_activation is False
+    assert reaction_10.precursor_range_is_valid is False
 
     # Check values on scan 1000 (IW 1.6, Different CE)
     scan_event_1000 = angiotensin_raw_file.get_scan_event_for_scan_number(1000)
@@ -88,3 +100,8 @@ def test_isolation_width_angiotensin(angiotensin_raw_file):
     assert reaction_1000.isolation_width == pytest.approx(1.600000023841858)
     assert reaction_1000.collision_energy == pytest.approx(121.46764373779297)
     assert reaction_1000.precursor_mass == pytest.approx(649.8494262695312)
+    assert reaction_1000.collision_energy_valid is True
+    assert reaction_1000.first_precursor_mass == 0.0
+    assert reaction_1000.last_precursor_mass == 0.0
+    assert reaction_1000.multiple_activation is False
+    assert reaction_1000.precursor_range_is_valid is False

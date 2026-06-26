@@ -1143,6 +1143,56 @@ fn get_scan_event_precursor_mass(handle: i32, scan_number: i32, index: i32) -> P
 }
 
 #[pyfunction]
+fn get_scan_event_collision_energy_valid(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_collision_energy_valid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_collision_energy_valid: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_first_precursor_mass(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_first_precursor_mass")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_first_precursor_mass: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_last_precursor_mass(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_last_precursor_mass")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_last_precursor_mass: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_multiple_activation(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_multiple_activation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_multiple_activation: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_precursor_range_is_valid(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_precursor_range_is_valid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_precursor_range_is_valid: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
 fn get_scan_event_activation_type(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -1780,6 +1830,11 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_event_ms_order, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_mass_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_precursor_mass, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_collision_energy_valid, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_first_precursor_mass, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_last_precursor_mass, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_multiple_activation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_precursor_range_is_valid, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_activation_type, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_isolation_width, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_isolation_width_offset, m)?)?;

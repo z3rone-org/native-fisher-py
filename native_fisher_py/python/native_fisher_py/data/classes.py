@@ -1218,9 +1218,14 @@ class Reaction(CommonCoreDataObject):
         return get_scan_event_collision_energy(self._handle, self._scan_number, self._index)
 
     @property
-    def collision_energy_valid(self): raise NotImplementedError
+    def collision_energy_valid(self):
+        from ..native_fisher_py_backend import get_scan_event_collision_energy_valid
+        return bool(get_scan_event_collision_energy_valid(self._handle, self._scan_number, self._index))
+
     @property
-    def first_precursor_mass(self): raise NotImplementedError
+    def first_precursor_mass(self):
+        from ..native_fisher_py_backend import get_scan_event_first_precursor_mass
+        return get_scan_event_first_precursor_mass(self._handle, self._scan_number, self._index)
     @property
     def isolation_width(self):
         from ..native_fisher_py_backend import get_scan_event_isolation_width
@@ -1230,11 +1235,19 @@ class Reaction(CommonCoreDataObject):
         from ..native_fisher_py_backend import get_scan_event_isolation_width_offset
         return get_scan_event_isolation_width_offset(self._handle, self._scan_number, self._index)
     @property
-    def last_precursor_mass(self): raise NotImplementedError
+    def last_precursor_mass(self):
+        from ..native_fisher_py_backend import get_scan_event_last_precursor_mass
+        return get_scan_event_last_precursor_mass(self._handle, self._scan_number, self._index)
+
     @property
-    def multiple_activation(self): raise NotImplementedError
+    def multiple_activation(self):
+        from ..native_fisher_py_backend import get_scan_event_multiple_activation
+        return bool(get_scan_event_multiple_activation(self._handle, self._scan_number, self._index))
+
     @property
-    def precursor_range_is_valid(self): raise NotImplementedError
+    def precursor_range_is_valid(self):
+        from ..native_fisher_py_backend import get_scan_event_precursor_range_is_valid
+        return bool(get_scan_event_precursor_range_is_valid(self._handle, self._scan_number, self._index))
 
 
 class Scan(CommonCoreDataObject):

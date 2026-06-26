@@ -18,7 +18,7 @@ namespace ThermoNativeReader
     {
         class FileState
         {
-            public IRawDataPlus RawFile;
+            public IRawDataPlus? RawFile;
             public int CachedMethodCount = 0;
             public int CachedSampleType = 0;
             public int CachedSampleRow = 0;
@@ -28,21 +28,24 @@ namespace ThermoNativeReader
         private static ConcurrentDictionary<int, FileState> _files = new ConcurrentDictionary<int, FileState>();
         private static int _nextHandle = 1;
 
-        private static IRawDataPlus GetFile(int handle)
+        private static IRawDataPlus? GetFile(int handle)
         {
-            if (_files.TryGetValue(handle, out var state)) return state.RawFile;
+            if (_files.TryGetValue(handle, out var state))
+                return state.RawFile;
             return null;
         }
-        private static FileState GetState(int handle)
+        private static FileState? GetState(int handle)
         {
-            if (_files.TryGetValue(handle, out var state)) return state;
+            if (_files.TryGetValue(handle, out var state))
+                return state;
             return null;
         }
 
 
         private static string SafeGetFilterString(IScanFilter filter)
         {
-            if (filter == null) return "";
+            if (filter == null)
+                return "";
             try
             {
                 return filter.ToString();
@@ -54,16 +57,12 @@ namespace ThermoNativeReader
             }
         }
 
-        // Dummy usage to prevent AOT trimming of important types used by reflection in Thermo DLLs
-        private static ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[] _dummyArray = new ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[0];
-        private static ThermoFisher.CommonCore.Data.Interfaces.IScanFilter? _dummyFilter = null;
-
         static NativeApi()
         {
             // Force compiler to keep these types
-            _dummyFilter = (ThermoFisher.CommonCore.Data.Interfaces.IScanFilter?)null;
             var t = typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType);
             var t2 = typeof(ThermoFisher.CommonCore.Data.Business.CentroidStream);
+            var t3 = typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter);
         }
 
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
@@ -73,19 +72,38 @@ namespace ThermoNativeReader
         {
             try
             {
-                if (pathPtr == null) return -1;
-                string path = System.Runtime.InteropServices.Marshal.PtrToStringUTF8((IntPtr)pathPtr);
-                if (string.IsNullOrEmpty(path)) return -1;
+                if (pathPtr == null)
+                    return -1;
+                string? path = System.Runtime.InteropServices.Marshal.PtrToStringUTF8((IntPtr)pathPtr);
+                if (string.IsNullOrEmpty(path))
+                    return -1;
 
                 var rawFile = (IRawDataPlus)RawFileReaderAdapter.FileFactory(path);
-                if (rawFile == null) return -1;
+                if (rawFile == null)
+                    return -1;
 
                 var state = new FileState { RawFile = rawFile };
 
-                try { state.CachedMethodCount = rawFile.InstrumentMethodsCount; } catch { state.CachedMethodCount = 0; }
-                try { state.CachedSampleType = (int)rawFile.SampleInformation.SampleType; } catch { state.CachedSampleType = 0; }
-                try { state.CachedSampleRow = rawFile.SampleInformation.RowNumber; } catch { state.CachedSampleRow = 0; }
-                try { state.CachedSampleDilution = rawFile.SampleInformation.DilutionFactor; } catch { state.CachedSampleDilution = 0.0; }
+                try
+                {
+                    state.CachedMethodCount = rawFile.InstrumentMethodsCount;
+                }
+                catch { state.CachedMethodCount = 0; }
+                try
+                {
+                    state.CachedSampleType = (int)rawFile.SampleInformation.SampleType;
+                }
+                catch { state.CachedSampleType = 0; }
+                try
+                {
+                    state.CachedSampleRow = rawFile.SampleInformation.RowNumber;
+                }
+                catch { state.CachedSampleRow = 0; }
+                try
+                {
+                    state.CachedSampleDilution = rawFile.SampleInformation.DilutionFactor;
+                }
+                catch { state.CachedSampleDilution = 0.0; }
 
                 rawFile.SelectInstrument(Device.MS, 1);
 
@@ -104,7 +122,8 @@ namespace ThermoNativeReader
         public static int GetNumScans(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1;
             return _rawFile.RunHeader.LastSpectrum;
         }
 
@@ -112,7 +131,8 @@ namespace ThermoNativeReader
         public static double GetScanRT(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1.0;
+            if (_rawFile == null)
+                return -1.0;
             return _rawFile.RetentionTimeFromScanNumber(scanNumber);
         }
 
@@ -120,11 +140,13 @@ namespace ThermoNativeReader
         public static int IsCentroid(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             try
             {
                 var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
-                if (scanStatistics == null) return 0;
+                if (scanStatistics == null)
+                    return 0;
                 return scanStatistics.IsCentroidScan ? 1 : 0;
             }
             catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in IsCentroid (fallback 0): " + ex.Message); return 0; }
@@ -134,16 +156,29 @@ namespace ThermoNativeReader
         public static unsafe int GetSpectrum(int handle, int scanNumber, double* masses, double* intensities, int maxLength)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
 
             try
             {
                 var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
                 var scan = _rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
-                if (scan == null) { return -2; }
-                if (scan.Positions == null) { return -3; }
-                if (scan.Intensities == null) { return -4; }
-                if (scan.Positions.Length == 0) { return -5; }
+                if (scan == null)
+                {
+                    return -2;
+                }
+                if (scan.Positions == null)
+                {
+                    return -3;
+                }
+                if (scan.Intensities == null)
+                {
+                    return -4;
+                }
+                if (scan.Positions.Length == 0)
+                {
+                    return -5;
+                }
 
                 int count = Math.Min(scan.Positions.Length, maxLength);
                 for (int i = 0; i < count; i++)
@@ -155,6 +190,7 @@ namespace ThermoNativeReader
             }
             catch (Exception ex)
             {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSpectrum: " + ex.Message);
                 return -1;
             }
         }
@@ -163,20 +199,27 @@ namespace ThermoNativeReader
         public static unsafe int GetCentroidStreamFull(int handle, int scanNumber, double* masses, double* intensities, double* baselines, double* noises, int* charges, double* noiseRes, int maxLength)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var scan = _rawFile.GetCentroidStream(scanNumber, false);
-                if (scan == null) return 0;
+                if (scan == null)
+                    return 0;
 
                 int count = Math.Min(scan.Length, maxLength);
                 for (int i = 0; i < count; i++)
                 {
-                    if (masses != null && scan.Masses != null && i < scan.Masses.Length) masses[i] = scan.Masses[i];
-                    if (intensities != null && scan.Intensities != null && i < scan.Intensities.Length) intensities[i] = scan.Intensities[i];
-                    if (baselines != null && scan.Baselines != null && i < scan.Baselines.Length) baselines[i] = scan.Baselines[i];
-                    if (noises != null && scan.Noises != null && i < scan.Noises.Length) noises[i] = scan.Noises[i];
-                    if (charges != null && scan.Charges != null && i < scan.Charges.Length) charges[i] = (int)scan.Charges[i];
+                    if (masses != null && scan.Masses != null && i < scan.Masses.Length)
+                        masses[i] = scan.Masses[i];
+                    if (intensities != null && scan.Intensities != null && i < scan.Intensities.Length)
+                        intensities[i] = scan.Intensities[i];
+                    if (baselines != null && scan.Baselines != null && i < scan.Baselines.Length)
+                        baselines[i] = scan.Baselines[i];
+                    if (noises != null && scan.Noises != null && i < scan.Noises.Length)
+                        noises[i] = scan.Noises[i];
+                    if (charges != null && scan.Charges != null && i < scan.Charges.Length)
+                        charges[i] = (int)scan.Charges[i];
                 }
 
                 if (noiseRes != null)
@@ -200,20 +243,25 @@ namespace ThermoNativeReader
         public static unsafe int GetScanFilterMetaFilters(int handle, int scanNumber, IntPtr* filters, int maxCount)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
-                if (filter == null) return 0;
+                if (filter == null)
+                    return 0;
                 var prop = filter.GetType().GetProperty("MetaFilters");
-                if (prop == null) return 0;
+                if (prop == null)
+                    return 0;
                 var metaFiltersObj = prop.GetValue(filter) as System.Collections.IEnumerable;
-                if (metaFiltersObj == null) return 0;
+                if (metaFiltersObj == null)
+                    return 0;
 
                 var metaList = new List<string>();
                 foreach (var mf in metaFiltersObj)
                 {
-                    if (mf != null) metaList.Add(mf.ToString() ?? "");
+                    if (mf != null)
+                        metaList.Add(mf.ToString() ?? "");
                 }
                 int count = Math.Min(metaList.Count, maxCount);
                 for (int i = 0; i < count; i++)
@@ -229,7 +277,8 @@ namespace ThermoNativeReader
         public static unsafe int GetFilters(int handle, IntPtr* filters, int maxCount)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var filterList = _rawFile.GetFilters().ToArray();
@@ -251,7 +300,8 @@ namespace ThermoNativeReader
         public static int GetFirstScan(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1;
             return _rawFile.RunHeader.FirstSpectrum;
         }
 
@@ -259,7 +309,8 @@ namespace ThermoNativeReader
         public static int GetLastScan(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1;
             return _rawFile.RunHeader.LastSpectrum;
         }
 
@@ -267,7 +318,8 @@ namespace ThermoNativeReader
         public static double GetEndTime(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1.0;
             return _rawFile.RunHeader.EndTime;
         }
 
@@ -275,7 +327,8 @@ namespace ThermoNativeReader
         public static double GetStartTime(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1.0;
             return _rawFile.RunHeader.StartTime;
         }
 
@@ -283,7 +336,8 @@ namespace ThermoNativeReader
         public static double GetMassResolution(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1.0;
             return _rawFile.RunHeader.MassResolution;
         }
 
@@ -291,7 +345,8 @@ namespace ThermoNativeReader
         public static double GetExpectedRuntime(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1.0;
             return _rawFile.RunHeader.ExpectedRuntime;
         }
 
@@ -299,7 +354,8 @@ namespace ThermoNativeReader
         public static double GetMaxIntegratedIntensity(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1.0;
             return _rawFile.RunHeader.MaxIntegratedIntensity;
         }
 
@@ -307,7 +363,8 @@ namespace ThermoNativeReader
         public static int GetMaxIntensity(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1;
             return _rawFile.RunHeader.MaxIntensity;
         }
 
@@ -315,7 +372,8 @@ namespace ThermoNativeReader
         public static double GetLowMass(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1.0;
             return _rawFile.RunHeader.LowMass;
         }
 
@@ -323,7 +381,8 @@ namespace ThermoNativeReader
         public static double GetHighMass(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+            if (_rawFile == null || _rawFile.RunHeader == null)
+                return -1.0;
             return _rawFile.RunHeader.HighMass;
         }
 
@@ -331,11 +390,13 @@ namespace ThermoNativeReader
         public static unsafe int GetFileName(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.FileName ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -344,11 +405,13 @@ namespace ThermoNativeReader
         public static unsafe int GetPath(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.Path ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -357,7 +420,8 @@ namespace ThermoNativeReader
         public static int GetTuneDataCount(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             return _rawFile.GetTuneDataCount();
         }
 
@@ -365,11 +429,13 @@ namespace ThermoNativeReader
         public static unsafe int GetCreationDate(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.CreationDate.ToString("o");
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -378,11 +444,13 @@ namespace ThermoNativeReader
         public static unsafe int GetComputerName(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.ComputerName ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -391,11 +459,13 @@ namespace ThermoNativeReader
         public static unsafe int GetCreatorID(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.CreatorId ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -404,12 +474,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentModel(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.Model ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -418,12 +490,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentName(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.Name ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -432,12 +506,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentSerialNumber(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.SerialNumber ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -446,12 +522,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentSoftwareVersion(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.SoftwareVersion ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -460,12 +538,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentHardwareVersion(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.HardwareVersion ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -474,12 +554,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentAxisLabelX(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.AxisLabelX ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -488,12 +570,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentAxisLabelY(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.AxisLabelY ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -502,12 +586,14 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentFlags(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             var str = data?.Flags ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -516,7 +602,8 @@ namespace ThermoNativeReader
         public static int GetInstrumentUnits(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             return data != null ? (int)data.Units : 0;
         }
@@ -525,7 +612,8 @@ namespace ThermoNativeReader
         public static int GetInstrumentIsValid(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             return data != null && data.IsValid ? 1 : 0;
         }
@@ -534,7 +622,8 @@ namespace ThermoNativeReader
         public static int GetInstrumentHasAccurateMassPrecursors(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             return data != null && data.HasAccurateMassPrecursors ? 1 : 0;
         }
@@ -543,7 +632,8 @@ namespace ThermoNativeReader
         public static int GetInstrumentIsTsqQuantumFile(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var data = _rawFile.GetInstrumentData();
             return data != null && data.IsTsqQuantumFile() ? 1 : 0;
         }
@@ -552,11 +642,13 @@ namespace ThermoNativeReader
         public static unsafe int GetFileDescription(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.FileHeader.FileDescription ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -565,11 +657,13 @@ namespace ThermoNativeReader
         public static unsafe int GetModifiedDate(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.FileHeader.ModifiedDate.ToString() ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -578,11 +672,13 @@ namespace ThermoNativeReader
         public static unsafe int GetWhoCreatedLogon(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.FileHeader.WhoCreatedLogon ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -591,11 +687,13 @@ namespace ThermoNativeReader
         public static unsafe int GetWhoModifiedId(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.FileHeader.WhoModifiedId ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -604,11 +702,13 @@ namespace ThermoNativeReader
         public static unsafe int GetWhoModifiedLogon(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.FileHeader.WhoModifiedLogon ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -617,11 +717,13 @@ namespace ThermoNativeReader
         public static unsafe int GetSampleBarcode(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.SampleInformation.Barcode ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -630,11 +732,13 @@ namespace ThermoNativeReader
         public static unsafe int GetSampleId(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.SampleInformation.SampleId ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -643,11 +747,13 @@ namespace ThermoNativeReader
         public static unsafe int GetSampleName(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.SampleInformation.SampleName ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -656,11 +762,13 @@ namespace ThermoNativeReader
         public static unsafe int GetSampleVial(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.SampleInformation.Vial ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -669,11 +777,13 @@ namespace ThermoNativeReader
         public static unsafe int GetSampleComment(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.SampleInformation.Comment ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -682,7 +792,8 @@ namespace ThermoNativeReader
         public static int GetSampleType(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             return (int)_rawFile.SampleInformation.SampleType;
         }
 
@@ -690,7 +801,8 @@ namespace ThermoNativeReader
         public static int GetSampleRowNumber(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             return _rawFile.SampleInformation.RowNumber;
         }
 
@@ -698,7 +810,8 @@ namespace ThermoNativeReader
         public static double GetSampleDilutionFactor(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 1.0;
+            if (_rawFile == null)
+                return 1.0;
             return _rawFile.SampleInformation.DilutionFactor;
         }
 
@@ -706,7 +819,8 @@ namespace ThermoNativeReader
         public static double GetSampleInjectionVolume(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0.0;
+            if (_rawFile == null)
+                return 0.0;
             return _rawFile.SampleInformation.InjectionVolume;
         }
 
@@ -714,11 +828,13 @@ namespace ThermoNativeReader
         public static unsafe int GetSampleInstrumentMethodFile(int handle, byte* buffer, int length)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             var str = _rawFile.SampleInformation.InstrumentMethodFile ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+            for (int i = 0; i < count; i++)
+                buffer[i] = bytes[i];
             buffer[count] = 0;
             return count;
         }
@@ -727,7 +843,8 @@ namespace ThermoNativeReader
         public static int GetMsOrder(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
@@ -740,7 +857,8 @@ namespace ThermoNativeReader
         public static int GetMassAnalyzer(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
@@ -753,11 +871,13 @@ namespace ThermoNativeReader
         public static double GetPrecursorMass(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1.0;
+            if (_rawFile == null)
+                return -1.0;
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
-                if (scanEvent.MSOrder == MSOrderType.Ms) return 0.0;
+                if (scanEvent.MSOrder == MSOrderType.Ms)
+                    return 0.0;
                 return scanEvent.GetReaction(0).PrecursorMass;
             }
             catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetPrecursorMass (fallback -1.0): " + ex.Message); return -1.0; }
@@ -765,7 +885,8 @@ namespace ThermoNativeReader
 
         private static string SafeGetScanEventString(IScanEvent scanEvent)
         {
-            if (scanEvent == null) return "";
+            if (scanEvent == null)
+                return "";
             // We AVOID scanEvent.ToString() because it triggers the Thermo.FilterStringTokens static constructor
             // which fails in AOT due to GetEnumValues[T] reflection.
             try
@@ -786,15 +907,18 @@ namespace ThermoNativeReader
         public static unsafe int GetScanEventString(int handle, int scanNumber, byte* buffer, int bufferSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
-                if (scanEvent == null) return 0;
+                if (scanEvent == null)
+                    return 0;
 
                 string eventStr = SafeGetScanEventString(scanEvent);
 
-                if (string.IsNullOrEmpty(eventStr)) return 0;
+                if (string.IsNullOrEmpty(eventStr))
+                    return 0;
 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(eventStr);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
@@ -816,7 +940,8 @@ namespace ThermoNativeReader
         public static unsafe int GetMs2FilterMasses(int handle, double* buffer, int maxSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var precursors = new HashSet<double>();
@@ -848,15 +973,18 @@ namespace ThermoNativeReader
         public static unsafe int GetScanFilterString(int handle, int scanNumber, byte* buffer, int bufferSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
-                if (filter == null) return 0;
+                if (filter == null)
+                    return 0;
 
                 string filterStr = SafeGetFilterString(filter);
 
-                if (string.IsNullOrEmpty(filterStr)) return 0;
+                if (string.IsNullOrEmpty(filterStr))
+                    return 0;
 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(filterStr);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
@@ -877,7 +1005,8 @@ namespace ThermoNativeReader
         public static int GetScanNumberFromRT(int handle, double rt)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             return _rawFile.ScanNumberFromRetentionTime(rt);
         }
 
@@ -885,7 +1014,8 @@ namespace ThermoNativeReader
         public static int GetMs2ScanNumberFromRT(int handle, double rt, double precursorMz, double tolerancePpm)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 int bestScan = -1;
@@ -928,7 +1058,8 @@ namespace ThermoNativeReader
         public static unsafe int GetChromatogram(int handle, int traceType, IntPtr filterPtr, double* massRangesStart, double* massRangesEnd, int massRangeCount, int startScan, int endScan, double* times, double* intensities, int maxLength)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 string filter = Marshal.PtrToStringAnsi(filterPtr) ?? "";
@@ -970,23 +1101,27 @@ namespace ThermoNativeReader
         public static int GetMs1ScanNumberFromRT(int handle, double rt)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 int scan = _rawFile.ScanNumberFromRetentionTime(rt);
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scan);
-                if (scanEvent.MSOrder == MSOrderType.Ms) return scan;
+                if (scanEvent.MSOrder == MSOrderType.Ms)
+                    return scan;
 
                 // Search nearby if not MS1
                 for (int i = 1; i < 100; i++)
                 {
                     if (scan - i >= _rawFile.RunHeader.FirstSpectrum)
                     {
-                        if (_rawFile.GetScanEventForScanNumber(scan - i).MSOrder == MSOrderType.Ms) return scan - i;
+                        if (_rawFile.GetScanEventForScanNumber(scan - i).MSOrder == MSOrderType.Ms)
+                            return scan - i;
                     }
                     if (scan + i <= _rawFile.RunHeader.LastSpectrum)
                     {
-                        if (_rawFile.GetScanEventForScanNumber(scan + i).MSOrder == MSOrderType.Ms) return scan + i;
+                        if (_rawFile.GetScanEventForScanNumber(scan + i).MSOrder == MSOrderType.Ms)
+                            return scan + i;
                     }
                 }
                 return -1;
@@ -998,18 +1133,21 @@ namespace ThermoNativeReader
         public static unsafe int GetAveragedSpectrum(int handle, int* scanNumbers, int numScans, double* masses, double* intensities, int maxLength)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var scans = new int[numScans];
-                for (int i = 0; i < numScans; i++) scans[i] = scanNumbers[i];
+                for (int i = 0; i < numScans; i++)
+                    scans[i] = scanNumbers[i];
 
                 // CommonCore uses AverageScans extension or casting to IScanAveragePlus
                 var massOptions = new MassOptions() { Tolerance = 10, ToleranceUnits = ToleranceUnits.ppm };
                 var averageOptions = new FtAverageOptions();
                 var result = _rawFile.AverageScans(scans.ToList(), massOptions, averageOptions);
 
-                if (result == null || result.PreferredMasses == null) return 0;
+                if (result == null || result.PreferredMasses == null)
+                    return 0;
 
                 int count = Math.Min(result.PreferredMasses.Length, maxLength);
                 for (int i = 0; i < count; i++)
@@ -1030,7 +1168,8 @@ namespace ThermoNativeReader
         public static int GetInstrumentCount(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             return _rawFile.InstrumentCount;
         }
 
@@ -1038,7 +1177,8 @@ namespace ThermoNativeReader
         public static int GetInstrumentCountOfType(int handle, int type)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             return _rawFile.GetInstrumentCountOfType((Device)type);
         }
 
@@ -1046,7 +1186,8 @@ namespace ThermoNativeReader
         public static int IsOpen(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             return _rawFile.IsOpen ? 1 : 0;
         }
 
@@ -1054,7 +1195,8 @@ namespace ThermoNativeReader
         public static int IsError(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 1;
+            if (_rawFile == null)
+                return 1;
             return _rawFile.IsError ? 1 : 0;
         }
 
@@ -1062,7 +1204,8 @@ namespace ThermoNativeReader
         public static int InAcquisition(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             return _rawFile.InAcquisition ? 1 : 0;
         }
 
@@ -1070,22 +1213,26 @@ namespace ThermoNativeReader
         public static int HasMsData(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             return _rawFile.HasMsData ? 1 : 0;
         }
 
         private static unsafe int _getStatusLogValuesForRt(int handle, double rt, byte* buffer, int bufferSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var log = _rawFile.GetStatusLogForRetentionTime(rt);
-                if (log == null || log.Values == null) return 0;
+                if (log == null || log.Values == null)
+                    return 0;
                 var res = string.Join("|", log.Values);
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                for (int i = 0; i < count; i++)
+                    buffer[i] = bytes[i];
                 buffer[count] = 0;
                 return bytes.Length;
             }
@@ -1103,7 +1250,8 @@ namespace ThermoNativeReader
         public static unsafe int GetStatusLogValues(int handle, int scanNumber, byte* buffer, int bufferSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
@@ -1116,15 +1264,18 @@ namespace ThermoNativeReader
         public static unsafe int GetStatusLogHeader(int handle, byte* buffer, int bufferSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var info = _rawFile.GetStatusLogHeaderInformation();
-                if (info == null) return 0;
+                if (info == null)
+                    return 0;
                 var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType + "###LEN###" + x.StringLengthOrPrecision));
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                for (int i = 0; i < count; i++)
+                    buffer[i] = bytes[i];
                 buffer[count] = 0;
                 return bytes.Length;
             }
@@ -1135,8 +1286,12 @@ namespace ThermoNativeReader
         public static int GetStatusLogCount(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetStatusLogEntriesCount(); }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.GetStatusLogEntriesCount();
+            }
             catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message); return -1; }
         }
 
@@ -1144,15 +1299,18 @@ namespace ThermoNativeReader
         public static unsafe int GetTrailerExtraValues(int handle, int scanNumber, byte* buffer, int bufferSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var trailer = _rawFile.GetTrailerExtraInformation(scanNumber);
-                if (trailer == null || trailer.Values == null) return 0;
+                if (trailer == null || trailer.Values == null)
+                    return 0;
                 var res = string.Join("|", trailer.Values);
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                for (int i = 0; i < count; i++)
+                    buffer[i] = bytes[i];
                 buffer[count] = 0;
                 return bytes.Length;
             }
@@ -1163,7 +1321,8 @@ namespace ThermoNativeReader
         public static int GetTrailerExtraCount(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var header = _rawFile.GetTrailerExtraHeaderInformation();
@@ -1176,70 +1335,211 @@ namespace ThermoNativeReader
         public static int GetScanEventMsOrder(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMsOrder (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMsOrder (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_count")]
         public static int GetScanEventMassCount(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassCount (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassCount (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_mass")]
         public static double GetScanEventPrecursorMass(int handle, int scanNumber, int index)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetMass(index); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventPrecursorMass (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1.0;
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).PrecursorMass;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventPrecursorMass (fallback -1): " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_collision_energy_valid")]
+        public static int GetScanEventCollisionEnergyValid(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventCollisionEnergyValid: RawFile handle is invalid or null.");
+                return 0;
+            }
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).CollisionEnergyValid ? 1 : 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergyValid (fallback 0): " + ex.Message);
+                return 0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_first_precursor_mass")]
+        public static double GetScanEventFirstPrecursorMass(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventFirstPrecursorMass: RawFile handle is invalid or null.");
+                return -1.0;
+            }
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).FirstPrecursorMass;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventFirstPrecursorMass (fallback -1): " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_last_precursor_mass")]
+        public static double GetScanEventLastPrecursorMass(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventLastPrecursorMass: RawFile handle is invalid or null.");
+                return -1.0;
+            }
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).LastPrecursorMass;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventLastPrecursorMass (fallback -1): " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_multiple_activation")]
+        public static int GetScanEventMultipleActivation(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventMultipleActivation: RawFile handle is invalid or null.");
+                return 0;
+            }
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).MultipleActivation ? 1 : 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMultipleActivation (fallback 0): " + ex.Message);
+                return 0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_range_is_valid")]
+        public static int GetScanEventPrecursorRangeIsValid(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventPrecursorRangeIsValid: RawFile handle is invalid or null.");
+                return 0;
+            }
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).PrecursorRangeIsValid ? 1 : 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventPrecursorRangeIsValid (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_activation_type")]
         public static int GetScanEventActivationType(int handle, int scanNumber, int index)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventActivationType (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index);
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventActivationType (fallback -1): " + ex.Message); return -1; }
         }
 
-        
-        
+
+
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_isolation_width")]
         public static double GetScanEventIsolationWidth(int handle, int scanNumber, int index)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidth(index); } catch { return 0.0; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidth(index);
+            }
+            catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_isolation_width_offset")]
         public static double GetScanEventIsolationWidthOffset(int handle, int scanNumber, int index)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidthOffset(index); } catch { return 0.0; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidthOffset(index);
+            }
+            catch { return 0.0; }
         }
 
-        
+
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_collision_energy")]
         public static double GetScanEventCollisionEnergy(int handle, int scanNumber, int index)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index);
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_stats")]
         public static unsafe int GetScanStats(int handle, int scanNumber, double* data)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var stats = _rawFile.GetScanStatsForScanNumber(scanNumber);
-                if (stats == null) return 0;
+                if (stats == null)
+                    return 0;
                 data[0] = stats.StartTime;
                 data[1] = stats.LowMass;
                 data[2] = stats.HighMass;
@@ -1257,135 +1557,216 @@ namespace ThermoNativeReader
         public static int GetScanFilterUltra(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUltra (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUltra (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_wideband")]
         public static int GetScanFilterWideband(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterWideband (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterWideband (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_polarity")]
         public static int GetScanFilterPolarity(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterPolarity (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterPolarity (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ms_order")]
         public static int GetScanFilterMsOrder(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMsOrder (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMsOrder (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_analyzer")]
         public static int GetScanFilterMassAnalyzer(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassAnalyzer (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassAnalyzer (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector")]
         public static int GetScanFilterDetector(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetector (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetector (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_data")]
         public static int GetScanFilterScanData(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanData (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanData (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_mode")]
         public static int GetScanFilterScanMode(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanMode (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanMode (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_accurate_mass")]
         public static int GetScanFilterAccurateMass(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterAccurateMass (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterAccurateMass (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ionization_mode")]
         public static int GetScanFilterIonizationMode(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterIonizationMode (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterIonizationMode (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_lock")]
         public static int GetScanFilterLock(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterLock (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterLock (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_turbo_scan")]
         public static int GetScanFilterTurboScan(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterTurboScan (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterTurboScan (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_corona")]
         public static int GetScanFilterCorona(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCorona (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCorona (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_dependent")]
         public static int GetScanFilterDependent(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDependent (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDependent (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector_value")]
         public static double GetScanFilterDetectorValue(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetectorValue (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetectorValue (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage")]
         public static int GetScanEventCompensationVoltage(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltage (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltage (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage_value")]
         public static double GetScanEventCompensationVoltageValue(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
@@ -1405,15 +1786,18 @@ namespace ThermoNativeReader
         public static unsafe int GetTrailerExtraHeader(int handle, byte* buffer, int bufferSize)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 var info = _rawFile.GetTrailerExtraHeaderInformation();
-                if (info == null) return 0;
+                if (info == null)
+                    return 0;
                 var res = string.Join("|", info.Select(x => x.Label + "###TYPE###" + (int)x.DataType + "###LEN###" + x.StringLengthOrPrecision));
                 var bytes = System.Text.Encoding.UTF8.GetBytes(res);
                 int count = Math.Min(bytes.Length, bufferSize - 1);
-                for (int i = 0; i < count; i++) buffer[i] = bytes[i];
+                for (int i = 0; i < count; i++)
+                    buffer[i] = bytes[i];
                 buffer[count] = 0;
                 return bytes.Length;
             }
@@ -1432,40 +1816,65 @@ namespace ThermoNativeReader
         public static int GetScanFilterCompensationVoltType(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltType; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltType (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltType;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltType (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage_count")]
         public static int GetScanFilterCompensationVoltageCount(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltageCount; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltageCount (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return _rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltageCount;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltageCount (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation")]
         public static int GetScanFilterElectronCaptureDissociation(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronCaptureDissociation (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronCaptureDissociation (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation")]
         public static int GetScanFilterElectronTransferDissociation(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronTransferDissociation (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronTransferDissociation (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_enhanced")]
         public static int GetScanFilterEnhanced(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterEnhanced (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterEnhanced (fallback 0): " + ex.Message); return 0; }
         }
 
 
@@ -1473,84 +1882,132 @@ namespace ThermoNativeReader
         public static int GetScanFilterSourceFragmentation(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentation (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentation (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_valid")]
         public static int GetScanFilterSourceFragmentationInfoValid(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid[0]; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationInfoValid (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid[0];
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationInfoValid (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_type")]
         public static int GetScanFilterSourceFragmentationType(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationType; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationType (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationType;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationType (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_value")]
         public static double GetScanFilterSourceFragmentationValue(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0.0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(0); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationValue (fallback 0.0): " + ex.Message); return 0.0; }
+            if (_rawFile == null)
+                return 0.0;
+            try
+            {
+                return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(0);
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationValue (fallback 0.0): " + ex.Message); return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
         public static int GetScanFilterSupplementalActivation(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSupplementalActivation (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSupplementalActivation (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_precision")]
         public static int GetScanFilterMassPrecision(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MassPrecision; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassPrecision (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).MassPrecision;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassPrecision (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multi_notch")]
         public static int GetScanFilterMultiNotch(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiNotch; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiNotch (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiNotch;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiNotch (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiplex")]
         public static int GetScanFilterMultiplex(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.GetFilterForScanNumber(scanNumber).Multiplex; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiplex (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.GetFilterForScanNumber(scanNumber).Multiplex;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiplex (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_unique_mass_count")]
         public static int GetScanFilterUniqueMassCount(int handle, int scanNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return _rawFile.GetFilterForScanNumber(scanNumber).UniqueMassCount; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return _rawFile.GetFilterForScanNumber(scanNumber).UniqueMassCount;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message); return 0; }
         }
         private static double GetFilterDouble(int handle, int scanNumber, string name)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0.0;
+            if (_rawFile == null)
+                return 0.0;
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
                 var prop = filter.GetType().GetProperty(name);
-                if (prop == null) return 0.0;
+                if (prop == null)
+                    return 0.0;
                 var val = prop.GetValue(filter);
-                if (val == null) return 0.0;
+                if (val == null)
+                    return 0.0;
                 return (double)Convert.ChangeType(val, typeof(double));
             }
             catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0.0): " + ex.Message); return 0.0; }
@@ -1559,14 +2016,17 @@ namespace ThermoNativeReader
         private static int GetFilterInt(int handle, int scanNumber, string name)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
                 var prop = filter.GetType().GetProperty(name);
-                if (prop == null) return 0;
+                if (prop == null)
+                    return 0;
                 var val = prop.GetValue(filter);
-                if (val == null) return 0;
+                if (val == null)
+                    return 0;
                 return (int)Convert.ChangeType(val, typeof(int));
             }
             catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message); return 0; }
@@ -1584,7 +2044,8 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             double val = GetFilterDouble(handle, scanNumber, "HigherEnergyCIDValue");
-            if (val == 0.0) val = GetFilterDouble(handle, scanNumber, "HigherEnergyCidValue");
+            if (val == 0.0)
+                val = GetFilterDouble(handle, scanNumber, "HigherEnergyCidValue");
             return val;
         }
 
@@ -1682,7 +2143,8 @@ namespace ThermoNativeReader
         public static void SelectInstrument(int handle, int deviceType, int deviceNumber)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return;
+            if (_rawFile == null)
+                return;
             try
             {
                 _rawFile.SelectInstrument((Device)deviceType, deviceNumber);
@@ -1701,15 +2163,18 @@ namespace ThermoNativeReader
         public static unsafe int GetInstrumentMethod(int handle, int index, byte* buffer, int maxLength)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
+            if (_rawFile == null)
+                return -1;
             try
             {
                 string method = _rawFile.GetInstrumentMethod(index);
-                if (string.IsNullOrEmpty(method)) return 0;
+                if (string.IsNullOrEmpty(method))
+                    return 0;
 
                 byte[] bytes = System.Text.Encoding.UTF8.GetBytes(method);
                 int len = Math.Min(bytes.Length, maxLength - 1);
-                for (int i = 0; i < len; i++) buffer[i] = bytes[i];
+                for (int i = 0; i < len; i++)
+                    buffer[i] = bytes[i];
                 buffer[len] = 0;
                 return len;
             }
@@ -1719,8 +2184,12 @@ namespace ThermoNativeReader
         public static int GetAutoSamplerTrayIndex(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.TrayIndex; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.AutoSamplerInformation.TrayIndex;
+            }
             catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerTrayIndex: {ex.Message}"); return -1; }
         }
 
@@ -1728,8 +2197,12 @@ namespace ThermoNativeReader
         public static int GetAutoSamplerVialIndex(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialIndex; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.AutoSamplerInformation.VialIndex;
+            }
             catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerVialIndex: {ex.Message}"); return -1; }
         }
 
@@ -1737,13 +2210,15 @@ namespace ThermoNativeReader
         public static unsafe int GetAutoSamplerTrayName(int handle, byte* buffer, int maxLength)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
+            if (_rawFile == null)
+                return 0;
             try
             {
                 string name = _rawFile.AutoSamplerInformation.TrayName ?? "";
                 byte[] bytes = System.Text.Encoding.UTF8.GetBytes(name);
                 int len = Math.Min(bytes.Length, maxLength - 1);
-                for (int i = 0; i < len; i++) buffer[i] = bytes[i];
+                for (int i = 0; i < len; i++)
+                    buffer[i] = bytes[i];
                 buffer[len] = 0;
                 return len;
             }
@@ -1754,32 +2229,52 @@ namespace ThermoNativeReader
         public static int GetAutoSamplerTrayShape(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return 0;
-            try { return (int)_rawFile.AutoSamplerInformation.TrayShape; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerTrayShape (fallback 0): " + ex.Message); return 0; }
+            if (_rawFile == null)
+                return 0;
+            try
+            {
+                return (int)_rawFile.AutoSamplerInformation.TrayShape;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerTrayShape (fallback 0): " + ex.Message); return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray")]
         public static int GetAutoSamplerVialsPerTray(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTray; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTray (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.AutoSamplerInformation.VialsPerTray;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTray (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_x")]
         public static int GetAutoSamplerVialsPerTrayX(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTrayX; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayX (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.AutoSamplerInformation.VialsPerTrayX;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayX (fallback -1): " + ex.Message); return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_y")]
         public static int GetAutoSamplerVialsPerTrayY(int handle)
         {
             var _rawFile = GetFile(handle);
-            if (_rawFile == null) return -1;
-            try { return _rawFile.AutoSamplerInformation.VialsPerTrayY; } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayY (fallback -1): " + ex.Message); return -1; }
+            if (_rawFile == null)
+                return -1;
+            try
+            {
+                return _rawFile.AutoSamplerInformation.VialsPerTrayY;
+            }
+            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayY (fallback -1): " + ex.Message); return -1; }
         }
     }
 }
