@@ -75,6 +75,7 @@ jobs:
         cp ${{ env.DYLIB_PATH }} native_fisher_py/python/native_fisher_py/
         
         # Install the package
+        cp README.md native_fisher_py/
         cd native_fisher_py
         maturin develop
         cd ..

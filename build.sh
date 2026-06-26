@@ -34,6 +34,7 @@ cd native_fisher_py
 export THERMO_NATIVE_LIB=$(pwd)/python/native_fisher_py/$LIB_NAME
 
 # Check for maturin
+cp ../README.md README.md
 if command -v maturin >/dev/null 2>&1; then
     maturin develop
 elif command -v pipenv >/dev/null 2>&1 && pipenv run maturin --version >/dev/null 2>&1; then
