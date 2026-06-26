@@ -1204,6 +1204,25 @@ namespace ThermoNativeReader
             try { return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index); } catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventActivationType (fallback -1): " + ex.Message); return -1; }
         }
 
+        
+        
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_isolation_width")]
+        public static double GetScanEventIsolationWidth(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidth(index); } catch { return 0.0; }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_isolation_width_offset")]
+        public static double GetScanEventIsolationWidthOffset(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try { return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidthOffset(index); } catch { return 0.0; }
+        }
+
+        
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_collision_energy")]
         public static double GetScanEventCollisionEnergy(int handle, int scanNumber, int index)
         {

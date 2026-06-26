@@ -1222,9 +1222,13 @@ class Reaction(CommonCoreDataObject):
     @property
     def first_precursor_mass(self): raise NotImplementedError
     @property
-    def isolation_width(self): raise NotImplementedError
+    def isolation_width(self):
+        from ..native_fisher_py_backend import get_scan_event_isolation_width
+        return get_scan_event_isolation_width(self._handle, self._scan_number, self._index)
     @property
-    def isolation_width_offset(self): raise NotImplementedError
+    def isolation_width_offset(self):
+        from ..native_fisher_py_backend import get_scan_event_isolation_width_offset
+        return get_scan_event_isolation_width_offset(self._handle, self._scan_number, self._index)
     @property
     def last_precursor_mass(self): raise NotImplementedError
     @property
