@@ -1,5 +1,4 @@
 import os
-import re
 import site
 import sys
 
@@ -8,14 +7,11 @@ def get_fisher_py_path():
         path = os.path.join(site_pkg, 'fisher_py')
         if os.path.exists(path):
             return path
-            
-    # Also check virtual environments where site.getsitepackages() might be missing
     for p in sys.path:
         path = os.path.join(p, 'fisher_py')
         if os.path.exists(path):
             return path
-            
-    raise RuntimeError("fisher_py not found in sys.path or site-packages")
+    raise RuntimeError("fisher_py not found")
 
 def patch_fisher_py():
     try:
@@ -25,34 +21,38 @@ def patch_fisher_py():
         with open(init_file, 'r') as f:
             content = f.read()
             
-        # Add import sys if needed
-        if "import sys" not in content:
-            content = "import sys\n" + content
-            
-        # Ensure sys.path.append(dll_path) is added
-        if "sys.path.append(os.path.realpath(dll_path))" not in content:
-            content = content.replace("clr.AddReference('mscorlib')", "clr.AddReference('mscorlib')\nsys.path.append(os.path.realpath(dll_path))")
+        if "from System.Reflection import Assembly" not in content:
+            content = content.replace("from System import Environment", "from System import Environment\nfrom System.Reflection import Assembly")
 
-        # Replace clr.AddReference(os.path.join(dll_path, 'AssemblyName.dll'))
-        # with clr.AddReference('AssemblyName')
-        content = re.sub(
-            r"clr\.AddReference\((?:os\.path\.join\()?dll_path,\s*'([^']+)\.dll'(?:\))?\)",
-            r"clr.AddReference('\1')",
-            content
-        )
-        # Also clean up any lingering Assembly.LoadFrom from previous patches just in case
-        content = re.sub(
-            r"Assembly\.LoadFrom\(os\.path\.realpath\(os\.path\.join\(dll_path,\s*'([^']+)\.dll'\)\)\)",
-            r"clr.AddReference('\1')",
-            content
-        )
+        import re
         
+        # Add helper function at the top of the file after imports
+        helper = """
+def _safe_load_assembly(path):
+    try:
+        Assembly.LoadFrom(path)
+    except Exception:
+        pass
+"""
+        if "_safe_load_assembly" not in content:
+            content = content.replace("import os", "import os\n" + helper, 1)
+
+        def replacer(match):
+            original = match.group(1)
+            return f"_safe_load_assembly(os.path.realpath({original}))"
+
+        content = re.sub(
+            r"clr\.AddReference\((os\.path\.join\(dll_path,\s*'[^']+'\))\)",
+            replacer,
+            content
+        )
+
         with open(init_file, 'w') as f:
             f.write(content)
             
         print(f"Successfully patched {init_file}")
     except Exception as e:
-        print(f"Failed to patch fisher_py: {e}")
+        print(f"Failed to patch: {e}")
         sys.exit(1)
 
 if __name__ == '__main__':
