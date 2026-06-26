@@ -6,7 +6,7 @@ build-backend = "maturin"
 name = "native-fisher-py"
 description = "Drop-in replacement for fisher-py without dotnet required"
 requires-python = ">=3.8"
-readme = "../README.md"
+readme = "README.md"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -25,4 +25,4 @@ tests = [
 [tool.maturin]
 python-source = "python"
 module-name = "native_fisher_py.native_fisher_py_backend"
-include = ["python/native_fisher_py/ThermoNativeReader.*"]
+include = ["python/native_fisher_py/ThermoNativeReader.*", "python/native_fisher_py/*.dll"]

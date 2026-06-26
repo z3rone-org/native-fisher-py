@@ -28,12 +28,14 @@ cd ../..
 # Copy the built library into the python package directory
 # This allows maturin to include it in the wheel
 cp $DYLIB_PATH native_fisher_py/python/native_fisher_py/
+cp vendor/RawFileReader/Libs/NetCore/Net8/Assemblies/*.dll native_fisher_py/python/native_fisher_py/
 
 # 2. Build Python Package
 cd native_fisher_py
 export THERMO_NATIVE_LIB=$(pwd)/python/native_fisher_py/$LIB_NAME
 
 # Check for maturin
+cp ../README.md README.md
 if command -v maturin >/dev/null 2>&1; then
     maturin develop
 elif command -v pipenv >/dev/null 2>&1 && pipenv run maturin --version >/dev/null 2>&1; then

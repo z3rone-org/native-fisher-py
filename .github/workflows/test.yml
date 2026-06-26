@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, development ]
 
 jobs:
   test:
@@ -51,7 +51,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -63,6 +63,9 @@ jobs:
         pip install maturin pytest numpy
         pip install fisher-py
 
+    - name: Decompress test data
+      run: gunzip -d -k test_data/*.gz
+
     - name: Build and test
       run: |
         source .venv/bin/activate
@@ -72,7 +75,10 @@ jobs:
         cp ${{ env.DYLIB_PATH }} native_fisher_py/python/native_fisher_py/
         
         # Install the package
-        pip install ./native_fisher_py
+        cp README.md native_fisher_py/
+        cd native_fisher_py
+        maturin develop
+        cd ..
         
         # Parity tests will automatically fall back to ground_truth.json if fisher-py fails
         python -m pytest tests

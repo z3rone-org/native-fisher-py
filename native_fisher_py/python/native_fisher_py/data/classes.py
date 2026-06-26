@@ -147,69 +147,70 @@ class CommonCoreDataObject(object):
     def perform_default_settings(self): pass
 
 class ScanFilter(CommonCoreDataObject):
-    def __init__(self, scan_number=0):
+    def __init__(self, handle=0, scan_number=0):
+        self._handle = handle
         self._scan_number = scan_number
     def __str__(self):
         from . import get_scan_filter_string
         return get_scan_filter_string(self._scan_number)
     @property
     def name(self):
-        return get_scan_event_string(self._scan_number)
+        return get_scan_event_string(self._handle, self._scan_number)
     @property
     def ms_order(self):
-        return MsOrderType(get_ms_order(self._scan_number))
+        return MsOrderType(get_ms_order(self._handle, self._scan_number))
     @property
     def mass_analyzer(self):
-        return MassAnalyzerType(get_mass_analyzer(self._scan_number))
+        return MassAnalyzerType(get_mass_analyzer(self._handle, self._scan_number))
     @property
     def polarity(self):
-        return PolarityType(get_scan_filter_polarity(self._scan_number))
+        return PolarityType(get_scan_filter_polarity(self._handle, self._scan_number))
     @property
     def scan_data(self):
-        return ScanDataType(get_scan_filter_scan_data(self._scan_number))
+        return ScanDataType(get_scan_filter_scan_data(self._handle, self._scan_number))
     @property
     def ultra(self):
-        return TriState(get_scan_filter_ultra(self._scan_number))
+        return TriState(get_scan_filter_ultra(self._handle, self._scan_number))
     @property
     def wideband(self):
-        return TriState(get_scan_filter_wideband(self._scan_number))
+        return TriState(get_scan_filter_wideband(self._handle, self._scan_number))
     @property
     def detector(self):
-        return DetectorType(get_scan_filter_detector(self._scan_number))
+        return DetectorType(get_scan_filter_detector(self._handle, self._scan_number))
     @property
     def compensation_voltage(self):
-        return TriState(get_scan_event_compensation_voltage(self._scan_number))
+        return TriState(get_scan_event_compensation_voltage(self._handle, self._scan_number))
     @property
     def compensation_voltage_value(self):
-        return get_scan_event_compensation_voltage_value(self._scan_number)
+        return get_scan_event_compensation_voltage_value(self._handle, self._scan_number)
     @property
     def scan_mode(self):
-        return ScanModeType(get_scan_filter_scan_mode(self._scan_number))
+        return ScanModeType(get_scan_filter_scan_mode(self._handle, self._scan_number))
     @property
     def accurate_mass(self):
-        return EventAccurateMass(get_scan_filter_accurate_mass(self._scan_number))
+        return EventAccurateMass(get_scan_filter_accurate_mass(self._handle, self._scan_number))
     @property
     def ionization_mode(self):
-        return IonizationModeType(get_scan_filter_ionization_mode(self._scan_number))
+        return IonizationModeType(get_scan_filter_ionization_mode(self._handle, self._scan_number))
     @property
     def lock(self):
-        return TriState(get_scan_filter_lock(self._scan_number))
+        return TriState(get_scan_filter_lock(self._handle, self._scan_number))
     @property
     def meta_filters(self):
         # This will be implemented in the native layer to return a list of filter strings
-        return get_scan_filter_meta_filters(self._scan_number)
+        return get_scan_filter_meta_filters(self._handle, self._scan_number)
     @property
     def turbo_scan(self):
-        return TriState(get_scan_filter_turbo_scan(self._scan_number))
+        return TriState(get_scan_filter_turbo_scan(self._handle, self._scan_number))
     @property
     def corona(self):
-        return TriState(get_scan_filter_corona(self._scan_number))
+        return TriState(get_scan_filter_corona(self._handle, self._scan_number))
     @property
     def dependent(self):
-        return TriState(get_scan_filter_dependent(self._scan_number))
+        return TriState(get_scan_filter_dependent(self._handle, self._scan_number))
     @property
     def detector_value(self):
-        return get_scan_filter_detector_value(self._scan_number)
+        return get_scan_filter_detector_value(self._handle, self._scan_number)
 
     @property
     def source_fragmentation(self):
@@ -279,12 +280,12 @@ class ScanFilter(CommonCoreDataObject):
         return TriState(get_scan_filter_enhanced(self._scan_number))
     @property
     def field_free_region(self):
-        return FieldFreeRegionType(get_scan_filter_field_free_region(self._scan_number))
+        return FieldFreeRegionType(get_scan_filter_field_free_region(self._handle, self._scan_number))
     @property
     def get_source_fragmentation_info_valid(self): return True
     @property
     def index_to_multiple_activation_index(self): 
-        return get_scan_filter_index_to_multiple_activation_index(self._scan_number)
+        return get_scan_filter_index_to_multiple_activation_index(self._handle, self._scan_number)
     @property
     def locale_name(self): return "en-US"
     @property
@@ -411,6 +412,7 @@ for name in ["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9
     setattr(MsOrderType, name, MsOrderType(["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9", "Ms10", "Ng", "Nl", "Par"].index(name)))
     getattr(MsOrderType, name).name = name
 MSOrder = MsOrderType
+MsOrderType.Ms = MsOrderType.Ms1
 
 class MassAnalyzer(EnumBase):
     Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2
@@ -721,10 +723,19 @@ class LogEntry(CommonCoreDataObject):
 
 class HeaderItem(CommonCoreDataObject):
     def __init__(self, data):
+        self._string_length_or_precision = 0
         if "###TYPE###" in data:
             parts = data.split("###TYPE###")
             self._label = parts[0]
-            try: self._data_type = GenericDataTypes(int(parts[1]))
+            rest = parts[1]
+            if "###LEN###" in rest:
+                subparts = rest.split("###LEN###")
+                type_val = subparts[0]
+                try: self._string_length_or_precision = int(subparts[1])
+                except: pass
+            else:
+                type_val = rest
+            try: self._data_type = GenericDataTypes(int(type_val))
             except: self._data_type = GenericDataTypes.NULL
         else:
             self._label = data
@@ -732,6 +743,8 @@ class HeaderItem(CommonCoreDataObject):
     
     @property
     def label(self): return self._label
+    @property
+    def string_length_or_precision(self): return self._string_length_or_precision
     @property
     def data_type(self): return self._data_type
     @property
@@ -752,7 +765,8 @@ class HeaderItem(CommonCoreDataObject):
         raise NotImplementedError
 
 class StatusLogValues(CommonCoreDataObject):
-    def __init__(self, retention_time=0.0, values=None):
+    def __init__(self, handle=0, retention_time=0.0, values=None):
+        self._handle = handle
         self._retention_time = retention_time
         self._values = values or []
     @property
@@ -761,7 +775,8 @@ class StatusLogValues(CommonCoreDataObject):
     def values(self): return self._values
 
 class TuneDataValues(CommonCoreDataObject):
-    def __init__(self, id=0, values=None):
+    def __init__(self, handle=0, id=0, values=None):
+        self._handle = handle
         self._id = id
         self._values = values or []
     @property
@@ -770,18 +785,19 @@ class TuneDataValues(CommonCoreDataObject):
     def values(self): return self._values
 
 class Reaction(CommonCoreDataObject): 
-    def __init__(self, scan_number=0, index=0):
+    def __init__(self, handle=0, scan_number=0, index=0):
+        self._handle = handle
         self._scan_number = scan_number
         self._index = index
     @property
     def precursor_mass(self):
-        return get_scan_event_precursor_mass(self._scan_number, self._index)
+        return get_scan_event_precursor_mass(self._handle, self._scan_number, self._index)
     @property
     def activation_type(self):
-        return ActivationType(get_scan_event_activation_type(self._scan_number, self._index))
+        return ActivationType(get_scan_event_activation_type(self._handle, self._scan_number, self._index))
     @property
     def collision_energy(self):
-        return get_scan_event_collision_energy(self._scan_number, self._index)
+        return get_scan_event_collision_energy(self._handle, self._scan_number, self._index)
     @property
     def collision_energy_valid(self): raise NotImplementedError
     @property
@@ -882,9 +898,27 @@ class Scan(CommonCoreDataObject):
     def tolerance_unit(self): return 0
 
 class CentroidStream(CommonCoreDataObject):
-    def __init__(self, masses=None, intensities=None):
+    def __init__(self, masses=None, intensities=None, baselines=None, noises=None, charges=None, base_peak_noise=0.0, base_peak_resolution=0.0, scan_number=0):
         self._masses = masses if masses is not None else np.array([])
         self._intensities = intensities if intensities is not None else np.array([])
+        self._baselines = baselines if baselines is not None else np.array([])
+        self._noises = noises if noises is not None else np.array([])
+        self._charges = charges if charges is not None else np.array([])
+        self._base_peak_noise = base_peak_noise
+        self._base_peak_resolution = base_peak_resolution
+        self._scan_number = scan_number
+
+    def clear(self):
+        self._masses = np.array([])
+        self._intensities = np.array([])
+        self._baselines = np.array([])
+        self._noises = np.array([])
+        self._charges = np.array([])
+        
+    def clone(self): return self
+    def deep_clone(self): 
+        import copy
+        return copy.deepcopy(self)
 
     @property
     def base_intensity(self): return np.max(self._intensities) if self._intensities.size > 0 else 0.0
@@ -893,57 +927,40 @@ class CentroidStream(CommonCoreDataObject):
     @property
     def base_peak_mass(self): return self._masses[np.argmax(self._intensities)] if self._intensities.size > 0 else 0.0
     @property
-    def base_peak_noise(self): raise NotImplementedError
+    def base_peak_noise(self): return self._base_peak_noise
     @property
-    def base_peak_resolution(self): raise NotImplementedError
+    def base_peak_resolution(self): return self._base_peak_resolution
     @property
-    def baselines(self): raise NotImplementedError
+    def baselines(self): return self._baselines
     @property
-    def charges(self): raise NotImplementedError
-    def clear(self): raise NotImplementedError
-    def clone(self): return self
+    def charges(self): return self._charges
     @property
-    def coefficients(self): 
-        if _IS_SPHINX: return np.array([])
-        raise NotImplementedError
+    def coefficients_count(self): return 0
     @property
-    def coefficients_count(self): 
-        if _IS_SPHINX: return 0
-        raise NotImplementedError
-    def deep_clone(self): 
-        if _IS_SPHINX: return self
-        raise NotImplementedError
+    def coefficients(self): return np.array([])
     @property
-    def flags(self): 
-        if _IS_SPHINX: return []
-        raise NotImplementedError
-    def get_centroids(self): 
-        if _IS_SPHINX: return []
-        raise NotImplementedError
-    def get_label_peak(self, i): 
-        if _IS_SPHINX: return None
-        raise NotImplementedError
-    def get_label_peaks(self): 
-        if _IS_SPHINX: return []
-        raise NotImplementedError
+    def flags(self): return 0
+    def get_centroids(self): return self._masses, self._intensities
+    def get_label_peak(self, index): return None
+    def get_label_peaks(self): return None
+    @property
+    def noises(self): return self._noises
     @property
     def intensities(self): return self._intensities
     @property
     def length(self): return len(self._masses) if self._masses is not None else 0
     @property
     def masses(self): return self._masses
-    @property
-    def noises(self): raise NotImplementedError
     def refresh_base_details(self): pass
     @property
     def resolutions(self): return np.array([])
     @property
-    def scan_number(self): return 0
-    def set_label_peaks(self, p): pass
+    def scan_number(self): return self._scan_number
+    def set_label_peaks(self, peaks): pass
     @property
-    def sum_intensities(self): return 0.0
+    def sum_intensities(self): return np.sum(self._intensities) if self._intensities.size > 0 else 0.0
     @property
-    def sum_masses(self): return 0.0
+    def sum_masses(self): return np.sum(self._masses) if self._masses.size > 0 else 0.0
     def to_scan(self): return None
     def to_segmented_scan(self): return None
     def to_simple_scan(self): return None
@@ -1009,37 +1026,41 @@ class ChromatogramSignal(CommonCoreDataObject):
 
 
 class InstrumentData(CommonCoreDataObject):
+    def __init__(self, handle=0):
+        self._handle = handle
     @property
-    def axis_label_x(self): return get_instrument_axis_label_x()
+    def axis_label_x(self): return get_instrument_axis_label_x(self._handle)
     @property
-    def axis_label_y(self): return get_instrument_axis_label_y()
+    def axis_label_y(self): return get_instrument_axis_label_y(self._handle)
     @property
     def channel_labels(self): return []
     def clone(self): return self
     @property
-    def flags(self): return get_instrument_flags()
+    def flags(self): return get_instrument_flags(self._handle)
     @property
-    def has_accurate_mass_precursors(self): return get_instrument_has_accurate_mass_precursors()
+    def has_accurate_mass_precursors(self): return get_instrument_has_accurate_mass_precursors(self._handle)
     @property
-    def is_tsq_quantum_file(self): return get_instrument_is_tsq_quantum_file()
+    def is_tsq_quantum_file(self): return get_instrument_is_tsq_quantum_file(self._handle)
     @property
-    def is_valid(self): return get_instrument_is_valid()
+    def is_valid(self): return get_instrument_is_valid(self._handle)
     @property
-    def units(self): return DataUnits(get_instrument_units())
+    def units(self): return DataUnits(get_instrument_units(self._handle))
     @property
-    def name(self) -> str: return get_instrument_name()
+    def name(self) -> str: return get_instrument_name(self._handle)
     @property
-    def model(self) -> str: return get_instrument_model()
+    def model(self) -> str: return get_instrument_model(self._handle)
     @property
-    def serial_number(self) -> str: return get_instrument_serial_number()
+    def serial_number(self) -> str: return get_instrument_serial_number(self._handle)
     @property
-    def software_version(self) -> str: return get_instrument_software_version()
+    def software_version(self) -> str: return get_instrument_software_version(self._handle)
     @property
-    def hardware_version(self) -> str: return get_instrument_hardware_version()
+    def hardware_version(self) -> str: return get_instrument_hardware_version(self._handle)
 
 class SampleInformation(CommonCoreDataObject):
+    def __init__(self, handle=0):
+        self._handle = handle
     @property
-    def barcode(self): return get_sample_barcode()
+    def barcode(self): return get_sample_barcode(self._handle)
     @property
     def barcode_status(self): 
         if _IS_SPHINX: return 0
@@ -1053,18 +1074,16 @@ class SampleInformation(CommonCoreDataObject):
         if _IS_SPHINX: return 0
         raise NotImplementedError
     @property
-    def comment(self): return get_sample_comment()
+    def comment(self): return get_sample_comment(self._handle)
     def deep_copy(self): raise NotImplementedError
     @property
-    def dilution_factor(self): return get_sample_dilution_factor()
+    def dilution_factor(self): return get_sample_dilution_factor(self._handle)
     @property
     def injection_volume(self): 
-        if _IS_SPHINX: return 0.0
-        raise NotImplementedError
+        return get_sample_injection_volume(self._handle)
     @property
     def instrument_method_file(self): 
-        if _IS_SPHINX: return ""
-        raise NotImplementedError
+        return get_sample_instrument_method_file(self._handle)
     @property
     def istd_amount(self): 
         if _IS_SPHINX: return 0.0
@@ -1078,15 +1097,15 @@ class SampleInformation(CommonCoreDataObject):
         if _IS_SPHINX: return ""
         raise NotImplementedError
     @property
-    def row_number(self): return get_sample_row_number()
+    def row_number(self): return get_sample_row_number(self._handle)
     @property
-    def sample_id(self): return get_sample_id()
+    def sample_id(self): return get_sample_id(self._handle)
     @property
-    def sample_name(self): return get_sample_name()
+    def sample_name(self): return get_sample_name(self._handle)
     @property
-    def vial(self): return get_sample_vial()
+    def vial(self): return get_sample_vial(self._handle)
     @property
-    def sample_type(self): return SampleType(get_sample_type())
+    def sample_type(self): return SampleType(get_sample_type(self._handle))
     @property
     def sample_volume(self): return 0.0
     @property
@@ -1096,21 +1115,25 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def vial(self): return ""
     @property
-    def raw_file_name(self) -> str: return get_file_name()
+    def raw_file_name(self) -> str: return get_file_name(self._handle)
     @property
-    def path(self) -> str: return get_path()
+    def path(self) -> str: return get_path(self._handle)
+    @property
+    def autosampler_information(self): return AutoSamplerInformation(self._handle)
 
 class FileHeader(CommonCoreDataObject):
+    def __init__(self, handle=0):
+        self._handle = handle
     @property
-    def creation_date(self) -> str: return get_creation_date()
+    def creation_date(self) -> str: return get_creation_date(self._handle)
     @property
-    def who_created_id(self) -> str: return get_creator_id()
+    def who_created_id(self) -> str: return get_creator_id(self._handle)
     @property
-    def file_description(self): return get_file_description()
+    def file_description(self): return get_file_description(self._handle)
     @property
     def file_type(self): return FileType.RawFile
     @property
-    def modified_date(self): return get_modified_date()
+    def modified_date(self): return get_modified_date(self._handle)
     @property
     def number_of_times_calibrated(self): 
         if _IS_SPHINX: return -1
@@ -1124,11 +1147,11 @@ class FileHeader(CommonCoreDataObject):
         if _IS_SPHINX: return -1
         raise NotImplementedError
     @property
-    def who_created_logon(self): return get_who_created_logon()
+    def who_created_logon(self): return get_who_created_logon(self._handle)
     @property
-    def who_modified_id(self): return get_who_modified_id()
+    def who_modified_id(self): return get_who_modified_id(self._handle)
     @property
-    def who_modified_logon(self): return get_who_modified_logon()
+    def who_modified_logon(self): return get_who_modified_logon(self._handle)
 
 class FileError(CommonCoreDataObject):
     @property
@@ -1143,43 +1166,40 @@ class FileError(CommonCoreDataObject):
     def warning_message(self): return ""
 
 class AutoSamplerInformation(CommonCoreDataObject):
+    def __init__(self, handle=0):
+        self._handle = handle
     @property
     def tray_index(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_tray_index(self._handle)
     @property
     def tray_name(self): 
-        if _IS_SPHINX: return "Any"
-        raise NotImplementedError
+        return get_autosampler_tray_name(self._handle)
     @property
     def tray_shape(self): 
-        if _IS_SPHINX: return TrayShape.Unknown
-        raise NotImplementedError
+        return TrayShape(get_autosampler_tray_shape(self._handle))
     @property
     def tray_shape_as_string(self): 
-        if _IS_SPHINX: return "Unknown"
-        raise NotImplementedError
+        return str(self.tray_shape)
     @property
     def vial_index(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vial_index(self._handle)
     @property
     def vials_per_tray(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vials_per_tray(self._handle)
     @property
     def vials_per_tray_x(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vials_per_tray_x(self._handle)
     @property
     def vials_per_tray_y(self): 
-        if _IS_SPHINX: return -1
-        raise NotImplementedError
+        return get_autosampler_vials_per_tray_y(self._handle)
 
 class RunHeader(CommonCoreDataObject):
-    def __init__(self, raw_file=None): self._raw_file = raw_file
+    def __init__(self, handle=0, raw_file=None):
+        self._handle = handle
+        self._raw_file = raw_file
+        self._handle = raw_file._handle if raw_file else 0
     @property
-    def start_time(self) -> float: return get_start_time()
+    def start_time(self) -> float: return get_start_time(self._handle)
     @property
     def first_spectrum(self) -> int: return self._raw_file.first_scan if self._raw_file else 1
     @property
@@ -1238,7 +1258,9 @@ class RunHeader(CommonCoreDataObject):
         raise NotImplementedError
 
 class RunHeaderEx(CommonCoreDataObject):
-    def __init__(self, raw_file): self._raw_file = raw_file
+    def __init__(self, raw_file):
+        self._raw_file = raw_file
+        self._handle = raw_file._handle if raw_file else 0
     @property
     def spectra_count(self): return self._raw_file.number_of_scans
     @property
@@ -1246,23 +1268,23 @@ class RunHeaderEx(CommonCoreDataObject):
     @property
     def last_spectrum(self): return self._raw_file.last_scan
     @property
-    def start_time(self): return get_start_time()
+    def start_time(self): return get_start_time(self._handle)
     @property
-    def end_time(self): return get_end_time()
+    def end_time(self): return get_end_time(self._handle)
     @property
-    def mass_resolution(self): return get_mass_resolution()
+    def mass_resolution(self): return get_mass_resolution(self._handle)
     @property
-    def expected_runtime(self): return get_expected_runtime()
+    def expected_runtime(self): return get_expected_runtime(self._handle)
     @property
-    def max_integrated_intensity(self): return get_max_integrated_intensity()
+    def max_integrated_intensity(self): return get_max_integrated_intensity(self._handle)
     @property
-    def max_intensity(self): return get_max_intensity()
+    def max_intensity(self): return get_max_intensity(self._handle)
     @property
-    def trailer_extra_count(self): return get_trailer_extra_count()
+    def trailer_extra_count(self): return get_trailer_extra_count(self._handle)
     @property
-    def low_mass(self): return get_low_mass()
+    def low_mass(self): return get_low_mass(self._handle)
     @property
-    def high_mass(self): return get_high_mass()
+    def high_mass(self): return get_high_mass(self._handle)
     @property
     def error_message(self): 
         if _IS_SPHINX: return ""
@@ -1281,6 +1303,8 @@ class RunHeaderEx(CommonCoreDataObject):
         raise NotImplementedError
 
 class WrappedRunHeader(CommonCoreDataObject):
+    def __init__(self, handle=0):
+        self._handle = handle
     @property
     def comment_1(self): 
         if _IS_SPHINX: return ""
@@ -1307,44 +1331,44 @@ class WrappedRunHeader(CommonCoreDataObject):
         raise NotImplementedError
     @property
     def high_mass(self): 
-        return get_high_mass()
+        return get_high_mass(self._handle)
     @property
     def in_acquisition(self): 
         return in_acquisition()
     @property
     def low_mass(self): 
-        return get_low_mass()
+        return get_low_mass(self._handle)
     @property
     def mass_resolution(self): 
-        return get_mass_resolution()
+        return get_mass_resolution(self._handle)
     @property
     def max_integrated_intensity(self): 
-        return get_max_integrated_intensity()
+        return get_max_integrated_intensity(self._handle)
     @property
     def max_intensity(self): 
-        return get_max_intensity()
+        return get_max_intensity(self._handle)
     @property
     def spectra_count(self): 
-        return get_num_scans()
+        return get_num_scans(self._handle)
     @property
     def status_log_count(self): 
-        return get_status_log_count()
+        return get_status_log_count(self._handle)
     @property
     def trailer_extra_count(self): 
-        return get_trailer_extra_count()
+        return get_trailer_extra_count(self._handle)
     @property
     def trailer_scan_event_count(self): 
         if _IS_SPHINX: return 0
         raise NotImplementedError
     @property
     def tune_data_count(self): 
-        return get_tune_data_count()
+        return get_tune_data_count(self._handle)
     @property
     def first_spectrum(self): 
-        return get_first_scan()
+        return get_first_scan(self._handle)
     @property
     def last_spectrum(self): 
-        return get_last_scan()
+        return get_last_scan(self._handle)
     @property
     def start_time(self): 
         if _IS_SPHINX: return 0.0
@@ -1355,61 +1379,62 @@ class WrappedRunHeader(CommonCoreDataObject):
         raise NotImplementedError
 
 class ScanEvent(CommonCoreDataObject):
-    def __init__(self, scan_number=0):
+    def __init__(self, handle=0, scan_number=0):
+        self._handle = handle
         self._scan_number = scan_number
     @property
     def ms_order(self):
-        return MsOrderType(get_scan_event_ms_order(self._scan_number))
+        return MsOrderType(get_scan_event_ms_order(self._handle, self._scan_number))
     @property
     def mass_count(self):
-        return get_scan_event_mass_count(self._scan_number)
+        return get_scan_event_mass_count(self._handle, self._scan_number)
     def get_mass(self, index):
-        return get_scan_event_precursor_mass(self._scan_number, index)
+        return get_scan_event_precursor_mass(self._handle, self._scan_number, index)
     def get_activation(self, index):
-        return ActivationType(get_scan_event_activation_type(self._scan_number, index))
+        return ActivationType(get_scan_event_activation_type(self._handle, self._scan_number, index))
     def get_energy(self, index):
-        return get_scan_event_collision_energy(self._scan_number, index)
+        return get_scan_event_collision_energy(self._handle, self._scan_number, index)
     def get_reaction(self, index):
-        return Reaction(self._scan_number, index)
+        return Reaction(self._handle, self._scan_number, index)
     @property
     def name(self):
-        return get_scan_event_string(self._scan_number)
+        return get_scan_event_string(self._handle, self._scan_number)
     @property
     def accurate_mass(self):
-        return EventAccurateMass(get_scan_filter_accurate_mass(self._scan_number))
+        return EventAccurateMass(get_scan_filter_accurate_mass(self._handle, self._scan_number))
     @property
     def mass_analyzer(self) -> int:
         return MassAnalyzer(get_scan_filter_mass_analyzer(self._scan_number))
     @property
     def polarity(self) -> int:
-        return PolarityType(get_scan_filter_polarity(self._scan_number))
+        return PolarityType(get_scan_filter_polarity(self._handle, self._scan_number))
     @property
     def scan_mode(self) -> int:
-        return ScanModeType(get_scan_filter_scan_mode(self._scan_number))
+        return ScanModeType(get_scan_filter_scan_mode(self._handle, self._scan_number))
     @property
     def ionization_mode(self) -> int:
-        return IonizationModeType(get_scan_filter_ionization_mode(self._scan_number))
+        return IonizationModeType(get_scan_filter_ionization_mode(self._handle, self._scan_number))
     @property
     def is_valid(self) -> bool:
-        return bool(get_instrument_is_valid())
+        return bool(get_instrument_is_valid(self._handle))
     @property
     def compensation_volt_type(self):
         return CompensationVoltageType(get_scan_filter_compensation_volt_type(self._scan_number))
     @property
     def compensation_voltage(self):
-        return TriState(get_scan_event_compensation_voltage(self._scan_number))
+        return TriState(get_scan_event_compensation_voltage(self._handle, self._scan_number))
     @property
     def corona(self):
-        return TriState(get_scan_filter_corona(self._scan_number))
+        return TriState(get_scan_filter_corona(self._handle, self._scan_number))
     @property
     def dependent(self):
-        return TriState(get_scan_filter_dependent(self._scan_number))
+        return TriState(get_scan_filter_dependent(self._handle, self._scan_number))
     @property
     def detector(self):
-        return DetectorType(get_scan_filter_detector(self._scan_number))
+        return DetectorType(get_scan_filter_detector(self._handle, self._scan_number))
     @property
     def detector_value(self):
-        return get_scan_filter_detector_value(self._scan_number)
+        return get_scan_filter_detector_value(self._handle, self._scan_number)
     @property
     def electron_capture_dissociation(self):
         return TriState(get_scan_filter_electron_capture_dissociation(self._scan_number))
@@ -1427,7 +1452,7 @@ class ScanEvent(CommonCoreDataObject):
         return TriState(get_scan_filter_enhanced(self._scan_number))
     @property
     def field_free_region(self):
-        return FieldFreeRegionType(get_scan_filter_field_free_region(self._scan_number))
+        return FieldFreeRegionType(get_scan_filter_field_free_region(self._handle, self._scan_number))
     @property
     def higher_energy_ci_d(self):
         return TriState(get_scan_filter_higher_energy_cid(self._scan_number))
@@ -1440,7 +1465,7 @@ class ScanEvent(CommonCoreDataObject):
         raise NotImplementedError("is_custom")
     @property
     def lock(self):
-        return TriState(get_scan_filter_lock(self._scan_number))
+        return TriState(get_scan_filter_lock(self._handle, self._scan_number))
     @property
     def mass_calibrator_count(self):
         if _IS_SPHINX: return -1
@@ -1492,7 +1517,7 @@ class ScanEvent(CommonCoreDataObject):
         return get_scan_filter_pulsed_q_dissociation_value(self._scan_number)
     @property
     def scan_data(self):
-        return ScanDataType(get_scan_filter_scan_data(self._scan_number))
+        return ScanDataType(get_scan_filter_scan_data(self._handle, self._scan_number))
     @property
     def scan_type_index(self):
         if _IS_SPHINX: return -1
@@ -1520,13 +1545,13 @@ class ScanEvent(CommonCoreDataObject):
         return TriState(get_scan_filter_supplemental_activation(self._scan_number))
     @property
     def turbo_scan(self):
-        return TriState(get_scan_filter_turbo_scan(self._scan_number))
+        return TriState(get_scan_filter_turbo_scan(self._handle, self._scan_number))
     @property
     def ultra(self):
-        return TriState(get_scan_filter_ultra(self._scan_number))
+        return TriState(get_scan_filter_ultra(self._handle, self._scan_number))
     @property
     def wideband(self):
-        return TriState(get_scan_filter_wideband(self._scan_number))
+        return TriState(get_scan_filter_wideband(self._handle, self._scan_number))
     def get_energy_valid(self, index):
         if _IS_SPHINX: return 0
         raise NotImplementedError("get_energy_valid")
