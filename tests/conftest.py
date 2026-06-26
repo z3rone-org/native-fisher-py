@@ -6,7 +6,7 @@ from native_fisher_py.raw_file import RawFile
 def zoom_raw_path():
     path = os.path.join("test_data", "MS2_MS1_zoom.raw")
     if not os.path.exists(path):
-        pytest.skip(f"Test file {path} not found")
+        raise FileNotFoundError(f"Test file {path} not found")
     return path
 
 @pytest.fixture(scope="session")
