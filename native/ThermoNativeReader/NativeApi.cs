@@ -132,7 +132,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanRT: RawFile handle is invalid or null.");
                 return -1.0;
+            }
             return _rawFile.RetentionTimeFromScanNumber(scanNumber);
         }
 
@@ -141,7 +144,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in IsCentroid: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 var scanStatistics = _rawFile.GetScanStatsForScanNumber(scanNumber);
@@ -149,7 +155,11 @@ namespace ThermoNativeReader
                     return 0;
                 return scanStatistics.IsCentroidScan ? 1 : 0;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in IsCentroid (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in IsCentroid (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_spectrum")]
@@ -157,7 +167,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in IsCentroid: RawFile handle is invalid or null.");
                 return -1;
+            }
 
             try
             {
@@ -200,7 +213,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in IsCentroid: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var scan = _rawFile.GetCentroidStream(scanNumber, false);
@@ -244,7 +260,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in IsCentroid: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
@@ -270,7 +289,11 @@ namespace ThermoNativeReader
                 }
                 return metaList.Count;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in IsCentroid (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in IsCentroid (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_filters")]
@@ -278,7 +301,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in IsCentroid: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var filterList = _rawFile.GetFilters().ToArray();
@@ -391,7 +417,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetHighMass: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.FileName ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -406,7 +435,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetHighMass: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.Path ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -421,7 +453,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             return _rawFile.GetTuneDataCount();
         }
 
@@ -430,7 +465,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.CreationDate.ToString("o");
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -445,7 +483,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.ComputerName ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -460,7 +501,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.CreatorId ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -475,7 +519,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.Model ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -491,7 +538,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.Name ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -507,7 +557,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.SerialNumber ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -523,7 +576,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.SoftwareVersion ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -539,7 +595,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.HardwareVersion ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -555,7 +614,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.AxisLabelX ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -571,7 +633,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.AxisLabelY ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -587,7 +652,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             var str = data?.Flags ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
@@ -603,7 +671,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentUnits: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             return data != null ? (int)data.Units : 0;
         }
@@ -613,7 +684,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsValid: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             return data != null && data.IsValid ? 1 : 0;
         }
@@ -623,7 +697,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentHasAccurateMassPrecursors: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             return data != null && data.HasAccurateMassPrecursors ? 1 : 0;
         }
@@ -633,7 +710,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var data = _rawFile.GetInstrumentData();
             return data != null && data.IsTsqQuantumFile() ? 1 : 0;
         }
@@ -643,7 +723,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.FileHeader.FileDescription ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -658,7 +741,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.FileHeader.ModifiedDate.ToString() ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -673,7 +759,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.FileHeader.WhoCreatedLogon ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -688,7 +777,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.FileHeader.WhoModifiedId ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -703,7 +795,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.FileHeader.WhoModifiedLogon ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -718,7 +813,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.SampleInformation.Barcode ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -733,7 +831,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.SampleInformation.SampleId ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -748,7 +849,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.SampleInformation.SampleName ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -763,7 +867,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.SampleInformation.Vial ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -778,7 +885,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.SampleInformation.Comment ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -793,7 +903,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleType: RawFile handle is invalid or null.");
                 return 0;
+            }
             return (int)_rawFile.SampleInformation.SampleType;
         }
 
@@ -802,7 +915,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleRowNumber: RawFile handle is invalid or null.");
                 return 0;
+            }
             return _rawFile.SampleInformation.RowNumber;
         }
 
@@ -811,7 +927,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleDilutionFactor: RawFile handle is invalid or null.");
                 return 1.0;
+            }
             return _rawFile.SampleInformation.DilutionFactor;
         }
 
@@ -820,7 +939,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleInjectionVolume: RawFile handle is invalid or null.");
                 return 0.0;
+            }
             return _rawFile.SampleInformation.InjectionVolume;
         }
 
@@ -829,7 +951,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleInjectionVolume: RawFile handle is invalid or null.");
                 return -1;
+            }
             var str = _rawFile.SampleInformation.InstrumentMethodFile ?? "";
             var bytes = System.Text.Encoding.UTF8.GetBytes(str);
             int count = Math.Min(bytes.Length, length - 1);
@@ -844,13 +969,20 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetMsOrder: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
                 return (int)scanEvent.MSOrder;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMsOrder (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetMsOrder (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_mass_analyzer")]
@@ -858,13 +990,20 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetMassAnalyzer: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
                 return (int)scanEvent.MassAnalyzer;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMassAnalyzer (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetMassAnalyzer (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_precursor_mass")]
@@ -872,7 +1011,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetPrecursorMass: RawFile handle is invalid or null.");
                 return -1.0;
+            }
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
@@ -880,7 +1022,11 @@ namespace ThermoNativeReader
                     return 0.0;
                 return scanEvent.GetReaction(0).PrecursorMass;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetPrecursorMass (fallback -1.0): " + ex.Message); return -1.0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetPrecursorMass (fallback -1.0): " + ex.Message);
+                return -1.0;
+            }
         }
 
         private static string SafeGetScanEventString(IScanEvent scanEvent)
@@ -908,7 +1054,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetPrecursorMass: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
@@ -941,7 +1090,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetPrecursorMass: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var precursors = new HashSet<double>();
@@ -974,7 +1126,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetPrecursorMass: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
@@ -995,8 +1150,9 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return count;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetPrecursorMass: " + ex.Message);
                 return 0;
             }
         }
@@ -1006,7 +1162,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanNumberFromRT: RawFile handle is invalid or null.");
                 return -1;
+            }
             return _rawFile.ScanNumberFromRetentionTime(rt);
         }
 
@@ -1015,7 +1174,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetMs2ScanNumberFromRT: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 int bestScan = -1;
@@ -1051,7 +1213,11 @@ namespace ThermoNativeReader
                 }
                 return bestScan;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMs2ScanNumberFromRT (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetMs2ScanNumberFromRT (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_chromatogram")]
@@ -1059,7 +1225,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetMs2ScanNumberFromRT: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 string filter = Marshal.PtrToStringAnsi(filterPtr) ?? "";
@@ -1102,7 +1271,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetMs1ScanNumberFromRT: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 int scan = _rawFile.ScanNumberFromRetentionTime(rt);
@@ -1126,7 +1298,11 @@ namespace ThermoNativeReader
                 }
                 return -1;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetMs1ScanNumberFromRT (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetMs1ScanNumberFromRT (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_averaged_spectrum")]
@@ -1134,7 +1310,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetMs1ScanNumberFromRT: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var scans = new int[numScans];
@@ -1169,7 +1348,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             return _rawFile.InstrumentCount;
         }
 
@@ -1178,7 +1360,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentCountOfType: RawFile handle is invalid or null.");
                 return -1;
+            }
             return _rawFile.GetInstrumentCountOfType((Device)type);
         }
 
@@ -1187,7 +1372,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in IsOpen: RawFile handle is invalid or null.");
                 return 0;
+            }
             return _rawFile.IsOpen ? 1 : 0;
         }
 
@@ -1196,7 +1384,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in IsError: RawFile handle is invalid or null.");
                 return 1;
+            }
             return _rawFile.IsError ? 1 : 0;
         }
 
@@ -1205,7 +1396,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in InAcquisition: RawFile handle is invalid or null.");
                 return 0;
+            }
             return _rawFile.InAcquisition ? 1 : 0;
         }
 
@@ -1214,7 +1408,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in HasMsData: RawFile handle is invalid or null.");
                 return 0;
+            }
             return _rawFile.HasMsData ? 1 : 0;
         }
 
@@ -1222,7 +1419,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in HasMsData: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var log = _rawFile.GetStatusLogForRetentionTime(rt);
@@ -1236,7 +1436,11 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_values_for_rt")]
@@ -1251,13 +1455,20 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in HasMsData: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var rt = _rawFile.RetentionTimeFromScanNumber(scanNumber);
                 return _getStatusLogValuesForRt(handle, rt, buffer, bufferSize);
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_header")]
@@ -1265,7 +1476,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in HasMsData: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var info = _rawFile.GetStatusLogHeaderInformation();
@@ -1279,7 +1493,11 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in HasMsData (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_status_log_count")]
@@ -1287,12 +1505,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetStatusLogCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.GetStatusLogEntriesCount();
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_values")]
@@ -1300,7 +1525,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetStatusLogCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var trailer = _rawFile.GetTrailerExtraInformation(scanNumber);
@@ -1314,7 +1542,11 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_count")]
@@ -1322,13 +1554,20 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetTrailerExtraCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var header = _rawFile.GetTrailerExtraHeaderInformation();
                 return header != null ? header.Count() : 0;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetTrailerExtraCount (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetTrailerExtraCount (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_ms_order")]
@@ -1336,12 +1575,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventMsOrder: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMsOrder (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMsOrder (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_count")]
@@ -1349,12 +1595,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventMassCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassCount (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassCount (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_mass")]
@@ -1362,7 +1615,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventPrecursorMass: RawFile handle is invalid or null.");
                 return -1.0;
+            }
             try
             {
                 return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).PrecursorMass;
@@ -1479,12 +1735,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventActivationType: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index);
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventActivationType (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventActivationType (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
 
@@ -1494,7 +1757,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventIsolationWidth: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidth(index);
@@ -1507,7 +1773,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventIsolationWidthOffset: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidthOffset(index);
@@ -1521,12 +1790,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventCollisionEnergy: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index);
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_stats")]
@@ -1534,7 +1810,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventCollisionEnergy: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var stats = _rawFile.GetScanStatsForScanNumber(scanNumber);
@@ -1550,7 +1829,11 @@ namespace ThermoNativeReader
                 data[7] = stats.IsCentroidScan ? 1.0 : 0.0;
                 return 8;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ultra")]
@@ -1558,12 +1841,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterUltra: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUltra (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUltra (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_wideband")]
@@ -1571,12 +1861,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterWideband: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterWideband (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterWideband (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_polarity")]
@@ -1584,12 +1881,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterPolarity: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterPolarity (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterPolarity (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ms_order")]
@@ -1597,12 +1901,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterMsOrder: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMsOrder (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMsOrder (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_analyzer")]
@@ -1610,12 +1921,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterMassAnalyzer: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassAnalyzer (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassAnalyzer (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector")]
@@ -1623,12 +1941,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterDetector: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetector (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetector (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_data")]
@@ -1636,12 +1961,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterScanData: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanData (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanData (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_mode")]
@@ -1649,12 +1981,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterScanMode: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanMode (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanMode (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_accurate_mass")]
@@ -1662,12 +2001,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterAccurateMass: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterAccurateMass (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterAccurateMass (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ionization_mode")]
@@ -1675,12 +2021,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterIonizationMode: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterIonizationMode (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterIonizationMode (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_lock")]
@@ -1688,12 +2041,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterLock: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterLock (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterLock (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_turbo_scan")]
@@ -1701,12 +2061,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterTurboScan: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterTurboScan (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterTurboScan (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_corona")]
@@ -1714,12 +2081,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterCorona: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCorona (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCorona (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_dependent")]
@@ -1727,12 +2101,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterDependent: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDependent (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDependent (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_detector_value")]
@@ -1740,12 +2121,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterDetectorValue: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetectorValue (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterDetectorValue (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage")]
@@ -1753,12 +2141,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventCompensationVoltage: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltage (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltage (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_event_compensation_voltage_value")]
@@ -1766,7 +2161,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventCompensationVoltageValue: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
@@ -1779,7 +2177,11 @@ namespace ThermoNativeReader
                 }
                 return 0.0;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltageValue (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltageValue (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_trailer_extra_header")]
@@ -1787,7 +2189,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventCompensationVoltageValue: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 var info = _rawFile.GetTrailerExtraHeaderInformation();
@@ -1801,7 +2206,11 @@ namespace ThermoNativeReader
                 buffer[count] = 0;
                 return bytes.Length;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltageValue (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCompensationVoltageValue (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "close_raw_file")]
@@ -1817,12 +2226,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterCompensationVoltType: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltType;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltType (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltType (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_compensation_voltage_count")]
@@ -1830,12 +2246,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterCompensationVoltageCount: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return _rawFile.GetFilterForScanNumber(scanNumber).CompensationVoltageCount;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltageCount (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterCompensationVoltageCount (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_capture_dissociation")]
@@ -1843,12 +2266,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterElectronCaptureDissociation: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronCaptureDissociation;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronCaptureDissociation (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronCaptureDissociation (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_electron_transfer_dissociation")]
@@ -1856,12 +2286,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterElectronTransferDissociation: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).ElectronTransferDissociation;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronTransferDissociation (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterElectronTransferDissociation (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_enhanced")]
@@ -1869,12 +2306,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterEnhanced: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).Enhanced;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterEnhanced (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterEnhanced (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
 
@@ -1883,12 +2327,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterSourceFragmentation: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentation;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentation (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentation (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_valid")]
@@ -1896,12 +2347,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterSourceFragmentationInfoValid: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationInfoValid[0];
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationInfoValid (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationInfoValid (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_type")]
@@ -1909,12 +2367,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterSourceFragmentationType: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationType;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationType (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationType (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_value")]
@@ -1922,12 +2387,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterSourceFragmentationValue: RawFile handle is invalid or null.");
                 return 0.0;
+            }
             try
             {
                 return _rawFile.GetFilterForScanNumber(scanNumber).SourceFragmentationValue(0);
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationValue (fallback 0.0): " + ex.Message); return 0.0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationValue (fallback 0.0): " + ex.Message);
+                return 0.0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_supplemental_activation")]
@@ -1935,12 +2407,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterSupplementalActivation: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).SupplementalActivation;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSupplementalActivation (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSupplementalActivation (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_precision")]
@@ -1948,12 +2427,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterMassPrecision: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).MassPrecision;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassPrecision (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassPrecision (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multi_notch")]
@@ -1961,12 +2447,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterMultiNotch: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).MultiNotch;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiNotch (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiNotch (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multiplex")]
@@ -1974,12 +2467,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterMultiplex: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.GetFilterForScanNumber(scanNumber).Multiplex;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiplex (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiplex (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_unique_mass_count")]
@@ -1987,49 +2487,82 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanFilterUniqueMassCount: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return _rawFile.GetFilterForScanNumber(scanNumber).UniqueMassCount;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
         private static double GetFilterDouble(int handle, int scanNumber, string name)
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetFilterDouble: RawFile handle is invalid or null.");
                 return 0.0;
+            }
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
                 var prop = filter.GetType().GetProperty(name);
                 if (prop == null)
+                {
+                    Console.Error.WriteLine($"[native-fisher-py] Error in GetFilterDouble: Property '{name}' not found on filter.");
                     return 0.0;
+                }
                 var val = prop.GetValue(filter);
                 if (val == null)
+                {
+                    Console.Error.WriteLine($"[native-fisher-py] Error in GetFilterDouble: Value for property '{name}' is null.");
                     return 0.0;
+                }
                 return (double)Convert.ChangeType(val, typeof(double));
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0.0): " + ex.Message); return 0.0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetFilterDouble (fallback 0.0): " + ex.Message);
+                return 0.0;
+            }
         }
 
         private static int GetFilterInt(int handle, int scanNumber, string name)
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetFilterInt: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 var filter = _rawFile.GetFilterForScanNumber(scanNumber);
                 var prop = filter.GetType().GetProperty(name);
                 if (prop == null)
+                {
+                    Console.Error.WriteLine($"[native-fisher-py] Error in GetFilterInt: Property '{name}' not found on filter.");
                     return 0;
+                }
                 var val = prop.GetValue(filter);
                 if (val == null)
+                {
+                    Console.Error.WriteLine($"[native-fisher-py] Error in GetFilterInt: Value for property '{name}' is null.");
                     return 0;
+                }
                 return (int)Convert.ChangeType(val, typeof(int));
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterUniqueMassCount (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetFilterInt (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_higher_energy_cid")]
@@ -2144,12 +2677,18 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in SelectInstrument: RawFile handle is invalid or null.");
                 return;
+            }
             try
             {
                 _rawFile.SelectInstrument((Device)deviceType, deviceNumber);
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in SelectInstrument (ignored): " + ex.Message); }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in SelectInstrument (ignored): " + ex.Message);
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_method_count")]
@@ -2164,7 +2703,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentMethodCount: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 string method = _rawFile.GetInstrumentMethod(index);
@@ -2178,19 +2720,30 @@ namespace ThermoNativeReader
                 buffer[len] = 0;
                 return len;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetInstrumentMethodCount (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetInstrumentMethodCount (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_index")]
         public static int GetAutoSamplerTrayIndex(int handle)
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetAutoSamplerTrayIndex: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.AutoSamplerInformation.TrayIndex;
             }
-            catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerTrayIndex: {ex.Message}"); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerTrayIndex (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vial_index")]
@@ -2198,12 +2751,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetAutoSamplerVialIndex: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.AutoSamplerInformation.VialIndex;
             }
-            catch (Exception ex) { Console.WriteLine($"Native Error in GetAutoSamplerVialIndex: {ex.Message}"); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialIndex (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_name")]
@@ -2211,7 +2771,10 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetAutoSamplerVialIndex: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 string name = _rawFile.AutoSamplerInformation.TrayName ?? "";
@@ -2222,7 +2785,11 @@ namespace ThermoNativeReader
                 buffer[len] = 0;
                 return len;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialIndex (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialIndex (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_tray_shape")]
@@ -2230,12 +2797,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetAutoSamplerTrayShape: RawFile handle is invalid or null.");
                 return 0;
+            }
             try
             {
                 return (int)_rawFile.AutoSamplerInformation.TrayShape;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerTrayShape (fallback 0): " + ex.Message); return 0; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerTrayShape (fallback 0): " + ex.Message);
+                return 0;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray")]
@@ -2243,12 +2817,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetAutoSamplerVialsPerTray: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.AutoSamplerInformation.VialsPerTray;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTray (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTray (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_x")]
@@ -2256,12 +2837,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetAutoSamplerVialsPerTrayX: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.AutoSamplerInformation.VialsPerTrayX;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayX (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayX (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_autosampler_vials_per_tray_y")]
@@ -2269,12 +2857,19 @@ namespace ThermoNativeReader
         {
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetAutoSamplerVialsPerTrayY: RawFile handle is invalid or null.");
                 return -1;
+            }
             try
             {
                 return _rawFile.AutoSamplerInformation.VialsPerTrayY;
             }
-            catch (Exception ex) { Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayY (fallback -1): " + ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetAutoSamplerVialsPerTrayY (fallback -1): " + ex.Message);
+                return -1;
+            }
         }
     }
 }

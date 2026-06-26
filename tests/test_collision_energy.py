@@ -75,6 +75,8 @@ def test_isolation_width_angiotensin(angiotensin_raw_file):
     assert reaction_3.collision_energy == pytest.approx(30.0), "Scan 3 CE mismatch"
     assert reaction_3.precursor_mass == pytest.approx(432.9000244140625)
     
+    # TODO: Find a raw file where the reaction explicitly defines a mass range (precursor_range_is_valid = True). 
+    # Current test files only utilize exact center mass + isolation width, causing first/last precursor bounds to default to 0.0.
     # Test auxiliary Reaction properties to ensure they correctly return hardware defaults instead of NotImplementedError
     assert reaction_3.collision_energy_valid is True
     assert reaction_3.first_precursor_mass == 0.0
