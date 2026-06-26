@@ -133,7 +133,7 @@ class RawFile(object):
         return get_creator_id(self._handle)
 
     def get_instrument_data(self) -> InstrumentData:
-        return InstrumentData()
+        return InstrumentData(self._handle)
 
     @property
     def run_header(self) -> RunHeader:
@@ -145,7 +145,7 @@ class RawFile(object):
 
     @property
     def sample_information(self) -> SampleInformation:
-        return SampleInformation()
+        return SampleInformation(self._handle)
 
     @property
     def instrument_selection(self) -> InstrumentSelection:
@@ -153,7 +153,7 @@ class RawFile(object):
 
     @property
     def file_header(self) -> FileHeader:
-        return FileHeader()
+        return FileHeader(self._handle)
 
     @property
     def file_error(self) -> FileError:
@@ -191,7 +191,7 @@ class RawFile(object):
 
     def get_scan_event_for_scan_number(self, scan_number: int):
         from .data.classes import ScanEvent
-        return ScanEvent(scan_number)
+        return ScanEvent(self._handle, scan_number)
 
     def get_status_log_for_retention_time(self, rt: float):
         from .data.classes import LogEntry
@@ -304,7 +304,7 @@ class RawFile(object):
     def get_auto_filters(self): return []
     def get_filter_for_scan_number(self, scan_number):
         from .data.classes import ScanFilter
-        return ScanFilter(scan_number)
+        return ScanFilter(self._handle, scan_number)
     def get_scan_events(self, start, end): return []
     def get_scan_dependents(self, scan_number, precision): return ScanDependents()
 
@@ -324,7 +324,7 @@ class RawFile(object):
 
     def get_tune_data_values(self, index: int):
         from .data.classes import TuneDataValues
-        return TuneDataValues()
+        return TuneDataValues(self._handle)
     
     @property
     def instrument_methods_count(self) -> int:
