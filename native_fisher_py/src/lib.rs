@@ -1152,6 +1152,27 @@ fn get_scan_event_activation_type(handle: i32, scan_number: i32, index: i32) -> 
     }
 }
 
+
+#[pyfunction]
+fn get_scan_event_isolation_width(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_isolation_width")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_isolation_width: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_isolation_width_offset(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_isolation_width_offset")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_isolation_width_offset: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
 #[pyfunction]
 fn get_scan_event_collision_energy(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
     let lib = get_lib()?;
@@ -1760,6 +1781,8 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_event_mass_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_precursor_mass, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_activation_type, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_isolation_width, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_isolation_width_offset, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_collision_energy, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_stats, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_axis_label_x, m)?)?;

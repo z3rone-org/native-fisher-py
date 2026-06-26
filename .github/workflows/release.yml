@@ -75,6 +75,9 @@ jobs:
       with:
         python-version: '3.9'
 
+    - name: Copy README
+      run: cp README.md native_fisher_py/
+
     - name: Build wheels
       uses: PyO3/maturin-action@v1
       with:

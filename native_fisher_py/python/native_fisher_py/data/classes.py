@@ -1,6 +1,6 @@
+import string
 import os
 import sys
-from typing import List, Tuple, Union
 import enum
 import numpy as np
 
@@ -131,6 +131,7 @@ else:
     def get_scan_event_collision_energy(s, i): return 0.0
     def get_scan_stats(s): return [0.0]*7
 
+
 class DataUnits(enum.Enum):
     none = 0
     AbsorbanceUnits = 1
@@ -140,74 +141,96 @@ class DataUnits(enum.Enum):
     MilliVolts = 5
     MicroVolts = 6
 
+
 class CommonCoreDataObject(object):
     def deep_equals(self, other): return True
     def equals(self, other): return True
     def get_hash_code(self): return 0
     def perform_default_settings(self): pass
 
+
 class ScanFilter(CommonCoreDataObject):
     def __init__(self, handle=0, scan_number=0):
         self._handle = handle
         self._scan_number = scan_number
+
     def __str__(self):
         from . import get_scan_filter_string
         return get_scan_filter_string(self._scan_number)
+
     @property
     def name(self):
         return get_scan_event_string(self._handle, self._scan_number)
+
     @property
     def ms_order(self):
         return MsOrderType(get_ms_order(self._handle, self._scan_number))
+
     @property
     def mass_analyzer(self):
         return MassAnalyzerType(get_mass_analyzer(self._handle, self._scan_number))
+
     @property
     def polarity(self):
         return PolarityType(get_scan_filter_polarity(self._handle, self._scan_number))
+
     @property
     def scan_data(self):
         return ScanDataType(get_scan_filter_scan_data(self._handle, self._scan_number))
+
     @property
     def ultra(self):
         return TriState(get_scan_filter_ultra(self._handle, self._scan_number))
+
     @property
     def wideband(self):
         return TriState(get_scan_filter_wideband(self._handle, self._scan_number))
+
     @property
     def detector(self):
         return DetectorType(get_scan_filter_detector(self._handle, self._scan_number))
+
     @property
     def compensation_voltage(self):
         return TriState(get_scan_event_compensation_voltage(self._handle, self._scan_number))
+
     @property
     def compensation_voltage_value(self):
         return get_scan_event_compensation_voltage_value(self._handle, self._scan_number)
+
     @property
     def scan_mode(self):
         return ScanModeType(get_scan_filter_scan_mode(self._handle, self._scan_number))
+
     @property
     def accurate_mass(self):
         return EventAccurateMass(get_scan_filter_accurate_mass(self._handle, self._scan_number))
+
     @property
     def ionization_mode(self):
         return IonizationModeType(get_scan_filter_ionization_mode(self._handle, self._scan_number))
+
     @property
     def lock(self):
         return TriState(get_scan_filter_lock(self._handle, self._scan_number))
+
     @property
     def meta_filters(self):
         # This will be implemented in the native layer to return a list of filter strings
         return get_scan_filter_meta_filters(self._handle, self._scan_number)
+
     @property
     def turbo_scan(self):
         return TriState(get_scan_filter_turbo_scan(self._handle, self._scan_number))
+
     @property
     def corona(self):
         return TriState(get_scan_filter_corona(self._handle, self._scan_number))
+
     @property
     def dependent(self):
         return TriState(get_scan_filter_dependent(self._handle, self._scan_number))
+
     @property
     def detector_value(self):
         return get_scan_filter_detector_value(self._handle, self._scan_number)
@@ -215,38 +238,50 @@ class ScanFilter(CommonCoreDataObject):
     @property
     def source_fragmentation(self):
         return TriState(get_scan_filter_source_fragmentation(self._scan_number))
+
     @property
     def source_fragmentation_info_valid(self):
         return SourceFragmentationInfoValidType(get_scan_filter_source_fragmentation_info_valid(self._scan_number))
+
     @property
     def source_fragmentation_type(self):
         return SourceFragmentationValueType(get_scan_filter_source_fragmentation_type(self._scan_number))
+
     @property
     def source_fragmentation_value(self):
         return get_scan_filter_source_fragmentation_value(self._scan_number)
+
     @property
     def supplemental_activation(self):
         return TriState(get_scan_filter_supplemental_activation(self._scan_number))
+
     @property
     def higher_energy_ci_d(self):
         return TriState(get_scan_filter_higher_energy_cid(self._scan_number))
+
     @higher_energy_ci_d.setter
     def higher_energy_ci_d(self, val): pass
+
     @property
     def higher_energy_ci_d_value(self):
         return get_scan_filter_higher_energy_cid_value(self._scan_number)
+
     @property
     def mass_precision(self):
         return FilterAccurateMass(get_scan_filter_mass_precision(self._scan_number))
+
     @property
     def multi_notch(self):
         return TriState(get_scan_filter_multi_notch(self._scan_number))
+
     @property
     def multiplex(self):
         return TriState(get_scan_filter_multiplex(self._scan_number))
+
     @property
     def unique_mass_count(self):
         return get_scan_filter_unique_mass_count(self._scan_number)
+
     @property
     def param_a(self): return get_scan_filter_param_a(self._scan_number)
     @property
@@ -257,64 +292,85 @@ class ScanFilter(CommonCoreDataObject):
     def param_r(self): return get_scan_filter_param_r(self._scan_number)
     @property
     def param_v(self): return get_scan_filter_param_v(self._scan_number)
+
     @property
     def compensation_volt_type(self):
         return CompensationVoltageType(get_scan_filter_compensation_volt_type(self._scan_number))
+
     @property
     def compensation_voltage_count(self):
         return get_scan_filter_compensation_voltage_count(self._scan_number)
+
     @property
     def electron_capture_dissociation(self):
         return TriState(get_scan_filter_electron_capture_dissociation(self._scan_number))
+
     @property
     def electron_capture_dissociation_value(self):
         return get_scan_filter_electron_capture_dissociation_value(self._scan_number)
+
     @property
     def electron_transfer_dissociation(self):
         return TriState(get_scan_filter_electron_transfer_dissociation(self._scan_number))
+
     @property
     def electron_transfer_dissociation_value(self):
         return get_scan_filter_electron_transfer_dissociation_value(self._scan_number)
+
     @property
     def enhanced(self):
         return TriState(get_scan_filter_enhanced(self._scan_number))
+
     @property
     def field_free_region(self):
         return FieldFreeRegionType(get_scan_filter_field_free_region(self._handle, self._scan_number))
+
     @property
     def get_source_fragmentation_info_valid(self): return True
+
     @property
-    def index_to_multiple_activation_index(self): 
+    def index_to_multiple_activation_index(self):
         return get_scan_filter_index_to_multiple_activation_index(self._handle, self._scan_number)
+
     @property
     def locale_name(self): return "en-US"
     @property
     def multi_state_activation(self): return TriState.Off
+
     @property
     def multiple_photon_dissociation(self):
         return TriState(get_scan_filter_multiple_photon_dissociation(self._scan_number))
+
     @property
     def multiple_photon_dissociation_value(self):
         return get_scan_filter_multiple_photon_dissociation_value(self._scan_number)
+
     @property
     def photo_ionization(self): return TriState.Off
+
     @property
     def pulsed_q_dissociation(self):
         return TriState(get_scan_filter_pulsed_q_dissociation(self._scan_number))
+
     @property
     def pulsed_q_dissociation_value(self):
         return get_scan_filter_pulsed_q_dissociation_value(self._scan_number)
+
     @property
     def sector_scan(self):
         return SectorScanType(get_scan_filter_sector_scan(self._scan_number))
+
     @property
     def souce_fragmentaion_value_count(self): return 0
+
     @property
     def source_fragmentation_info_valid(self):
         return SourceFragmentationInfoValidType(get_scan_filter_source_fragmentation_info_valid(self._scan_number))
 
+
 class EnumBase(object):
     _instances = {}
+
     def __new__(cls, value):
         key = (cls, value)
         if key not in EnumBase._instances:
@@ -322,35 +378,45 @@ class EnumBase(object):
             EnumBase._instances[key] = inst
             return inst
         return EnumBase._instances[key]
-    def __init__(self, value=0): 
-        if hasattr(self, "_value"): return
+
+    def __init__(self, value=0):
+        if hasattr(self, "_value"):
+            return
         self._value = value
         self._name = None
+
     @property
     def name(self):
-        if self._name: return self._name
+        if self._name:
+            return self._name
         # Check class dictionary for instances or matching values
         for k, v in self.__class__.__dict__.items():
-            if k.startswith("_") or k == "name" or k == "value": continue
+            if k.startswith("_") or k == "name" or k == "value":
+                continue
             if isinstance(v, self.__class__) and v.value == self.value:
                 return k
         # Fallback to literal class members that are integers (un-instantiated)
         for k, v in self.__class__.__dict__.items():
-            if k.startswith("_") or k == "name" or k == "value": continue
+            if k.startswith("_") or k == "name" or k == "value":
+                continue
             if not isinstance(v, EnumBase) and isinstance(v, int) and v == self.value:
                 return k
         return str(self.value)
+
     @name.setter
     def name(self, val):
         self._name = val
+
     def __repr__(self): return str(self)
     @property
     def value(self): return self._value
     @value.setter
     def value(self, val): self._value = val
     def __int__(self): return self._value
+
     def __str__(self):
         return f"{self.__class__.__name__}.{self.name}"
+
 
 class GenericDataTypes(EnumBase):
     NULL = 0
@@ -368,175 +434,513 @@ class GenericDataTypes(EnumBase):
     CHAR_STRING = 12
     WCHAR_STRING = 13
 
+
 for name in ["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"]:
-    enum_val = GenericDataTypes(["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT", "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"].index(name))
+    enum_val = GenericDataTypes(["NULL", "CHAR", "TRUEFALSE", "YESNO", "ONOFF", "UCHAR", "SHORT",
+                                "USHORT", "LONG", "ULONG", "FLOAT", "DOUBLE", "CHAR_STRING", "WCHAR_STRING"].index(name))
     enum_val.name = name
     setattr(GenericDataTypes, name, enum_val)
+
+
 class SpectrumPacketType(EnumBase):
     Profile = 0
     Centroid = 1
     FtProfile = 2
     FtCentroid = 3
-class Scan(object): pass
+
+
+class Scan(object):
+    pass
 # ChromatogramSignal was here
+
+
 class Device(EnumBase):
-    MS = 1; PDA = 2; UV = 3; Analog = 4; MSAnalog = 4; Other = 5; none = 0; Pda = 2
+    MS = 1
+    PDA = 2
+    UV = 3
+    Analog = 4
+    MSAnalog = 4
+    Other = 5
+    none = 0
+    Pda = 2
+
+
 for name, val in {"MS": 1, "PDA": 2, "UV": 3, "Analog": 4, "MSAnalog": 4, "Other": 5, "none": 0, "Pda": 2}.items():
-    inst = Device(val); inst.name = name; setattr(Device, name, inst)
+    inst = Device(val)
+    inst.name = name
+    setattr(Device, name, inst)
+
 
 class TraceType(EnumBase):
-    MassRange = 0; TIC = 1; BasePeak = 2; Fragment = 3; SpectrumMax = 4
-    A2DChannel1 = 5; A2DChannel2 = 6; A2DChannel3 = 7; A2DChannel4 = 8; A2DChannel5 = 9; A2DChannel6 = 10; A2DChannel7 = 11; A2DChannel8 = 12
-    Analog1 = 13; Analog2 = 14; Analog3 = 15; Analog4 = 16; Analog5 = 17; Analog6 = 18; Analog7 = 19; Analog8 = 20
-    ChannelA = 21; ChannelB = 22; ChannelC = 23; ChannelD = 24; ChannelE = 25; ChannelF = 26; ChannelG = 27; ChannelH = 28
-    EndAllChromatogramTraces = 29; EndAnalogChromatogramTraces = 30; EndMSChromatogramTraces = 31; EndPCA2DChromatogramTraces = 32; EndPDAChromatogramTraces = 33; EndUVChromatogramTraces = 34
-    StartAnalogChromatogramTraces = 35; StartMSChromatogramTraces = 36; StartPCA2DChromatogramTraces = 37; StartPDAChromatogramTraces = 38; StartUVChromatogramTraces = 39
-    TotalAbsorbance = 40; WavelengthRange = 41
+    MassRange = 0
+    TIC = 1
+    BasePeak = 2
+    Fragment = 3
+    SpectrumMax = 4
+    A2DChannel1 = 5
+    A2DChannel2 = 6
+    A2DChannel3 = 7
+    A2DChannel4 = 8
+    A2DChannel5 = 9
+    A2DChannel6 = 10
+    A2DChannel7 = 11
+    A2DChannel8 = 12
+    Analog1 = 13
+    Analog2 = 14
+    Analog3 = 15
+    Analog4 = 16
+    Analog5 = 17
+    Analog6 = 18
+    Analog7 = 19
+    Analog8 = 20
+    ChannelA = 21
+    ChannelB = 22
+    ChannelC = 23
+    ChannelD = 24
+    ChannelE = 25
+    ChannelF = 26
+    ChannelG = 27
+    ChannelH = 28
+    EndAllChromatogramTraces = 29
+    EndAnalogChromatogramTraces = 30
+    EndMSChromatogramTraces = 31
+    EndPCA2DChromatogramTraces = 32
+    EndPDAChromatogramTraces = 33
+    EndUVChromatogramTraces = 34
+    StartAnalogChromatogramTraces = 35
+    StartMSChromatogramTraces = 36
+    StartPCA2DChromatogramTraces = 37
+    StartPDAChromatogramTraces = 38
+    StartUVChromatogramTraces = 39
+    TotalAbsorbance = 40
+    WavelengthRange = 41
 
-trace_type_names = ["MassRange", "TIC", "BasePeak", "Fragment", "SpectrumMax", 
-                   "A2DChannel1", "A2DChannel2", "A2DChannel3", "A2DChannel4", "A2DChannel5", "A2DChannel6", "A2DChannel7", "A2DChannel8",
-                   "Analog1", "Analog2", "Analog3", "Analog4", "Analog5", "Analog6", "Analog7", "Analog8",
-                   "ChannelA", "ChannelB", "ChannelC", "ChannelD", "ChannelE", "ChannelF", "ChannelG", "ChannelH",
-                   "EndAllChromatogramTraces", "EndAnalogChromatogramTraces", "EndMSChromatogramTraces", "EndPCA2DChromatogramTraces", "EndPDAChromatogramTraces", "EndUVChromatogramTraces",
-                   "StartAnalogChromatogramTraces", "StartMSChromatogramTraces", "StartPCA2DChromatogramTraces", "StartPDAChromatogramTraces", "StartUVChromatogramTraces",
-                   "TotalAbsorbance", "WavelengthRange"]
+
+trace_type_names = ["MassRange", "TIC", "BasePeak", "Fragment", "SpectrumMax",
+                    "A2DChannel1", "A2DChannel2", "A2DChannel3", "A2DChannel4", "A2DChannel5", "A2DChannel6", "A2DChannel7", "A2DChannel8",
+                    "Analog1", "Analog2", "Analog3", "Analog4", "Analog5", "Analog6", "Analog7", "Analog8",
+                    "ChannelA", "ChannelB", "ChannelC", "ChannelD", "ChannelE", "ChannelF", "ChannelG", "ChannelH",
+                    "EndAllChromatogramTraces", "EndAnalogChromatogramTraces", "EndMSChromatogramTraces", "EndPCA2DChromatogramTraces", "EndPDAChromatogramTraces", "EndUVChromatogramTraces",
+                    "StartAnalogChromatogramTraces", "StartMSChromatogramTraces", "StartPCA2DChromatogramTraces", "StartPDAChromatogramTraces", "StartUVChromatogramTraces",
+                    "TotalAbsorbance", "WavelengthRange"]
 
 for i, name in enumerate(trace_type_names):
     setattr(TraceType, name, TraceType(i))
     getattr(TraceType, name).name = name
 
+
 class MsOrderType(EnumBase):
-    Any = 0; Ms1 = 1; Ms2 = 2; Ms3 = 3; Ms4 = 4; Ms5 = 5; Ms6 = 6; Ms7 = 7; Ms8 = 8; Ms9 = 9; Ms10 = 10; Ng = 11; Nl = 12; Par = 13
+    Any = 0
+    Ms1 = 1
+    Ms2 = 2
+    Ms3 = 3
+    Ms4 = 4
+    Ms5 = 5
+    Ms6 = 6
+    Ms7 = 7
+    Ms8 = 8
+    Ms9 = 9
+    Ms10 = 10
+    Ng = 11
+    Nl = 12
+    Par = 13
+
 
 for name in ["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9", "Ms10", "Ng", "Nl", "Par"]:
-    setattr(MsOrderType, name, MsOrderType(["Any", "Ms1", "Ms2", "Ms3", "Ms4", "Ms5", "Ms6", "Ms7", "Ms8", "Ms9", "Ms10", "Ng", "Nl", "Par"].index(name)))
+    setattr(MsOrderType, name, MsOrderType(["Any", "Ms1", "Ms2", "Ms3", "Ms4",
+            "Ms5", "Ms6", "Ms7", "Ms8", "Ms9", "Ms10", "Ng", "Nl", "Par"].index(name)))
     getattr(MsOrderType, name).name = name
 MSOrder = MsOrderType
 MsOrderType.Ms = MsOrderType.Ms1
 
+
 class MassAnalyzer(EnumBase):
-    Any = 0; ITMS = 1; TQMS = 2; SQMS = 3; TOFMS = 4; FTMS = 5; Sector = 6; MassAnalyzerFTMS = 5; MassAnalyzerITMS = 1; MassAnalyzerSQMS = 3; MassAnalyzerSector = 6; MassAnalyzerTOFMS = 4; MassAnalyzerTQMS = 2
+    Any = 0
+    ITMS = 1
+    TQMS = 2
+    SQMS = 3
+    TOFMS = 4
+    FTMS = 5
+    Sector = 6
+    MassAnalyzerFTMS = 5
+    MassAnalyzerITMS = 1
+    MassAnalyzerSQMS = 3
+    MassAnalyzerSector = 6
+    MassAnalyzerTOFMS = 4
+    MassAnalyzerTQMS = 2
+
+
 for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 4, "FTMS": 5, "Sector": 6, "MassAnalyzerFTMS": 5, "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 4, "MassAnalyzerTQMS": 2}.items():
-    inst = MassAnalyzer(val); inst.name = name; setattr(MassAnalyzer, name, inst)
+    inst = MassAnalyzer(val)
+    inst.name = name
+    setattr(MassAnalyzer, name, inst)
 MassAnalyzerType = MassAnalyzer
 
-class TriState(EnumBase): Any = 0; Off = 1; On = 2
-TriState.Any = TriState(0); TriState.Any.name = "Any"
-TriState.Off = TriState(1); TriState.Off.name = "Off"
-TriState.On = TriState(2); TriState.On.name = "On"
 
-class EventAccurateMass(EnumBase): Off = 0; External = 1; Internal = 2; On = 3
-EventAccurateMass.Off = EventAccurateMass(0); EventAccurateMass.Off.name = "Off"
-EventAccurateMass.External = EventAccurateMass(1); EventAccurateMass.External.name = "External"
-EventAccurateMass.Internal = EventAccurateMass(2); EventAccurateMass.Internal.name = "Internal"
-EventAccurateMass.On = EventAccurateMass(3); EventAccurateMass.On.name = "On"
-EventAccurateMass.External = EventAccurateMass(1); EventAccurateMass.External.name = "External"
-EventAccurateMass.Internal = EventAccurateMass(2); EventAccurateMass.Internal.name = "Internal"
-EventAccurateMass.On = EventAccurateMass(3); EventAccurateMass.On.name = "On"
+class TriState(EnumBase):
+    Any = 0
+    Off = 1
+    On = 2
 
-class SourceFragmentationValueType(EnumBase): Any = 0; NoValue = 1; Ramp = 2; SIM = 3; SingleValue = 4
-SourceFragmentationValueType.Any = SourceFragmentationValueType(0); SourceFragmentationValueType.Any.name = "Any"
-SourceFragmentationValueType.NoValue = SourceFragmentationValueType(1); SourceFragmentationValueType.NoValue.name = "NoValue"
-SourceFragmentationValueType.Ramp = SourceFragmentationValueType(2); SourceFragmentationValueType.Ramp.name = "Ramp"
-SourceFragmentationValueType.SIM = SourceFragmentationValueType(3); SourceFragmentationValueType.SIM.name = "SIM"
-SourceFragmentationValueType.SingleValue = SourceFragmentationValueType(4); SourceFragmentationValueType.SingleValue.name = "SingleValue"
 
-class ScanModeType(EnumBase): Any = 0; Crm = 1; Full = 2; Q1Ms = 3; Q3Ms = 4; Sim = 5; Srm = 6; Zoom = 7
-ScanModeType.Any = ScanModeType(0); ScanModeType.Any.name = "Any"
+TriState.Any = TriState(0)
+TriState.Any.name = "Any"
+TriState.Off = TriState(1)
+TriState.Off.name = "Off"
+TriState.On = TriState(2)
+TriState.On.name = "On"
+
+
+class EventAccurateMass(EnumBase):
+    Off = 0
+    External = 1
+    Internal = 2
+    On = 3
+
+
+EventAccurateMass.Off = EventAccurateMass(0)
+EventAccurateMass.Off.name = "Off"
+EventAccurateMass.External = EventAccurateMass(1)
+EventAccurateMass.External.name = "External"
+EventAccurateMass.Internal = EventAccurateMass(2)
+EventAccurateMass.Internal.name = "Internal"
+EventAccurateMass.On = EventAccurateMass(3)
+EventAccurateMass.On.name = "On"
+EventAccurateMass.External = EventAccurateMass(1)
+EventAccurateMass.External.name = "External"
+EventAccurateMass.Internal = EventAccurateMass(2)
+EventAccurateMass.Internal.name = "Internal"
+EventAccurateMass.On = EventAccurateMass(3)
+EventAccurateMass.On.name = "On"
+
+
+class SourceFragmentationValueType(EnumBase):
+    Any = 0
+    NoValue = 1
+    Ramp = 2
+    SIM = 3
+    SingleValue = 4
+
+
+SourceFragmentationValueType.Any = SourceFragmentationValueType(0)
+SourceFragmentationValueType.Any.name = "Any"
+SourceFragmentationValueType.NoValue = SourceFragmentationValueType(1)
+SourceFragmentationValueType.NoValue.name = "NoValue"
+SourceFragmentationValueType.Ramp = SourceFragmentationValueType(2)
+SourceFragmentationValueType.Ramp.name = "Ramp"
+SourceFragmentationValueType.SIM = SourceFragmentationValueType(3)
+SourceFragmentationValueType.SIM.name = "SIM"
+SourceFragmentationValueType.SingleValue = SourceFragmentationValueType(4)
+SourceFragmentationValueType.SingleValue.name = "SingleValue"
+
+
+class ScanModeType(EnumBase):
+    Any = 0
+    Crm = 1
+    Full = 2
+    Q1Ms = 3
+    Q3Ms = 4
+    Sim = 5
+    Srm = 6
+    Zoom = 7
+
+
+ScanModeType.Any = ScanModeType(0)
+ScanModeType.Any.name = "Any"
 for name in ["Crm", "Full", "Q1Ms", "Q3Ms", "Sim", "Srm", "Zoom"]:
     setattr(ScanModeType, name, ScanModeType(["Any", "Crm", "Full", "Q1Ms", "Q3Ms", "Sim", "Srm", "Zoom"].index(name)))
     getattr(ScanModeType, name).name = name
 
-class CompensationVoltageType(EnumBase): Any = 0; NoValue = 1; Ramp = 2; SIM = 3; SingleValue = 4
-CompensationVoltageType.Any = CompensationVoltageType(0); CompensationVoltageType.Any.name = "Any"
-CompensationVoltageType.NoValue = CompensationVoltageType(1); CompensationVoltageType.NoValue.name = "NoValue"
-CompensationVoltageType.Ramp = CompensationVoltageType(2); CompensationVoltageType.Ramp.name = "Ramp"
-CompensationVoltageType.SIM = CompensationVoltageType(3); CompensationVoltageType.SIM.name = "SIM"
-CompensationVoltageType.SingleValue = CompensationVoltageType(4); CompensationVoltageType.SingleValue.name = "SingleValue"
 
-class ScanDataType(EnumBase): Any = 0; Centroid = 1; Profile = 2
-ScanDataType.Any = ScanDataType(0); ScanDataType.Any.name = "Any"
-ScanDataType.Centroid = ScanDataType(1); ScanDataType.Centroid.name = "Centroid"
-ScanDataType.Profile = ScanDataType(2); ScanDataType.Profile.name = "Profile"
+class CompensationVoltageType(EnumBase):
+    Any = 0
+    NoValue = 1
+    Ramp = 2
+    SIM = 3
+    SingleValue = 4
 
-class SectorScanType(EnumBase): Any = 0; SectorBScan = 1; SectorEScan = 2
-SectorScanType.Any = SectorScanType(0); SectorScanType.Any.name = "Any"
-SectorScanType.SectorBScan = SectorScanType(1); SectorScanType.SectorBScan.name = "SectorBScan"
-SectorScanType.SectorEScan = SectorScanType(2); SectorScanType.SectorEScan.name = "SectorEScan"
 
-class FieldFreeRegionType(EnumBase): Any = 0; FieldFreeRegion1 = 1; FieldFreeRegion2 = 2
-FieldFreeRegionType.Any = FieldFreeRegionType(0); FieldFreeRegionType.Any.name = "Any"
-FieldFreeRegionType.FieldFreeRegion1 = FieldFreeRegionType(1); FieldFreeRegionType.FieldFreeRegion1.name = "FieldFreeRegion1"
-FieldFreeRegionType.FieldFreeRegion2 = FieldFreeRegionType(2); FieldFreeRegionType.FieldFreeRegion2.name = "FieldFreeRegion2"
+CompensationVoltageType.Any = CompensationVoltageType(0)
+CompensationVoltageType.Any.name = "Any"
+CompensationVoltageType.NoValue = CompensationVoltageType(1)
+CompensationVoltageType.NoValue.name = "NoValue"
+CompensationVoltageType.Ramp = CompensationVoltageType(2)
+CompensationVoltageType.Ramp.name = "Ramp"
+CompensationVoltageType.SIM = CompensationVoltageType(3)
+CompensationVoltageType.SIM.name = "SIM"
+CompensationVoltageType.SingleValue = CompensationVoltageType(4)
+CompensationVoltageType.SingleValue.name = "SingleValue"
 
-class EnergyType(EnumBase): Any = 0; Valid = 1
-EnergyType.Any = EnergyType(0); EnergyType.Any.name = "Any"
-EnergyType.Valid = EnergyType(1); EnergyType.Valid.name = "Valid"
+
+class ScanDataType(EnumBase):
+    Any = 0
+    Centroid = 1
+    Profile = 2
+
+
+ScanDataType.Any = ScanDataType(0)
+ScanDataType.Any.name = "Any"
+ScanDataType.Centroid = ScanDataType(1)
+ScanDataType.Centroid.name = "Centroid"
+ScanDataType.Profile = ScanDataType(2)
+ScanDataType.Profile.name = "Profile"
+
+
+class SectorScanType(EnumBase):
+    Any = 0
+    SectorBScan = 1
+    SectorEScan = 2
+
+
+SectorScanType.Any = SectorScanType(0)
+SectorScanType.Any.name = "Any"
+SectorScanType.SectorBScan = SectorScanType(1)
+SectorScanType.SectorBScan.name = "SectorBScan"
+SectorScanType.SectorEScan = SectorScanType(2)
+SectorScanType.SectorEScan.name = "SectorEScan"
+
+
+class FieldFreeRegionType(EnumBase):
+    Any = 0
+    FieldFreeRegion1 = 1
+    FieldFreeRegion2 = 2
+
+
+FieldFreeRegionType.Any = FieldFreeRegionType(0)
+FieldFreeRegionType.Any.name = "Any"
+FieldFreeRegionType.FieldFreeRegion1 = FieldFreeRegionType(1)
+FieldFreeRegionType.FieldFreeRegion1.name = "FieldFreeRegion1"
+FieldFreeRegionType.FieldFreeRegion2 = FieldFreeRegionType(2)
+FieldFreeRegionType.FieldFreeRegion2.name = "FieldFreeRegion2"
+
+
+class EnergyType(EnumBase):
+    Any = 0
+    Valid = 1
+
+
+EnergyType.Any = EnergyType(0)
+EnergyType.Any.name = "Any"
+EnergyType.Valid = EnergyType(1)
+EnergyType.Valid.name = "Valid"
+
 
 class IonizationModeType(EnumBase):
-    Any = 0; ElectroSpray = 1; AtmosphericPressureChemicalIonization = 2; NanoSpray = 3; ChemicalIonization = 4; ElectronImpact = 5; FastAtomBombardment = 6; FieldDesorption = 7; MatrixAssistedLaserDesorptionIonization = 8; GlowDischarge = 9; ThermoSpray = 10; CardNanoSprayIonization = 11; PaperSprayIonization = 12; IonModeBeyondKnown = 13
-    IonizationMode1 = 1; IonizationMode2 = 2; IonizationMode3 = 3; IonizationMode4 = 4; IonizationMode5 = 5; IonizationMode6 = 6; IonizationMode7 = 7; IonizationMode8 = 8; IonizationMode9 = 9
-IonizationModeType.Any = IonizationModeType(0); IonizationModeType.Any.name = "Any"
-IonizationModeType.ElectroSpray = IonizationModeType(1); IonizationModeType.ElectroSpray.name = "ElectroSpray"
+    Any = 0
+    ElectroSpray = 1
+    AtmosphericPressureChemicalIonization = 2
+    NanoSpray = 3
+    ChemicalIonization = 4
+    ElectronImpact = 5
+    FastAtomBombardment = 6
+    FieldDesorption = 7
+    MatrixAssistedLaserDesorptionIonization = 8
+    GlowDischarge = 9
+    ThermoSpray = 10
+    CardNanoSprayIonization = 11
+    PaperSprayIonization = 12
+    IonModeBeyondKnown = 13
+    IonizationMode1 = 1
+    IonizationMode2 = 2
+    IonizationMode3 = 3
+    IonizationMode4 = 4
+    IonizationMode5 = 5
+    IonizationMode6 = 6
+    IonizationMode7 = 7
+    IonizationMode8 = 8
+    IonizationMode9 = 9
+
+
+IonizationModeType.Any = IonizationModeType(0)
+IonizationModeType.Any.name = "Any"
+IonizationModeType.ElectroSpray = IonizationModeType(1)
+IonizationModeType.ElectroSpray.name = "ElectroSpray"
+
 
 class ActivationType(EnumBase):
-    Any = 0; CollisionInducedDissociation = 1; ElectronCaptureDissociation = 2; ElectronTransferDissociation = 3; HigherEnergyCollisionalDissociation = 4; MultiPhotonDissociation = 5; PQD = 6; SAactivation = 7; UltraVioletPhotoDissociation = 8
-    NegativeElectronTransferDissociation = 9; NegativeProtonTransferReaction = 10; ProtonTransferReaction = 11; LastActivation = 12
-ActivationType.Any = ActivationType(0); ActivationType.Any.name = "Any"
+    Any = 0
+    CollisionInducedDissociation = 1
+    ElectronCaptureDissociation = 2
+    ElectronTransferDissociation = 3
+    HigherEnergyCollisionalDissociation = 4
+    MultiPhotonDissociation = 5
+    PQD = 6
+    SAactivation = 7
+    UltraVioletPhotoDissociation = 8
+    NegativeElectronTransferDissociation = 9
+    NegativeProtonTransferReaction = 10
+    ProtonTransferReaction = 11
+    LastActivation = 12
+
+
+ActivationType.Any = ActivationType(0)
+ActivationType.Any.name = "Any"
 # Add ModeA-Z
-import string
 for char in string.ascii_uppercase:
     setattr(ActivationType, f"Mode{char}", ActivationType(13 + ord(char) - ord('A')))
     getattr(ActivationType, f"Mode{char}").name = f"Mode{char}"
 
-class DetectorType(EnumBase): Any = 0; Detector1 = 1; NotValid = 0; Valid = 1
-DetectorType.Any = DetectorType(0); DetectorType.Any.name = "Any"
-DetectorType.Detector1 = DetectorType(1); DetectorType.Detector1.name = "Detector1"
 
-class PolarityType(EnumBase): Any = 0; Positive = 1; Negative = 2
-PolarityType.Any = PolarityType(0); PolarityType.Any.name = "Any"
-PolarityType.Positive = PolarityType(1); PolarityType.Positive.name = "Positive"
-PolarityType.Negative = PolarityType(2); PolarityType.Negative.name = "Negative"
+class DetectorType(EnumBase):
+    Any = 0
+    Detector1 = 1
+    NotValid = 0
+    Valid = 1
 
-class SampleType(EnumBase): Unknown = 0; Blank = 1; QC = 2; StdBracket = 3; SolventBlank = 4; MatrixBlank = 5; MatrixSpike = 6; MatrixSpikeDuplicate = 7; Program = 8; StdBracketStart = 9; StdBracketEnd = 10; StdClear = 11; StdUpdate = 12
+
+DetectorType.Any = DetectorType(0)
+DetectorType.Any.name = "Any"
+DetectorType.Detector1 = DetectorType(1)
+DetectorType.Detector1.name = "Detector1"
+
+
+class PolarityType(EnumBase):
+    Any = 0
+    Positive = 1
+    Negative = 2
+
+
+PolarityType.Any = PolarityType(0)
+PolarityType.Any.name = "Any"
+PolarityType.Positive = PolarityType(1)
+PolarityType.Positive.name = "Positive"
+PolarityType.Negative = PolarityType(2)
+PolarityType.Negative.name = "Negative"
+
+
+class SampleType(EnumBase):
+    Unknown = 0
+    Blank = 1
+    QC = 2
+    StdBracket = 3
+    SolventBlank = 4
+    MatrixBlank = 5
+    MatrixSpike = 6
+    MatrixSpikeDuplicate = 7
+    Program = 8
+    StdBracketStart = 9
+    StdBracketEnd = 10
+    StdClear = 11
+    StdUpdate = 12
+
+
 for name in ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike", "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"]:
-    idx = ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike", "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"].index(name)
+    idx = ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike",
+           "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"].index(name)
     ev = SampleType(idx)
     ev.name = name
     setattr(SampleType, name, ev)
 
-class PeakOptions(EnumBase): none = 0; Saturated = 1; Fragmented = 2; Exception = 3; LockPeak = 4; Merged = 5; Modified = 6; Reference = 7
-PeakOptions.none = PeakOptions(0); PeakOptions.none.name = "none"
 
-class RawFileClassification(EnumBase): StandardRaw = 0; MasterScanNumberRaw = 1; Indeterminate = 2
-RawFileClassification.StandardRaw = RawFileClassification(0); RawFileClassification.StandardRaw.name = "StandardRaw"
+class PeakOptions(EnumBase):
+    none = 0
+    Saturated = 1
+    Fragmented = 2
+    Exception = 3
+    LockPeak = 4
+    Merged = 5
+    Modified = 6
+    Reference = 7
 
-class SourceFragmentationInfoValidType(EnumBase): Any = 0; Energy = 1
-SourceFragmentationInfoValidType.Any = SourceFragmentationInfoValidType(0); SourceFragmentationInfoValidType.Any.name = "Any"
 
-class FilterAccurateMass(EnumBase): Off = 0; On = 1; Any = 0; External = 1; Internal = 2
-FilterAccurateMass.Off = FilterAccurateMass(0); FilterAccurateMass.Off.name = "Off"
+PeakOptions.none = PeakOptions(0)
+PeakOptions.none.name = "none"
 
-class ToleranceUnits(EnumBase): amu = 0; mmu = 1; ppm = 2
-ToleranceUnits.amu = ToleranceUnits(0); ToleranceUnits.amu.name = "amu"
-ToleranceUnits.mmu = ToleranceUnits(1); ToleranceUnits.mmu.name = "mmu"
-ToleranceUnits.ppm = ToleranceUnits(2); ToleranceUnits.ppm.name = "ppm"
 
-class TrayShape(EnumBase): Circular = 0; Invalid = 1; Rectangular = 2; StaggeredEven = 3; StaggeredOdd = 4; Unknown = 5
-TrayShape.Unknown = TrayShape(5); TrayShape.Unknown.name = "Unknown"
-TrayShape.Circular = TrayShape(0); TrayShape.Circular.name = "Circular"
-TrayShape.Invalid = TrayShape(1); TrayShape.Invalid.name = "Invalid"
-TrayShape.Rectangular = TrayShape(2); TrayShape.Rectangular.name = "Rectangular"
-TrayShape.StaggeredEven = TrayShape(3); TrayShape.StaggeredEven.name = "StaggeredEven"
-TrayShape.StaggeredOdd = TrayShape(4); TrayShape.StaggeredOdd.name = "StaggeredOdd"
+class RawFileClassification(EnumBase):
+    StandardRaw = 0
+    MasterScanNumberRaw = 1
+    Indeterminate = 2
 
-class FileType(EnumBase): 
-    RawFile = 0; ExperimentMethod = 1; ProcessingMethod = 2; ResultsFile = 3; CalibrationFile = 4; LayoutFile = 5; MethodFile = 6; QuanFile = 7; SampleList = 8; TuneMethod = 9; XqnFile = 10; NotSupported = 11
-    MethodEditorLayout = 12; ProcessingMethodEditLayout = 13; QualBrowserLayout = 14; ResultsLayout = 15; SampleListEditorLayout = 16; TuneLayout = 17
 
-FileType.RawFile = FileType(0); FileType.RawFile.name = "RawFile"
+RawFileClassification.StandardRaw = RawFileClassification(0)
+RawFileClassification.StandardRaw.name = "StandardRaw"
+
+
+class SourceFragmentationInfoValidType(EnumBase):
+    Any = 0
+    Energy = 1
+
+
+SourceFragmentationInfoValidType.Any = SourceFragmentationInfoValidType(0)
+SourceFragmentationInfoValidType.Any.name = "Any"
+
+
+class FilterAccurateMass(EnumBase):
+    Off = 0
+    On = 1
+    Any = 0
+    External = 1
+    Internal = 2
+
+
+FilterAccurateMass.Off = FilterAccurateMass(0)
+FilterAccurateMass.Off.name = "Off"
+
+
+class ToleranceUnits(EnumBase):
+    amu = 0
+    mmu = 1
+    ppm = 2
+
+
+ToleranceUnits.amu = ToleranceUnits(0)
+ToleranceUnits.amu.name = "amu"
+ToleranceUnits.mmu = ToleranceUnits(1)
+ToleranceUnits.mmu.name = "mmu"
+ToleranceUnits.ppm = ToleranceUnits(2)
+ToleranceUnits.ppm.name = "ppm"
+
+
+class TrayShape(EnumBase):
+    Circular = 0
+    Invalid = 1
+    Rectangular = 2
+    StaggeredEven = 3
+    StaggeredOdd = 4
+    Unknown = 5
+
+
+TrayShape.Unknown = TrayShape(5)
+TrayShape.Unknown.name = "Unknown"
+TrayShape.Circular = TrayShape(0)
+TrayShape.Circular.name = "Circular"
+TrayShape.Invalid = TrayShape(1)
+TrayShape.Invalid.name = "Invalid"
+TrayShape.Rectangular = TrayShape(2)
+TrayShape.Rectangular.name = "Rectangular"
+TrayShape.StaggeredEven = TrayShape(3)
+TrayShape.StaggeredEven.name = "StaggeredEven"
+TrayShape.StaggeredOdd = TrayShape(4)
+TrayShape.StaggeredOdd.name = "StaggeredOdd"
+
+
+class FileType(EnumBase):
+    RawFile = 0
+    ExperimentMethod = 1
+    ProcessingMethod = 2
+    ResultsFile = 3
+    CalibrationFile = 4
+    LayoutFile = 5
+    MethodFile = 6
+    QuanFile = 7
+    SampleList = 8
+    TuneMethod = 9
+    XqnFile = 10
+    NotSupported = 11
+    MethodEditorLayout = 12
+    ProcessingMethodEditLayout = 13
+    QualBrowserLayout = 14
+    ResultsLayout = 15
+    SampleListEditorLayout = 16
+    TuneLayout = 17
+
+
+FileType.RawFile = FileType(0)
+FileType.RawFile.name = "RawFile"
 for name in ["MethodEditorLayout", "ProcessingMethodEditLayout", "QualBrowserLayout", "ResultsLayout", "SampleListEditorLayout", "TuneLayout"]:
-    setattr(FileType, name, FileType(12 + ["MethodEditorLayout", "ProcessingMethodEditLayout", "QualBrowserLayout", "ResultsLayout", "SampleListEditorLayout", "TuneLayout"].index(name)))
+    setattr(FileType, name, FileType(12 + ["MethodEditorLayout", "ProcessingMethodEditLayout",
+            "QualBrowserLayout", "ResultsLayout", "SampleListEditorLayout", "TuneLayout"].index(name)))
     getattr(FileType, name).name = name
 
 # Mass-initialize any remaining uninstantiated enum members
@@ -546,6 +950,7 @@ for cls in EnumBase.__subclasses__():
             inst = cls(val)
             inst.name = name
             setattr(cls, name, inst)
+
 
 class ScanDependentDetails(CommonCoreDataObject):
     @property
@@ -557,19 +962,6 @@ class ScanDependentDetails(CommonCoreDataObject):
     @property
     def scan_index(self): raise NotImplementedError
 
-class SequenceInfo(CommonCoreDataObject):
-    @property
-    def bracket(self): raise NotImplementedError
-    @property
-    def column_width(self): raise NotImplementedError
-    @property
-    def tray_configuration(self): raise NotImplementedError
-    @property
-    def type_to_column_position(self): raise NotImplementedError
-    @property
-    def user_label(self): raise NotImplementedError
-    @property
-    def user_private_label(self): raise NotImplementedError
 
 class ErrorLogEntry(CommonCoreDataObject):
     @property
@@ -578,12 +970,12 @@ class ErrorLogEntry(CommonCoreDataObject):
     def retention_time(self): raise NotImplementedError
 
 
-
 class InstrumentSelection(CommonCoreDataObject):
     @property
     def device_type(self): return 1
     @property
     def instrument_index(self): return 0
+
 
 class ScanStatistics(CommonCoreDataObject):
     def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0, is_centroid_scan=False):
@@ -649,6 +1041,7 @@ class ScanStatistics(CommonCoreDataObject):
     @property
     def wavelength_step(self): raise NotImplementedError
 
+
 class SegmentedScan(CommonCoreDataObject):
     def __init__(self, masses=None, intensities=None, scan_number=0):
         self._masses = masses if masses is not None else np.array([])
@@ -668,10 +1061,12 @@ class SegmentedScan(CommonCoreDataObject):
     def deep_clone(self): return self
     @property
     def flags(self): return []
-    def from_mass_and_intensities(self, m, i): 
+
+    def from_mass_and_intensities(self, m, i):
         self._masses = m
         self._intensities = i
         return self
+
     @property
     def index_of_segment_start(self): return []
     @property
@@ -694,10 +1089,12 @@ class SegmentedScan(CommonCoreDataObject):
     def try_validate(self): return True
     def validate(self): pass
 
+
 class LogEntry(CommonCoreDataObject):
     def __init__(self, values=None, labels=None):
         self._values = values or []
         self._labels = labels or []
+
     @property
     def labels(self): return self._labels
     @property
@@ -721,6 +1118,7 @@ class LogEntry(CommonCoreDataObject):
         except KeyError:
             return default
 
+
 class HeaderItem(CommonCoreDataObject):
     def __init__(self, data):
         self._string_length_or_precision = 0
@@ -731,87 +1129,113 @@ class HeaderItem(CommonCoreDataObject):
             if "###LEN###" in rest:
                 subparts = rest.split("###LEN###")
                 type_val = subparts[0]
-                try: self._string_length_or_precision = int(subparts[1])
-                except: pass
+                try:
+                    self._string_length_or_precision = int(subparts[1])
+                except:
+                    pass
             else:
                 type_val = rest
-            try: self._data_type = GenericDataTypes(int(type_val))
-            except: self._data_type = GenericDataTypes.NULL
+            try:
+                self._data_type = GenericDataTypes(int(type_val))
+            except:
+                self._data_type = GenericDataTypes.NULL
         else:
             self._label = data
             self._data_type = GenericDataTypes.NULL
-    
+
     @property
     def label(self): return self._label
     @property
     def string_length_or_precision(self): return self._string_length_or_precision
     @property
     def data_type(self): return self._data_type
+
     @property
-    def is_numeric(self): 
-        if _IS_SPHINX: return 1
+    def is_numeric(self):
+        if _IS_SPHINX:
+            return 1
         raise NotImplementedError
+
     @property
-    def is_scientific_notation(self): 
-        if _IS_SPHINX: return 0
+    def is_scientific_notation(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def is_variable_header(self): 
-        if _IS_SPHINX: return 0
+    def is_variable_header(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def format_value(self): 
-        if _IS_SPHINX: return ""
+    def format_value(self):
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError
+
 
 class StatusLogValues(CommonCoreDataObject):
     def __init__(self, handle=0, retention_time=0.0, values=None):
         self._handle = handle
         self._retention_time = retention_time
         self._values = values or []
+
     @property
     def retention_time(self): return self._retention_time
     @property
     def values(self): return self._values
+
 
 class TuneDataValues(CommonCoreDataObject):
     def __init__(self, handle=0, id=0, values=None):
         self._handle = handle
         self._id = id
         self._values = values or []
+
     @property
     def id(self): return self._id
     @property
     def values(self): return self._values
 
-class Reaction(CommonCoreDataObject): 
+
+class Reaction(CommonCoreDataObject):
     def __init__(self, handle=0, scan_number=0, index=0):
         self._handle = handle
         self._scan_number = scan_number
         self._index = index
+
     @property
     def precursor_mass(self):
         return get_scan_event_precursor_mass(self._handle, self._scan_number, self._index)
+
     @property
     def activation_type(self):
         return ActivationType(get_scan_event_activation_type(self._handle, self._scan_number, self._index))
+
     @property
     def collision_energy(self):
         return get_scan_event_collision_energy(self._handle, self._scan_number, self._index)
+
     @property
     def collision_energy_valid(self): raise NotImplementedError
     @property
     def first_precursor_mass(self): raise NotImplementedError
     @property
-    def isolation_width(self): raise NotImplementedError
+    def isolation_width(self):
+        from ..native_fisher_py_backend import get_scan_event_isolation_width
+        return get_scan_event_isolation_width(self._handle, self._scan_number, self._index)
     @property
-    def isolation_width_offset(self): raise NotImplementedError
+    def isolation_width_offset(self):
+        from ..native_fisher_py_backend import get_scan_event_isolation_width_offset
+        return get_scan_event_isolation_width_offset(self._handle, self._scan_number, self._index)
     @property
     def last_precursor_mass(self): raise NotImplementedError
     @property
     def multiple_activation(self): raise NotImplementedError
     @property
     def precursor_range_is_valid(self): raise NotImplementedError
+
 
 class Scan(CommonCoreDataObject):
     @property
@@ -826,13 +1250,14 @@ class Scan(CommonCoreDataObject):
     def centroid_stream_access(self): return None
     def create_scan_reader(self, r): return None
     def deep_clone(self): return self
+
     @classmethod
     def from_file(cls, f, s):
         scan = cls()
         segmented_scan = f.get_segmented_scan_from_scan_number(s)
         centroid_stream = f.get_centroid_stream(s)
         scan._centroid_stream = centroid_stream
-        
+
         # Original reader preference: if centroids are present (FTMS), use them for preferred data
         if centroid_stream is not None and centroid_stream.length > 0:
             scan._preferred_masses = centroid_stream.masses
@@ -840,14 +1265,17 @@ class Scan(CommonCoreDataObject):
         else:
             scan._preferred_masses = segmented_scan.masses
             scan._preferred_intensities = segmented_scan.intensities
-            
+
         return scan
+
     def generate_frequency_table(self): return None
     def generate_noise_table(self): return None
+
     @property
-    def has_centroid_stream(self): 
+    def has_centroid_stream(self):
         cs = getattr(self, '_centroid_stream', None)
         return 1 if cs is not None and cs.length > 0 else 0
+
     @property
     def has_noise_table(self): return 0
     @property
@@ -897,6 +1325,7 @@ class Scan(CommonCoreDataObject):
     @property
     def tolerance_unit(self): return 0
 
+
 class CentroidStream(CommonCoreDataObject):
     def __init__(self, masses=None, intensities=None, baselines=None, noises=None, charges=None, base_peak_noise=0.0, base_peak_resolution=0.0, scan_number=0):
         self._masses = masses if masses is not None else np.array([])
@@ -914,9 +1343,10 @@ class CentroidStream(CommonCoreDataObject):
         self._baselines = np.array([])
         self._noises = np.array([])
         self._charges = np.array([])
-        
+
     def clone(self): return self
-    def deep_clone(self): 
+
+    def deep_clone(self):
         import copy
         return copy.deepcopy(self)
 
@@ -967,7 +1397,8 @@ class CentroidStream(CommonCoreDataObject):
     def try_validate(self): return True
     def validate(self): pass
 
-class ChromatogramSignal(CommonCoreDataObject): 
+
+class ChromatogramSignal(CommonCoreDataObject):
     def __init__(self, times=None, intensities=None, scans=None, masses=None):
         self._times = times if times is not None else np.array([])
         self._intensities = intensities if intensities is not None else np.array([])
@@ -981,7 +1412,7 @@ class ChromatogramSignal(CommonCoreDataObject):
     def delay(self): return 0.0
     @property
     def end_time(self): return self._times[-1] if len(self._times) > 0 else 0.0
-    
+
     @staticmethod
     def from_chromatogram_data(data):
         signals = []
@@ -1024,10 +1455,10 @@ class ChromatogramSignal(CommonCoreDataObject):
     def valid(self): return 1
 
 
-
 class InstrumentData(CommonCoreDataObject):
     def __init__(self, handle=0):
         self._handle = handle
+
     @property
     def axis_label_x(self): return get_instrument_axis_label_x(self._handle)
     @property
@@ -1056,46 +1487,64 @@ class InstrumentData(CommonCoreDataObject):
     @property
     def hardware_version(self) -> str: return get_instrument_hardware_version(self._handle)
 
+
 class SampleInformation(CommonCoreDataObject):
     def __init__(self, handle=0):
         self._handle = handle
+
     @property
     def barcode(self): return get_sample_barcode(self._handle)
+
     @property
-    def barcode_status(self): 
-        if _IS_SPHINX: return 0
+    def barcode_status(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def calibration_file(self): 
-        if _IS_SPHINX: return ""
+    def calibration_file(self):
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError
+
     @property
-    def calibration_level(self): 
-        if _IS_SPHINX: return 0
+    def calibration_level(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
     def comment(self): return get_sample_comment(self._handle)
     def deep_copy(self): raise NotImplementedError
     @property
     def dilution_factor(self): return get_sample_dilution_factor(self._handle)
+
     @property
-    def injection_volume(self): 
+    def injection_volume(self):
         return get_sample_injection_volume(self._handle)
+
     @property
-    def instrument_method_file(self): 
+    def instrument_method_file(self):
         return get_sample_instrument_method_file(self._handle)
+
     @property
-    def istd_amount(self): 
-        if _IS_SPHINX: return 0.0
+    def istd_amount(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def max_user_text_column_count(self): 
-        if _IS_SPHINX: return 0
+    def max_user_text_column_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def processing_method_file(self): 
-        if _IS_SPHINX: return ""
+    def processing_method_file(self):
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError
+
     @property
     def row_number(self): return get_sample_row_number(self._handle)
     @property
@@ -1121,9 +1570,11 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def autosampler_information(self): return AutoSamplerInformation(self._handle)
 
+
 class FileHeader(CommonCoreDataObject):
     def __init__(self, handle=0):
         self._handle = handle
+
     @property
     def creation_date(self) -> str: return get_creation_date(self._handle)
     @property
@@ -1134,24 +1585,32 @@ class FileHeader(CommonCoreDataObject):
     def file_type(self): return FileType.RawFile
     @property
     def modified_date(self): return get_modified_date(self._handle)
+
     @property
-    def number_of_times_calibrated(self): 
-        if _IS_SPHINX: return -1
+    def number_of_times_calibrated(self):
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError
+
     @property
-    def number_of_times_modified(self): 
-        if _IS_SPHINX: return -1
+    def number_of_times_modified(self):
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError
+
     @property
-    def revision(self): 
-        if _IS_SPHINX: return -1
+    def revision(self):
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError
+
     @property
     def who_created_logon(self): return get_who_created_logon(self._handle)
     @property
     def who_modified_id(self): return get_who_modified_id(self._handle)
     @property
     def who_modified_logon(self): return get_who_modified_logon(self._handle)
+
 
 class FileError(CommonCoreDataObject):
     @property
@@ -1165,102 +1624,141 @@ class FileError(CommonCoreDataObject):
     @property
     def warning_message(self): return ""
 
+
 class AutoSamplerInformation(CommonCoreDataObject):
     def __init__(self, handle=0):
         self._handle = handle
+
     @property
-    def tray_index(self): 
+    def tray_index(self):
         return get_autosampler_tray_index(self._handle)
+
     @property
-    def tray_name(self): 
+    def tray_name(self):
         return get_autosampler_tray_name(self._handle)
+
     @property
-    def tray_shape(self): 
+    def tray_shape(self):
         return TrayShape(get_autosampler_tray_shape(self._handle))
+
     @property
-    def tray_shape_as_string(self): 
+    def tray_shape_as_string(self):
         return str(self.tray_shape)
+
     @property
-    def vial_index(self): 
+    def vial_index(self):
         return get_autosampler_vial_index(self._handle)
+
     @property
-    def vials_per_tray(self): 
+    def vials_per_tray(self):
         return get_autosampler_vials_per_tray(self._handle)
+
     @property
-    def vials_per_tray_x(self): 
+    def vials_per_tray_x(self):
         return get_autosampler_vials_per_tray_x(self._handle)
+
     @property
-    def vials_per_tray_y(self): 
+    def vials_per_tray_y(self):
         return get_autosampler_vials_per_tray_y(self._handle)
+
 
 class RunHeader(CommonCoreDataObject):
     def __init__(self, handle=0, raw_file=None):
         self._handle = handle
         self._raw_file = raw_file
         self._handle = raw_file._handle if raw_file else 0
+
     @property
     def start_time(self) -> float: return get_start_time(self._handle)
     @property
     def first_spectrum(self) -> int: return self._raw_file.first_scan if self._raw_file else 1
     @property
     def last_spectrum(self) -> int: return self._raw_file.last_scan if self._raw_file else 1
+
     @property
-    def end_time(self): 
-        if _IS_SPHINX: return 0.0
+    def end_time(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def expected_runtime(self): 
-        if _IS_SPHINX: return 0.0
+    def expected_runtime(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def high_mass(self): 
-        if _IS_SPHINX: return 0.0
+    def high_mass(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def low_mass(self): 
-        if _IS_SPHINX: return 0.0
+    def low_mass(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def mass_resolution(self): 
-        if _IS_SPHINX: return 0.0
+    def mass_resolution(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def max_integrated_intensity(self): 
-        if _IS_SPHINX: return 0.0
+    def max_integrated_intensity(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def max_intensity(self): 
-        if _IS_SPHINX: return 0.0
+    def max_intensity(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def spectra_count(self): 
-        if _IS_SPHINX: return 0
+    def spectra_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def status_log_count(self): 
-        if _IS_SPHINX: return 0
+    def status_log_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def trailer_extra_count(self): 
-        if _IS_SPHINX: return 0
+    def trailer_extra_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def trailer_scan_event_count(self): 
-        if _IS_SPHINX: return 0
+    def trailer_scan_event_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def tune_data_count(self): 
-        if _IS_SPHINX: return 0
+    def tune_data_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def tolerance_unit(self): 
-        if _IS_SPHINX: return 0
+    def tolerance_unit(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
 
 class RunHeaderEx(CommonCoreDataObject):
     def __init__(self, raw_file):
         self._raw_file = raw_file
         self._handle = raw_file._handle if raw_file else 0
+
     @property
     def spectra_count(self): return self._raw_file.number_of_scans
     @property
@@ -1285,323 +1783,460 @@ class RunHeaderEx(CommonCoreDataObject):
     def low_mass(self): return get_low_mass(self._handle)
     @property
     def high_mass(self): return get_high_mass(self._handle)
+
     @property
-    def error_message(self): 
-        if _IS_SPHINX: return ""
+    def error_message(self):
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError
+
     @property
-    def has_error(self): 
-        if _IS_SPHINX: return 0
+    def has_error(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def has_warning(self): 
-        if _IS_SPHINX: return 0
+    def has_warning(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def warning_message(self): 
-        if _IS_SPHINX: return ""
+    def warning_message(self):
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError
+
 
 class WrappedRunHeader(CommonCoreDataObject):
     def __init__(self, handle=0):
         self._handle = handle
+
     @property
-    def comment_1(self): 
-        if _IS_SPHINX: return ""
+    def comment_1(self):
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError
+
     @property
-    def comment_2(self): 
-        if _IS_SPHINX: return ""
+    def comment_2(self):
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError
+
     @property
-    def end_time(self): 
-        if _IS_SPHINX: return 0.0
+    def end_time(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def error_log_count(self): 
-        if _IS_SPHINX: return 0
+    def error_log_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def expected_run_time(self): 
-        if _IS_SPHINX: return 0.0
+    def expected_run_time(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def filter_mass_precision(self): 
-        if _IS_SPHINX: return 4
+    def filter_mass_precision(self):
+        if _IS_SPHINX:
+            return 4
         raise NotImplementedError
+
     @property
-    def high_mass(self): 
+    def high_mass(self):
         return get_high_mass(self._handle)
+
     @property
-    def in_acquisition(self): 
+    def in_acquisition(self):
         return in_acquisition()
+
     @property
-    def low_mass(self): 
+    def low_mass(self):
         return get_low_mass(self._handle)
+
     @property
-    def mass_resolution(self): 
+    def mass_resolution(self):
         return get_mass_resolution(self._handle)
+
     @property
-    def max_integrated_intensity(self): 
+    def max_integrated_intensity(self):
         return get_max_integrated_intensity(self._handle)
+
     @property
-    def max_intensity(self): 
+    def max_intensity(self):
         return get_max_intensity(self._handle)
+
     @property
-    def spectra_count(self): 
+    def spectra_count(self):
         return get_num_scans(self._handle)
+
     @property
-    def status_log_count(self): 
+    def status_log_count(self):
         return get_status_log_count(self._handle)
+
     @property
-    def trailer_extra_count(self): 
+    def trailer_extra_count(self):
         return get_trailer_extra_count(self._handle)
+
     @property
-    def trailer_scan_event_count(self): 
-        if _IS_SPHINX: return 0
+    def trailer_scan_event_count(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
     @property
-    def tune_data_count(self): 
+    def tune_data_count(self):
         return get_tune_data_count(self._handle)
+
     @property
-    def first_spectrum(self): 
+    def first_spectrum(self):
         return get_first_scan(self._handle)
+
     @property
-    def last_spectrum(self): 
+    def last_spectrum(self):
         return get_last_scan(self._handle)
+
     @property
-    def start_time(self): 
-        if _IS_SPHINX: return 0.0
+    def start_time(self):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError
+
     @property
-    def tolerance_unit(self): 
-        if _IS_SPHINX: return 0
+    def tolerance_unit(self):
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError
+
 
 class ScanEvent(CommonCoreDataObject):
     def __init__(self, handle=0, scan_number=0):
         self._handle = handle
         self._scan_number = scan_number
+
     @property
     def ms_order(self):
         return MsOrderType(get_scan_event_ms_order(self._handle, self._scan_number))
+
     @property
     def mass_count(self):
         return get_scan_event_mass_count(self._handle, self._scan_number)
+
     def get_mass(self, index):
         return get_scan_event_precursor_mass(self._handle, self._scan_number, index)
+
     def get_activation(self, index):
         return ActivationType(get_scan_event_activation_type(self._handle, self._scan_number, index))
+
     def get_energy(self, index):
         return get_scan_event_collision_energy(self._handle, self._scan_number, index)
+
     def get_reaction(self, index):
         return Reaction(self._handle, self._scan_number, index)
+
     @property
     def name(self):
         return get_scan_event_string(self._handle, self._scan_number)
+
     @property
     def accurate_mass(self):
         return EventAccurateMass(get_scan_filter_accurate_mass(self._handle, self._scan_number))
+
     @property
     def mass_analyzer(self) -> int:
         return MassAnalyzer(get_scan_filter_mass_analyzer(self._scan_number))
+
     @property
     def polarity(self) -> int:
         return PolarityType(get_scan_filter_polarity(self._handle, self._scan_number))
+
     @property
     def scan_mode(self) -> int:
         return ScanModeType(get_scan_filter_scan_mode(self._handle, self._scan_number))
+
     @property
     def ionization_mode(self) -> int:
         return IonizationModeType(get_scan_filter_ionization_mode(self._handle, self._scan_number))
+
     @property
     def is_valid(self) -> bool:
         return bool(get_instrument_is_valid(self._handle))
+
     @property
     def compensation_volt_type(self):
         return CompensationVoltageType(get_scan_filter_compensation_volt_type(self._scan_number))
+
     @property
     def compensation_voltage(self):
         return TriState(get_scan_event_compensation_voltage(self._handle, self._scan_number))
+
     @property
     def corona(self):
         return TriState(get_scan_filter_corona(self._handle, self._scan_number))
+
     @property
     def dependent(self):
         return TriState(get_scan_filter_dependent(self._handle, self._scan_number))
+
     @property
     def detector(self):
         return DetectorType(get_scan_filter_detector(self._handle, self._scan_number))
+
     @property
     def detector_value(self):
         return get_scan_filter_detector_value(self._handle, self._scan_number)
+
     @property
     def electron_capture_dissociation(self):
         return TriState(get_scan_filter_electron_capture_dissociation(self._scan_number))
+
     @property
     def electron_capture_dissociation_value(self):
         return get_scan_filter_electron_capture_dissociation_value(self._scan_number)
+
     @property
     def electron_transfer_dissociation(self):
         return TriState(get_scan_filter_electron_transfer_dissociation(self._scan_number))
+
     @property
     def electron_transfer_dissociation_value(self):
         return get_scan_filter_electron_transfer_dissociation_value(self._scan_number)
+
     @property
     def enhanced(self):
         return TriState(get_scan_filter_enhanced(self._scan_number))
+
     @property
     def field_free_region(self):
         return FieldFreeRegionType(get_scan_filter_field_free_region(self._handle, self._scan_number))
+
     @property
     def higher_energy_ci_d(self):
         return TriState(get_scan_filter_higher_energy_cid(self._scan_number))
+
     @property
     def higher_energy_ci_d_value(self):
         return get_scan_filter_higher_energy_cid_value(self._scan_number)
+
     @property
     def is_custom(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("is_custom")
+
     @property
     def lock(self):
         return TriState(get_scan_filter_lock(self._handle, self._scan_number))
+
     @property
     def mass_calibrator_count(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("mass_calibrator_count")
+
     @property
     def mass_range_count(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("mass_range_count")
+
     @property
     def multi_notch(self):
         return TriState(get_scan_filter_multi_notch(self._scan_number))
+
     @property
     def multi_state_activation(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("multi_state_activation")
+
     @property
     def multiple_photon_dissociation(self):
         return TriState(get_scan_filter_multiple_photon_dissociation(self._scan_number))
+
     @property
     def multiple_photon_dissociation_value(self):
         return get_scan_filter_multiple_photon_dissociation_value(self._scan_number)
+
     @property
     def multiplex(self):
         return TriState(get_scan_filter_multiplex(self._scan_number))
+
     @property
     def param_a(self):
         return get_scan_filter_param_a(self._scan_number)
+
     @property
     def param_b(self):
         return get_scan_filter_param_b(self._scan_number)
+
     @property
     def param_f(self):
         return get_scan_filter_param_f(self._scan_number)
+
     @property
     def param_r(self):
         return get_scan_filter_param_r(self._scan_number)
+
     @property
     def param_v(self):
         return get_scan_filter_param_v(self._scan_number)
+
     @property
     def photo_ionization(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("photo_ionization")
+
     @property
     def pulsed_q_dissociation(self):
         return TriState(get_scan_filter_pulsed_q_dissociation(self._scan_number))
+
     @property
     def pulsed_q_dissociation_value(self):
         return get_scan_filter_pulsed_q_dissociation_value(self._scan_number)
+
     @property
     def scan_data(self):
         return ScanDataType(get_scan_filter_scan_data(self._handle, self._scan_number))
+
     @property
     def scan_type_index(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("scan_type_index")
+
     @property
     def sector_scan(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("sector_scan")
+
     @property
     def source_fragmentation(self):
         return TriState(get_scan_filter_source_fragmentation(self._scan_number))
+
     @property
     def source_fragmentation_info_count(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("source_fragmentation_info_count")
+
     @property
     def source_fragmentation_mass_range_count(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("source_fragmentation_mass_range_count")
+
     @property
     def source_fragmentation_type(self):
         return SourceFragmentationValueType(get_scan_filter_source_fragmentation_type(self._scan_number))
+
     @property
     def supplemental_activation(self):
         return TriState(get_scan_filter_supplemental_activation(self._scan_number))
+
     @property
     def turbo_scan(self):
         return TriState(get_scan_filter_turbo_scan(self._handle, self._scan_number))
+
     @property
     def ultra(self):
         return TriState(get_scan_filter_ultra(self._handle, self._scan_number))
+
     @property
     def wideband(self):
         return TriState(get_scan_filter_wideband(self._handle, self._scan_number))
+
     def get_energy_valid(self, index):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("get_energy_valid")
+
     def get_first_precursor_mass(self, index):
-        if _IS_SPHINX: return 0.0
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError("get_first_precursor_mass")
+
     def get_last_precursor_mass(self, index):
-        if _IS_SPHINX: return 0.0
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError("get_last_precursor_mass")
+
     def get_isolation_width(self, index):
-        if _IS_SPHINX: return 0.0
-        raise NotImplementedError("get_isolation_width")
+        if _IS_SPHINX:
+            return 0.0
+        from ..native_fisher_py_backend import get_scan_event_isolation_width
+        return get_scan_event_isolation_width(self._handle, self._scan_number, index)
+
     def get_isolation_width_offset(self, index):
-        if _IS_SPHINX: return 0.0
-        raise NotImplementedError("get_isolation_width_offset")
+        if _IS_SPHINX:
+            return 0.0
+        from ..native_fisher_py_backend import get_scan_event_isolation_width_offset
+        return get_scan_event_isolation_width_offset(self._handle, self._scan_number, index)
+
     def get_is_multiple_activation(self, index):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("get_is_multiple_activation")
+
     def get_mass_range(self, index):
-        if _IS_SPHINX: return (0.0, 0.0)
+        if _IS_SPHINX:
+            return (0.0, 0.0)
         raise NotImplementedError("get_mass_range")
+
     def get_mass_calibrator(self, index):
-        if _IS_SPHINX: return 0.0
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError("get_mass_calibrator")
+
     def get_precursor_range_validity(self, index):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("get_precursor_range_validity")
+
     def get_source_fragmentation_info(self, index):
-        if _IS_SPHINX: return None
+        if _IS_SPHINX:
+            return None
         raise NotImplementedError("get_source_fragmentation_info")
+
     def get_source_fragmentation_mass_range(self, index):
-        if _IS_SPHINX: return (0.0, 0.0)
+        if _IS_SPHINX:
+            return (0.0, 0.0)
         raise NotImplementedError("get_source_fragmentation_mass_range")
+
 
 class ScanEvents(CommonCoreDataObject):
     def get_event(self, index):
         return ScanEvent(index + 1)
+
     def get_event_by_segment(self, segment, event):
-        if _IS_SPHINX: return ScanEvent()
+        if _IS_SPHINX:
+            return ScanEvent()
         raise NotImplementedError("get_event_by_segment")
+
     def get_event_count(self, segment):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("get_event_count")
+
     @property
     def scan_events(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("scan_events")
+
     @property
     def segments(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("segments")
 
 
@@ -1615,144 +2250,216 @@ class Range(object):
     @property
     def high(self): return self._high
 
-    def compare_to(self, other): 
-        if not isinstance(other, Range): return -1
-        if self._low < other._low: return -1
-        if self._low > other._low: return 1
-        if self._high < other._high: return -1
-        if self._high > other._high: return 1
+    def compare_to(self, other):
+        if not isinstance(other, Range):
+            return -1
+        if self._low < other._low:
+            return -1
+        if self._low > other._low:
+            return 1
+        if self._high < other._high:
+            return -1
+        if self._high > other._high:
+            return 1
         return 0
+
     @staticmethod
-    def create(l, h): return Range(l, h)
+    def create(low, high): return Range(low, high)
     @staticmethod
     def create_from_cetner_and_delta(c, d): return Range(c-d, c+d)
+
     def equals(self, other):
-        if not isinstance(other, Range): return False
+        if not isinstance(other, Range):
+            return False
         return self._low == other._low and self._high == other._high
+
     def get_hash_code(self): return hash((self._low, self._high))
     def includes(self, val): return self._low <= val <= self._high
+
+
 class MassOptions(CommonCoreDataObject):
     def clone(self): return self
-    def get_tolerance_at_mass(self, m): 
-        if _IS_SPHINX: return 0.0
+
+    def get_tolerance_at_mass(self, m):
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError("get_tolerance_at_mass")
+
     def get_tolerance_string(self):
-        if _IS_SPHINX: return ""
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError("get_tolerance_string")
+
     @property
     def precision(self):
-        if _IS_SPHINX: return 4
+        if _IS_SPHINX:
+            return 4
         raise NotImplementedError("precision")
+
     @property
     def tolerance(self):
-        if _IS_SPHINX: return 0.0
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError("tolerance")
+
     @property
     def tolerance_string(self):
-        if _IS_SPHINX: return ""
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError("tolerance_string")
+
     @property
     def tolerance_units(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("tolerance_units")
+
 
 class FtAverageOptions(CommonCoreDataObject):
     @property
     def max_charge_determinations(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("max_charge_determinations")
+
     @property
     def max_scans_merged(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("max_scans_merged")
+
     @property
     def merge_in_parallel(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("merge_in_parallel")
+
     @property
     def merge_task_batching(self):
-        if _IS_SPHINX: return -1
+        if _IS_SPHINX:
+            return -1
         raise NotImplementedError("merge_task_batching")
+
     @property
     def use_noise_table_when_available(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("use_noise_table_when_available")
 
 
 class ScanDependents(CommonCoreDataObject):
     @property
     def raw_file_instrument_type(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("raw_file_instrument_type")
+
     @property
     def scan_dependent_detail_array(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("scan_dependent_detail_array")
+
 
 class SequenceInfo(CommonCoreDataObject):
     @property
     def column_width(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("column_width")
+
     @property
     def type_to_column_position(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("type_to_column_position")
+
     @property
     def bracket(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("bracket")
+
     @property
     def user_private_label(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("user_private_label")
-    @property
-    def tray_configuration(self):
-        if _IS_SPHINX: return ""
-        raise NotImplementedError("tray_configuration")
+
     @property
     def user_label(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("user_label")
 
+    @property
+    def tray_configuration(self):
+        if _IS_SPHINX:
+            return ""
+        raise NotImplementedError("tray_configuration")
+
+    @property
+    def user_label(self):
+        if _IS_SPHINX:
+            return []
+        raise NotImplementedError("user_label")
+
+
 class SequenceFileWriter(CommonCoreDataObject):
-    def __init__(self): 
+    def __init__(self):
         self.samples = []
         self._info = SequenceInfo()
+
     @property
     def bracket(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("bracket")
+
     @property
     def file_error(self):
-        if _IS_SPHINX: return None
+        if _IS_SPHINX:
+            return None
         raise NotImplementedError("file_error")
+
     @property
     def file_header(self):
-        if _IS_SPHINX: return None
+        if _IS_SPHINX:
+            return None
         raise NotImplementedError("file_header")
+
     @property
     def file_name(self):
-        if _IS_SPHINX: return ""
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError("file_name")
+
     def get_user_column_label(self, index):
-        if _IS_SPHINX: return ""
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError("get_user_column_label")
+
     @property
     def info(self):
         return self._info
+
     @info.setter
     def info(self, value):
         self._info = value
+
     @property
     def is_error(self):
-        if _IS_SPHINX: return 0
+        if _IS_SPHINX:
+            return 0
         raise NotImplementedError("is_error")
+
     def save(self, path): pass
     def set_user_column_label(self, index, label): pass
+
     @property
     def tray_configuration(self):
-        if _IS_SPHINX: return ""
+        if _IS_SPHINX:
+            return ""
         raise NotImplementedError("tray_configuration")
 
 
@@ -1772,33 +2479,45 @@ class ChromatogramTraceSettings(CommonCoreDataObject):
                 self._mass_ranges = [args[1]]
 
     def clone(self): return self
+
     @property
     def compound_names(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("compound_names")
+
     @property
     def delay_in_min(self):
-        if _IS_SPHINX: return 0.0
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError("delay_in_min")
+
     @property
     def filter(self): return self._filter
     @filter.setter
     def filter(self, value): self._filter = value
+
     @property
     def fragment_mass(self):
-        if _IS_SPHINX: return 0.0
+        if _IS_SPHINX:
+            return 0.0
         raise NotImplementedError("fragment_mass")
+
     def get_mass_range(self, index): return self._mass_ranges[index] if index < len(self._mass_ranges) else None
+
     @property
     def include_reference(self):
-        if _IS_SPHINX: return False
+        if _IS_SPHINX:
+            return False
         raise NotImplementedError("include_reference")
+
     @property
     def mass_range_count(self): return len(self._mass_ranges)
     @property
     def mass_ranges(self): return self._mass_ranges
     @mass_ranges.setter
     def mass_ranges(self, value): self._mass_ranges = value
+
     def set_mass_range(self, index, start, end=None):
         if end is None and isinstance(start, Range):
             r = start
@@ -1808,13 +2527,16 @@ class ChromatogramTraceSettings(CommonCoreDataObject):
             self._mass_ranges[index] = r
         else:
             self._mass_ranges.append(r)
+
     @property
     def trace(self): return self._trace
     @trace.setter
     def trace(self, value): self._trace = value
+
     @property
     def times(self):
-        if _IS_SPHINX: return []
+        if _IS_SPHINX:
+            return []
         raise NotImplementedError("times")
 
 
@@ -1833,9 +2555,109 @@ class ChromatogramData(CommonCoreDataObject):
     @property
     def scan_numbers_array(self): return self._scan_numbers_array
 
+
 class business:
-    InstrumentData = InstrumentData; SampleType = SampleType; ScanStatistics = ScanStatistics; SegmentedScan = SegmentedScan; RunHeader = RunHeader; SampleInformation = SampleInformation; InstrumentSelection = InstrumentSelection; FileHeader = FileHeader; FileError = FileError; CentroidStream = CentroidStream; ChromatogramSignal = ChromatogramSignal; ChromatogramTraceSettings = ChromatogramTraceSettings; HeaderItem = HeaderItem; LogEntry = LogEntry; MassOptions = MassOptions; Range = Range; Reaction = Reaction; Scan = Scan; StatusLogValues = StatusLogValues; TuneDataValues = TuneDataValues; TraceType = TraceType; BarcodeStatusType = EnumBase; BracketType = EnumBase; CachedScanProvider = object; SimpleScan = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; barcode_status_type = EnumBase; bracket_type = EnumBase; cached_scan_provider = object; centroid_stream = CentroidStream; chromatogram_signal = ChromatogramSignal; chromatogram_signal_cls = ChromatogramSignal; chromatogram_trace_settings = ChromatogramTraceSettings; data_units = EnumBase; generic_data_types = EnumBase; header_item = HeaderItem; instrument_data = InstrumentData; instrument_selection = InstrumentSelection; label_peak = object; log_entry = LogEntry; mass_options = MassOptions; mass_to_frequency_converter = object; noise_and_baseline = object; range = Range; reaction = Reaction; run_header = RunHeader; sample_information = SampleInformation; sample_type = SampleType; scan = Scan; scan_statistics = ScanStatistics; segmented_scan = SegmentedScan; simple_scan = object; spectrum_packet_type = object; status_log_values = StatusLogValues; tolerance_mode = EnumBase; trace_type = TraceType; tune_data_values = TuneDataValues; DataUnits = EnumBase; GenericDataTypes = EnumBase; MassToFrequencyConverter = object; SpectrumPacketType = object; ToleranceMode = EnumBase; NoiseAndBaseline = object; SimpleScan = object; BarcodeStatusType = EnumBase; BracketType = EnumBase; SampleType = SampleType; TraceType = TraceType
+    InstrumentData = InstrumentData
+    SampleType = SampleType
+    ScanStatistics = ScanStatistics
+    SegmentedScan = SegmentedScan
+    RunHeader = RunHeader
+    SampleInformation = SampleInformation
+    InstrumentSelection = InstrumentSelection
+    FileHeader = FileHeader
+    FileError = FileError
+    CentroidStream = CentroidStream
+    ChromatogramSignal = ChromatogramSignal
+    ChromatogramTraceSettings = ChromatogramTraceSettings
+    HeaderItem = HeaderItem
+    LogEntry = LogEntry
+    MassOptions = MassOptions
+    Range = Range
+    Reaction = Reaction
+    Scan = Scan
+    StatusLogValues = StatusLogValues
+    TuneDataValues = TuneDataValues
+    TraceType = TraceType
+    BarcodeStatusType = EnumBase
+    BracketType = EnumBase
+    CachedScanProvider = object
+    SimpleScan = object
+    SpectrumPacketType = object
+    ToleranceMode = EnumBase
+    NoiseAndBaseline = object
+    barcode_status_type = EnumBase
+    bracket_type = EnumBase
+    cached_scan_provider = object
+    centroid_stream = CentroidStream
+    chromatogram_signal = ChromatogramSignal
+    chromatogram_signal_cls = ChromatogramSignal
+    chromatogram_trace_settings = ChromatogramTraceSettings
+    data_units = EnumBase
+    generic_data_types = EnumBase
+    header_item = HeaderItem
+    instrument_data = InstrumentData
+    instrument_selection = InstrumentSelection
+    label_peak = object
+    log_entry = LogEntry
+    mass_options = MassOptions
+    mass_to_frequency_converter = object
+    noise_and_baseline = object
+    range = Range
+    reaction = Reaction
+    run_header = RunHeader
+    sample_information = SampleInformation
+    sample_type = SampleType
+    scan = Scan
+    scan_statistics = ScanStatistics
+    segmented_scan = SegmentedScan
+    simple_scan = object
+    spectrum_packet_type = object
+    status_log_values = StatusLogValues
+    tolerance_mode = EnumBase
+    trace_type = TraceType
+    tune_data_values = TuneDataValues
+    DataUnits = EnumBase
+    GenericDataTypes = EnumBase
+    MassToFrequencyConverter = object
+    SpectrumPacketType = object
+    ToleranceMode = EnumBase
+    NoiseAndBaseline = object
+    SimpleScan = object
+    BarcodeStatusType = EnumBase
+    BracketType = EnumBase
+    SampleType = SampleType
+    TraceType = TraceType
+    LabelPeak = object
+
 
 class filter_enums:
-    ActivationType = ActivationType; CompensationVoltageType = CompensationVoltageType; DetectorType = DetectorType; EnergyType = EnergyType; EventAccurateMass = EventAccurateMass; FieldFreeRegionType = FieldFreeRegionType; IonizationModeType = IonizationModeType; MassAnalyzerType = MassAnalyzer; MsOrderType = MsOrderType; PolarityType = PolarityType; ScanDataType = ScanDataType; ScanModeType = ScanModeType; SectorScanType = SectorScanType; SourceFragmentationValueType = SourceFragmentationValueType; TriState = TriState
-    activation_type = ActivationType; compensation_voltage_type = CompensationVoltageType; detector_type = DetectorType; energy_type = EnergyType; event_accurate_mass = EventAccurateMass; field_free_region_type = FieldFreeRegionType; ionization_mode_type = IonizationModeType; mass_analyzer_type = MassAnalyzer; ms_order_type = MsOrderType; polarity_type = PolarityType; scan_data_type = ScanDataType; scan_mode_type = ScanModeType; sector_scan_type = SectorScanType; source_fragmentation_value_type = SourceFragmentationValueType; tri_state = TriState
+    ActivationType = ActivationType
+    CompensationVoltageType = CompensationVoltageType
+    DetectorType = DetectorType
+    EnergyType = EnergyType
+    EventAccurateMass = EventAccurateMass
+    FieldFreeRegionType = FieldFreeRegionType
+    IonizationModeType = IonizationModeType
+    MassAnalyzerType = MassAnalyzer
+    MsOrderType = MsOrderType
+    PolarityType = PolarityType
+    ScanDataType = ScanDataType
+    ScanModeType = ScanModeType
+    SectorScanType = SectorScanType
+    SourceFragmentationValueType = SourceFragmentationValueType
+    TriState = TriState
+    activation_type = ActivationType
+    compensation_voltage_type = CompensationVoltageType
+    detector_type = DetectorType
+    energy_type = EnergyType
+    event_accurate_mass = EventAccurateMass
+    field_free_region_type = FieldFreeRegionType
+    ionization_mode_type = IonizationModeType
+    mass_analyzer_type = MassAnalyzer
+    ms_order_type = MsOrderType
+    polarity_type = PolarityType
+    scan_data_type = ScanDataType
+    scan_mode_type = ScanModeType
+    sector_scan_type = SectorScanType
+    source_fragmentation_value_type = SourceFragmentationValueType
+    tri_state = TriState

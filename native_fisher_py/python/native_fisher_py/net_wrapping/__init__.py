@@ -2,11 +2,13 @@ import sys
 import os
 import pathlib
 
+
 class NetWrapperBase(object):
     Any = None
     CoreException = Exception
     NetWrapperBase = object
     annotations = None
+
 
 class Extensions(object):
     def Equals(self, *args): return True
@@ -103,6 +105,7 @@ class Extensions(object):
     @staticmethod
     def TestScan(*args, **kwargs): return True
 
+
 class Environment(object):
     CurrentManagedThreadId = 1
     ExitCode = 0
@@ -121,7 +124,7 @@ class Environment(object):
     UserName = "User"
     Version = "8.0"
     WorkingSet = 0
-    
+
     @staticmethod
     def Equals(*args, **kwargs): return True
     def Finalize(self): pass
@@ -153,19 +156,20 @@ class Environment(object):
     @staticmethod
     def SetEnvironmentVariable(name, val): pass
     def ToString(self): return "Environment"
-    
+
     class SpecialFolder:
         pass
+
     class SpecialFolderOption:
         pass
-    
+
     @property
     def CommandLine(self): return ""
     @property
     def CurrentDirectory(self): return "."
     @property
     def OSVersion(self): return "Unix"
-    
+
     def get_CommandLine(self): return ""
     def get_CurrentDirectory(self): return "."
     def get_CurrentManagedThreadId(self): return 1
@@ -186,29 +190,39 @@ class Environment(object):
     def get_UserName(self): return "User"
     def get_Version(self): return "8.0"
     def get_WorkingSet(self): return 0
-    
+
     def set_CurrentDirectory(self, v): pass
     def set_ExitCode(self, v): pass
 
 # Helper classes to avoid NameErrors
+
+
 class Assembly_cls(object):
     @staticmethod
     def get_function(*args): return None
+
+
 class Runtime_cls(object):
     @staticmethod
     def get_assembly(*args): return None
     info = None
     @staticmethod
     def shutdown(): pass
+
+
 class Mono_cls(object):
     @staticmethod
     def get_assembly(*args): return None
     info = None
     @staticmethod
     def shutdown(): pass
+
+
 class TemporaryDirectory_cls(object):
     @staticmethod
     def cleanup(): pass
+
+
 class DotnetCoreRuntimeSpec_cls(object):
     floor_version = "8.0"
     runtime_config = ""
@@ -217,16 +231,20 @@ class DotnetCoreRuntimeSpec_cls(object):
     @staticmethod
     def write_config(): pass
 
+
 class clr_loader_stub(object):
     Runtime = Runtime_cls
     Assembly = Assembly_cls
     TemporaryDirectory = TemporaryDirectory_cls
-    class RuntimeInfo(object): 
+
+    class RuntimeInfo(object):
         pass
     DotnetCoreRuntimeSpec = DotnetCoreRuntimeSpec_cls
+
     class mono(object):
         Any = None
         Dict = dict
+
         class MethodDesc(object):
             @staticmethod
             def search(*args): return None
@@ -239,6 +257,7 @@ class clr_loader_stub(object):
         RuntimeInfo = object
         Sequence = list
         StrOrPath = str
+
         class atexit(object):
             @staticmethod
             def register(*args): pass
@@ -268,18 +287,27 @@ class clr_loader_stub(object):
         StrOrPath = str
         @staticmethod
         def check_result(r): pass
+
         class clr_error(object):
-            ClrError = Exception; Optional = None
+            ClrError = Exception
+            Optional = None
         coreclr_errors_dict = {}
+
         class hostfxr_errors_cls(object):
-            ClrError = Exception; HOSTFXR_ERRORS = {}; Optional = None; 
+            ClrError = Exception
+            HOSTFXR_ERRORS = {}
+            Optional = None
             @staticmethod
             def get_hostfxr_error(e): return ""
         hostfxr_errors = hostfxr_errors_cls
         @staticmethod
         def find_root(): return ""
+
         class find_inner(object):
-            DotnetCoreRuntimeSpec = object; Iterator = iter; Optional = None; Path = pathlib.Path; 
+            DotnetCoreRuntimeSpec = object
+            Iterator = iter
+            Optional = None
+            Path = pathlib.Path
             @staticmethod
             def find_dotnet_cli(): return ""
             @staticmethod
@@ -294,7 +322,10 @@ class clr_loader_stub(object):
             def find_runtimes_using_cli(): return []
             import platform as platform_real
             import shutil as shutil_real
-            os = os; platform = platform_real; shutil = shutil_real; sys = sys
+            os = os
+            platform = platform_real
+            shutil = shutil_real
+            sys = sys
         find = find_inner
         @staticmethod
         def find_dotnet_root(): return ""
@@ -302,8 +333,14 @@ class clr_loader_stub(object):
         def get_coreclr_error(e): return ""
         @staticmethod
         def get_hostfxr_error(e): return ""
+
         class coreclr_errors_inner(object):
-            ClrError = Exception; Comment = ""; Dict = dict; Message = ""; Optional = None; SymbolicName = ""; 
+            ClrError = Exception
+            Comment = ""
+            Dict = dict
+            Message = ""
+            Optional = None
+            SymbolicName = ""
             @staticmethod
             def get_coreclr_error(e): return ""
         coreclr_errors = coreclr_errors_inner
@@ -311,13 +348,21 @@ class clr_loader_stub(object):
         def optional_path_as_string(p): return ""
         @staticmethod
         def path_as_string(p): return ""
+
         class runtime_spec_cls(object):
             import json as json_real
             import typing as typing_real
-            Any = typing_real.Any; Dict = typing_real.Dict; DotnetCoreRuntimeSpec = object; Path = pathlib.Path; TextIO = typing_real.TextIO; Tuple = typing_real.Tuple; json = json_real;
+            Any = typing_real.Any
+            Dict = typing_real.Dict
+            DotnetCoreRuntimeSpec = object
+            Path = pathlib.Path
+            TextIO = typing_real.TextIO
+            Tuple = typing_real.Tuple
+            json = json_real
             @staticmethod
             def dataclass(x): return x
         runtime_spec = runtime_spec_cls
+
     class ffi_sub(object):
         Optional = None
         Path = pathlib.Path
@@ -326,6 +371,7 @@ class clr_loader_stub(object):
         def cdef(s): pass
         cffi_obj = object
         ffi_obj = object
+
         class hostfxr_cls(object):
             @staticmethod
             def cdef(s): pass
@@ -337,17 +383,31 @@ class clr_loader_stub(object):
         def load_mono(): pass
         @staticmethod
         def load_netfx(): pass
+
         class mono_cls2(object):
             @staticmethod
             def cdef(s): pass
         mono = mono_cls2
+
         class netfx_cls(object):
             @staticmethod
             def cdef(s): pass
         netfx = netfx_cls
         sys = sys
+
         class cffi_inner(object):
-            CDefError = Exception; FFI = object; FFIError = Exception; PkgConfigError = Exception; VerificationError = Exception; VerificationMissing = Exception; api = object; commontypes = object; cparser = object; error = Exception; lock = object; model = object
+            CDefError = Exception
+            FFI = object
+            FFIError = Exception
+            PkgConfigError = Exception
+            VerificationError = Exception
+            VerificationMissing = Exception
+            api = object
+            commontypes = object
+            cparser = object
+            error = Exception
+            lock = object
+            model = object
         cffi = cffi_inner
     ffi = ffi_sub
 
@@ -389,6 +449,7 @@ class clr_loader_stub(object):
     def get_netfx(*args): return None
     util = util
 
+
 class pythonnet(object):
     Any = None
     Dict = dict
@@ -422,18 +483,21 @@ class pythonnet(object):
         ThermoFisher = None
         @staticmethod
         def clrmethod(*args): return None
+
         class clrproperty_inner(object):
             @staticmethod
             def getter(): return None
             @staticmethod
             def setter(v): pass
+
         @staticmethod
-        def clrproperty(*args): return clr_stub.clrproperty_inner()
+        def clrproperty(*args): return pythonnet.clr_stub.clrproperty_inner()
         @staticmethod
         def getPreload(): return False
         loader = None
         @staticmethod
         def setPreload(p): pass
+
 
 class clr_inner(object):
     @staticmethod
@@ -442,15 +506,19 @@ class clr_inner(object):
     def GetClrType(t): return None
     @staticmethod
     def ListAssemblies(verbose): return []
-    class clrmethod_stub(object): 
+
+    class clrmethod_stub(object):
         pass
+
     @staticmethod
     def clrmethod(*args, **kwargs): return clr_inner.clrmethod_stub()
+
     class clrproperty_stub(object):
         @staticmethod
         def getter(): return None
         @staticmethod
         def setter(v): pass
+
     @staticmethod
     def clrproperty(*args, **kwargs): return clr_inner.clrproperty_stub()
     @staticmethod
@@ -459,10 +527,12 @@ class clr_inner(object):
     def setPreload(p): pass
     @staticmethod
     def AddReference(p): pass
+
     class loader_stub(object):
         import importlib as importlib_real
         import sys as sys_real
         DotNetFinder = object
+
         class DotNetLoader_cls(object):
             @staticmethod
             def create_module(*args): return None
@@ -471,6 +541,7 @@ class clr_inner(object):
             @staticmethod
             def load_module(*args): return None
         DotNetLoader = DotNetLoader_cls
+
         class DotNetFinder_cls(object):
             @staticmethod
             def find_spec(*args): return None
@@ -484,13 +555,22 @@ class clr_inner(object):
     System = None
     ThermoFisher = None
 
+
 class ThermoFisher(object):
     class CommonCore(object):
-        class MassPrecisionEstimator(object): pass
-        class RawFileReader(object): pass
-        class Data(object): pass
+        class MassPrecisionEstimator(object):
+            pass
 
-class Python(object): pass
+        class RawFileReader(object):
+            pass
+
+        class Data(object):
+            pass
+
+
+class Python(object):
+    pass
+
 
 this = sys.modules[__name__]
 this.Extensions = Extensions
@@ -510,6 +590,7 @@ thermo_fisher_data_filter_enums = None
 thermo_fisher_data_interfaces = object
 thermo_fisher_mass_precision_estimator = None
 thermo_fisher_raw_file_reader = None
+
 
 class WrappedNetArray(object):
     @staticmethod
@@ -535,8 +616,10 @@ class WrappedNetArray(object):
     @staticmethod
     def sort(*args, **kwargs): pass
 
+
 class TypeVar_stub(object):
     has_default = False
+
 
 class wrapped_net_array(object):
     T = object
@@ -547,4 +630,6 @@ class wrapped_net_array(object):
     generic = object
     clr = clr_inner
     WrappedNetArray = WrappedNetArray
+
+
 this.wrapped_net_array = wrapped_net_array
