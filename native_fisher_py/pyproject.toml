@@ -25,4 +25,4 @@ tests = [
 [tool.maturin]
 python-source = "python"
 module-name = "native_fisher_py.native_fisher_py_backend"
-include = ["python/native_fisher_py/ThermoNativeReader.*"]
+include = ["python/native_fisher_py/ThermoNativeReader.*", "python/native_fisher_py/*.dll"]
