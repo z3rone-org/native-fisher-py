@@ -86,7 +86,7 @@ def test_behavior_parity(raw_file_path):
         if os.path.exists(gt_path):
             orig = FisherPyMock(gt_path)
         else:
-            pytest.skip("Neither fisher-py nor ground_truth.json available.")
+            pytest.fail("Neither fisher-py nor ground_truth.json available.")
 
     native = native_fisher_py.RawFile(raw_file_path)
 

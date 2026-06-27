@@ -11,7 +11,7 @@ def raw_path():
 @pytest.fixture(scope="session")
 def raw_file(raw_path):
     if not os.path.exists(raw_path):
-        pytest.skip(f"Test file {raw_path} not found")
+        pytest.fail(f"Test file {raw_path} not found")
 
     raw = RawFile(raw_path)
     yield raw
