@@ -1811,7 +1811,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
             {
-                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventCollisionEnergy: RawFile handle is invalid or null.");
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanStats: RawFile handle is invalid or null.");
                 return -1;
             }
             try
@@ -1827,12 +1827,54 @@ namespace ThermoNativeReader
                 data[5] = stats.BasePeakIntensity;
                 data[6] = stats.PacketCount;
                 data[7] = stats.IsCentroidScan ? 1.0 : 0.0;
-                return 8;
+                data[8] = stats.AbsorbanceUnitScale;
+                data[9] = stats.CycleNumber;
+                data[10] = stats.Frequency;
+                data[11] = stats.IsUniformTime ? 1.0 : 0.0;
+                data[12] = stats.LongWavelength;
+                data[13] = stats.NumberOfChannels;
+                data[14] = stats.PacketType;
+                data[15] = stats.ScanEventNumber;
+                data[16] = stats.SegmentNumber;
+                data[17] = stats.ShortWavelength;
+                data[18] = (int)stats.SpectrumPacketType;
+                data[19] = stats.WavelengthStep;
+                return 20;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventCollisionEnergy (fallback -1): " + ex.Message);
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanStats (fallback -1): " + ex.Message);
                 return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_stats_scan_type")]
+        public static unsafe int GetScanStatsScanType(int handle, int scanNumber, byte* buffer, int bufferSize)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanStatsScanType: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try
+            {
+                var stats = _rawFile.GetScanStatsForScanNumber(scanNumber);
+                if (stats == null || stats.ScanType == null)
+                    return 0;
+                var bytes = System.Text.Encoding.UTF8.GetBytes(stats.ScanType);
+                int count = Math.Min(bytes.Length, bufferSize - 1);
+                for (int i = 0; i < count; i++)
+                {
+                    buffer[i] = bytes[i];
+                }
+                buffer[count] = 0;
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Warning in GetScanStatsScanType: " + ex.Message);
+                return 0;
             }
         }
 

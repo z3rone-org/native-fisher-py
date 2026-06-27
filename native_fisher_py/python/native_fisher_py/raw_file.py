@@ -242,8 +242,9 @@ class RawFile(object):
 
     def get_scan_stats_for_scan_number(self, scan_number: int):
         from .data.classes import ScanStatistics
-        from .native_fisher_py_backend import get_scan_stats
+        from .native_fisher_py_backend import get_scan_stats, get_scan_stats_scan_type
         data = get_scan_stats(self._handle, scan_number)
+        scan_type = get_scan_stats_scan_type(self._handle, scan_number)
         return ScanStatistics(
             start_time=data[0],
             low_mass=data[1],
@@ -252,7 +253,20 @@ class RawFile(object):
             base_peak_mass=data[4],
             base_peak_intensity=data[5],
             packet_count=int(data[6]),
-            is_centroid_scan=bool(data[7])
+            is_centroid_scan=bool(data[7]),
+            absorbance_unit_scale=data[8],
+            cycle_number=int(data[9]),
+            frequency=data[10],
+            is_uniform_time=bool(data[11]),
+            long_wavelength=data[12],
+            number_of_channels=int(data[13]),
+            packet_type=int(data[14]),
+            scan_event_number=int(data[15]),
+            segment_number=int(data[16]),
+            short_wavelength=data[17],
+            spectrum_packet_type=int(data[18]),
+            wavelength_step=data[19],
+            scan_type=scan_type
         )
 
     def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance=None):

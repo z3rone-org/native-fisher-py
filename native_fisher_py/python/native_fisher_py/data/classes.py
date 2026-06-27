@@ -978,7 +978,7 @@ class InstrumentSelection(CommonCoreDataObject):
 
 
 class ScanStatistics(CommonCoreDataObject):
-    def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0, is_centroid_scan=False):
+    def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0, is_centroid_scan=False, absorbance_unit_scale=0.0, cycle_number=0, frequency=0.0, is_uniform_time=False, long_wavelength=0.0, number_of_channels=0, packet_type=0, scan_event_number=0, segment_number=0, short_wavelength=0.0, spectrum_packet_type=0, wavelength_step=0.0, scan_type=None):
         self._start_time = start_time
         self._low_mass = low_mass
         self._high_mass = high_mass
@@ -989,6 +989,19 @@ class ScanStatistics(CommonCoreDataObject):
         self._scan_number = scan_number
         self._ms_order = ms_order
         self._is_centroid_scan = bool(is_centroid_scan)
+        self._absorbance_unit_scale = absorbance_unit_scale
+        self._cycle_number = cycle_number
+        self._frequency = frequency
+        self._is_uniform_time = bool(is_uniform_time)
+        self._long_wavelength = long_wavelength
+        self._number_of_channels = number_of_channels
+        self._packet_type = packet_type
+        self._scan_event_number = scan_event_number
+        self._segment_number = segment_number
+        self._short_wavelength = short_wavelength
+        self._spectrum_packet_type = spectrum_packet_type
+        self._wavelength_step = wavelength_step
+        self._scan_type = scan_type
 
     @property
     def start_time(self): return self._start_time
@@ -1010,36 +1023,36 @@ class ScanStatistics(CommonCoreDataObject):
     def ms_order(self): return self._ms_order
 
     @property
-    def absorbance_unit_scale(self): raise NotImplementedError
+    def absorbance_unit_scale(self): return self._absorbance_unit_scale
     def clone(self): raise NotImplementedError
     def copy_to(self, other): raise NotImplementedError
     @property
-    def cycle_number(self): raise NotImplementedError
+    def cycle_number(self): return self._cycle_number
     def deep_clone(self): raise NotImplementedError
     @property
-    def frequency(self): raise NotImplementedError
+    def frequency(self): return self._frequency
     @property
     def is_centroid_scan(self): return self._is_centroid_scan
     @property
-    def is_uniform_time(self): raise NotImplementedError
+    def is_uniform_time(self): return self._is_uniform_time
     @property
-    def long_wavelength(self): raise NotImplementedError
+    def long_wavelength(self): return self._long_wavelength
     @property
-    def number_of_channels(self): raise NotImplementedError
+    def number_of_channels(self): return self._number_of_channels
     @property
-    def packet_type(self): raise NotImplementedError
+    def packet_type(self): return self._packet_type
     @property
-    def scan_event_number(self): raise NotImplementedError
+    def scan_event_number(self): return self._scan_event_number
     @property
-    def scan_type(self): raise NotImplementedError
+    def scan_type(self): return self._scan_type
     @property
-    def segment_number(self): raise NotImplementedError
+    def segment_number(self): return self._segment_number
     @property
-    def short_wavelength(self): raise NotImplementedError
+    def short_wavelength(self): return self._short_wavelength
     @property
-    def spectrum_packet_type(self): raise NotImplementedError
+    def spectrum_packet_type(self): return self._spectrum_packet_type
     @property
-    def wavelength_step(self): raise NotImplementedError
+    def wavelength_step(self): return self._wavelength_step
 
 
 class SegmentedScan(CommonCoreDataObject):

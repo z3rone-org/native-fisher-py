@@ -1236,13 +1236,28 @@ fn get_scan_event_collision_energy(handle: i32, scan_number: i32, index: i32) ->
 #[pyfunction]
 fn get_scan_stats(handle: i32, scan_number: i32) -> PyResult<Vec<f64>> {
     let lib = get_lib()?;
-    let mut data = vec![0.0f64; 8];
+    let mut data = vec![0.0f64; 20];
     unsafe {
         let func: Symbol<unsafe extern "C" fn(i32, i32, *mut f64) -> i32> = lib.get(b"get_scan_stats")
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_stats: {}", e)))?;
         let res = func(handle, scan_number, data.as_mut_ptr());
         if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_scan_stats failed")); }
         Ok(data)
+    }
+}
+
+#[pyfunction]
+fn get_scan_stats_scan_type(handle: i32, scan_number: i32) -> PyResult<Option<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, *mut u8, i32) -> i32> = lib.get(b"get_scan_stats_scan_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_stats_scan_type: {}", e)))?;
+        let res = func(handle, scan_number, buffer.as_mut_ptr(), buffer.len() as i32);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_scan_stats_scan_type failed")); }
+        if res == 0 { return Ok(None); }
+        let s = String::from_utf8_lossy(&buffer[..res as usize]).into_owned();
+        Ok(Some(s))
     }
 }
 
@@ -1840,6 +1855,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_event_isolation_width_offset, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_collision_energy, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_stats_scan_type, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_axis_label_x, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_axis_label_y, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_flags, m)?)?;
