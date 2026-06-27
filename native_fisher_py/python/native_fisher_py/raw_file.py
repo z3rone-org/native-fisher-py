@@ -121,9 +121,15 @@ class RawFile(object):
     def first_scan(self) -> int:
         return get_first_scan(self._handle)
 
+    def get_first_spectrum_number(self) -> int:
+        return self.first_scan
+
     @property
     def last_scan(self) -> int:
         return get_last_scan(self._handle)
+
+    def get_last_spectrum_number(self) -> int:
+        return self.last_scan
 
     @property
     def file_name(self) -> str:

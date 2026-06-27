@@ -1498,6 +1498,36 @@ fn get_who_modified_logon(handle: i32) -> PyResult<String> {
 }
 
 #[pyfunction]
+fn get_number_of_times_calibrated(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_number_of_times_calibrated")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_number_of_times_calibrated: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_number_of_times_modified(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_number_of_times_modified")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_number_of_times_modified: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_revision(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_revision")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_revision: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
 fn get_sample_barcode(handle: i32) -> PyResult<String> {
     let lib = get_lib()?;
     let mut buffer = vec![0u8; 1024];
@@ -1868,6 +1898,9 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_who_created_logon, m)?)?;
     m.add_function(wrap_pyfunction!(get_who_modified_id, m)?)?;
     m.add_function(wrap_pyfunction!(get_who_modified_logon, m)?)?;
+    m.add_function(wrap_pyfunction!(get_number_of_times_calibrated, m)?)?;
+    m.add_function(wrap_pyfunction!(get_number_of_times_modified, m)?)?;
+    m.add_function(wrap_pyfunction!(get_revision, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_barcode, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_id, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_name, m)?)?;

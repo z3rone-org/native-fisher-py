@@ -37,6 +37,9 @@ if not _IS_SPHINX:
         def get_who_created_logon(): return ""
         def get_who_modified_id(): return ""
         def get_who_modified_logon(): return ""
+        def get_number_of_times_calibrated(): return 0
+        def get_number_of_times_modified(): return 0
+        def get_revision(): return 0
         def get_sample_barcode(): return ""
         def get_sample_id(): return ""
         def get_sample_name(): return ""
@@ -101,6 +104,9 @@ else:
     def get_who_created_logon(): return ""
     def get_who_modified_id(): return ""
     def get_who_modified_logon(): return ""
+    def get_number_of_times_calibrated(): return 0
+    def get_number_of_times_modified(): return 0
+    def get_revision(): return 0
     def get_sample_barcode(): return ""
     def get_sample_id(): return ""
     def get_sample_name(): return ""
@@ -1613,22 +1619,13 @@ class FileHeader(CommonCoreDataObject):
     def modified_date(self): return get_modified_date(self._handle)
 
     @property
-    def number_of_times_calibrated(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError
+    def number_of_times_calibrated(self): return get_number_of_times_calibrated(self._handle)
 
     @property
-    def number_of_times_modified(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError
+    def number_of_times_modified(self): return get_number_of_times_modified(self._handle)
 
     @property
-    def revision(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError
+    def revision(self): return get_revision(self._handle)
 
     @property
     def who_created_logon(self): return get_who_created_logon(self._handle)
@@ -1689,10 +1686,19 @@ class AutoSamplerInformation(CommonCoreDataObject):
 
 
 class RunHeader(CommonCoreDataObject):
-    def __init__(self, handle=0, raw_file=None):
-        self._handle = handle
-        self._raw_file = raw_file
-        self._handle = raw_file._handle if raw_file else 0
+    def __init__(self, raw_file=None, handle=0):
+        # Allow either raw_file or handle to be passed. raw_file takes precedence.
+        if raw_file is not None and hasattr(raw_file, "_handle"):
+            self._raw_file = raw_file
+            self._handle = raw_file._handle
+        else:
+            self._raw_file = None
+            # If the first argument was actually the RawFile but passed to handle
+            if hasattr(handle, "_handle"):
+                self._raw_file = handle
+                self._handle = handle._handle
+            else:
+                self._handle = handle
 
     @property
     def start_time(self) -> float: return get_start_time(self._handle)
@@ -1702,64 +1708,44 @@ class RunHeader(CommonCoreDataObject):
     def last_spectrum(self) -> int: return self._raw_file.last_scan if self._raw_file else 1
 
     @property
-    def end_time(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def end_time(self) -> float:
+        return get_end_time(self._handle)
 
     @property
-    def expected_runtime(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def expected_runtime(self) -> float:
+        return get_expected_runtime(self._handle)
 
     @property
-    def high_mass(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def high_mass(self) -> float:
+        return get_high_mass(self._handle)
 
     @property
-    def low_mass(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def low_mass(self) -> float:
+        return get_low_mass(self._handle)
 
     @property
-    def mass_resolution(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def mass_resolution(self) -> float:
+        return get_mass_resolution(self._handle)
 
     @property
-    def max_integrated_intensity(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def max_integrated_intensity(self) -> float:
+        return get_max_integrated_intensity(self._handle)
 
     @property
-    def max_intensity(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def max_intensity(self) -> int:
+        return get_max_intensity(self._handle)
 
     @property
     def spectra_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return self._raw_file.number_of_scans if self._raw_file else 0
 
     @property
     def status_log_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return get_status_log_count(self._handle)
 
     @property
     def trailer_extra_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return get_trailer_extra_count(self._handle)
 
     @property
     def trailer_scan_event_count(self):
@@ -1769,9 +1755,7 @@ class RunHeader(CommonCoreDataObject):
 
     @property
     def tune_data_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return get_tune_data_count(self._handle)
 
     @property
     def tolerance_unit(self):

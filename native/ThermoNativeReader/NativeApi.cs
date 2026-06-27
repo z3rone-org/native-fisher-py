@@ -124,10 +124,17 @@ namespace ThermoNativeReader
         [UnmanagedCallersOnly(EntryPoint = "get_num_scans")]
         public static int GetNumScans(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
+            try
+            {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null) return -1;
+                return _rawFile.RunHeaderEx.SpectraCount;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetNumScans: " + ex.Message);
                 return -1;
-            return _rawFile.RunHeader.LastSpectrum;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_rt")]
@@ -328,91 +335,101 @@ namespace ThermoNativeReader
         [UnmanagedCallersOnly(EntryPoint = "get_first_scan")]
         public static int GetFirstScan(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1;
-            return _rawFile.RunHeader.FirstSpectrum;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+                return _rawFile.RunHeader.FirstSpectrum;
+            } catch { return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_last_scan")]
         public static int GetLastScan(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1;
-            return _rawFile.RunHeader.LastSpectrum;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return -1;
+                return _rawFile.RunHeader.LastSpectrum;
+            } catch { return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_end_time")]
         public static double GetEndTime(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1.0;
-            return _rawFile.RunHeader.EndTime;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+                return _rawFile.RunHeader.EndTime;
+            } catch { return -1.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_start_time")]
         public static double GetStartTime(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1.0;
-            return _rawFile.RunHeader.StartTime;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return -1.0;
+                return _rawFile.RunHeader.StartTime;
+            } catch { return -1.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_mass_resolution")]
         public static double GetMassResolution(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1.0;
-            return _rawFile.RunHeader.MassResolution;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return 0.0;
+                return _rawFile.RunHeader.MassResolution;
+            } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_expected_runtime")]
         public static double GetExpectedRuntime(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1.0;
-            return _rawFile.RunHeader.ExpectedRuntime;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return 0.0;
+                return _rawFile.RunHeader.ExpectedRuntime;
+            } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_max_integrated_intensity")]
         public static double GetMaxIntegratedIntensity(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1.0;
-            return _rawFile.RunHeader.MaxIntegratedIntensity;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return 0.0;
+                return _rawFile.RunHeader.MaxIntegratedIntensity;
+            } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_max_intensity")]
         public static int GetMaxIntensity(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1;
-            return _rawFile.RunHeader.MaxIntensity;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return 0;
+                return (int)_rawFile.RunHeader.MaxIntensity;
+            } catch { return 0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_low_mass")]
         public static double GetLowMass(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1.0;
-            return _rawFile.RunHeader.LowMass;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return 0.0;
+                return _rawFile.RunHeader.LowMass;
+            } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_high_mass")]
         public static double GetHighMass(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null || _rawFile.RunHeader == null)
-                return -1.0;
-            return _rawFile.RunHeader.HighMass;
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null || _rawFile.RunHeader == null) return 0.0;
+                return _rawFile.RunHeader.HighMass;
+            } catch { return 0.0; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_file_name")]
@@ -454,13 +471,11 @@ namespace ThermoNativeReader
         [UnmanagedCallersOnly(EntryPoint = "get_tune_data_count")]
         public static int GetTuneDataCount(int handle)
         {
-            var _rawFile = GetFile(handle);
-            if (_rawFile == null)
-            {
-                Console.Error.WriteLine("[native-fisher-py] Error in GetTuneDataCount: RawFile handle is invalid or null.");
-                return -1;
-            }
-            return _rawFile.GetTuneDataCount();
+            try {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null) return -1;
+                return _rawFile.GetTuneDataCount();
+            } catch { return -1; }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_creation_date")]
@@ -693,6 +708,51 @@ namespace ThermoNativeReader
             }
             var data = _rawFile.GetInstrumentData();
             return data != null && data.IsValid ? 1 : 0;
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_number_of_times_calibrated")]
+        public static int GetNumberOfTimesCalibrated(int handle)
+        {
+            try
+            {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null) return -1;
+                return _rawFile.FileHeader.NumberOfTimesCalibrated;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_number_of_times_modified")]
+        public static int GetNumberOfTimesModified(int handle)
+        {
+            try
+            {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null) return -1;
+                return _rawFile.FileHeader.NumberOfTimesModified;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_revision")]
+        public static int GetRevision(int handle)
+        {
+            try
+            {
+                var _rawFile = GetFile(handle);
+                if (_rawFile == null) return -1;
+                return _rawFile.FileHeader.Revision;
+            }
+            catch
+            {
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_instrument_has_accurate_mass_precursors")]
