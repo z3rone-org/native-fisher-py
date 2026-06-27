@@ -42,7 +42,7 @@ def test_run_header_ms():
         raw_file.close()
 
 def test_run_header_uv():
-    raw_path = os.path.join(os.path.dirname(__file__), "..", "potential_test_files", "MTBLS773_UV.raw")
+    raw_path = os.path.join(os.path.dirname(__file__), "..", "test_data", "MTBLS773_UV.raw")
     if not os.path.exists(raw_path) or os.path.getsize(raw_path) == 0:
         pytest.fail("Empty test file")
         

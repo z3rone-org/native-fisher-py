@@ -4,7 +4,7 @@ import os
 
 @pytest.fixture
 def raw_file_mtbls773():
-    path = os.path.join(os.path.dirname(__file__), "..", "potential_test_files", "MTBLS773_UV.raw")
+    path = os.path.join(os.path.dirname(__file__), "..", "test_data", "MTBLS773_UV.raw")
     if not os.path.exists(path):
         pytest.fail(f"Test file not found: {path}")
     raw = RawFile(path)
