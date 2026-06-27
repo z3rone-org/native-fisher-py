@@ -105,8 +105,11 @@ namespace ThermoNativeReader
                 }
                 catch { state.CachedSampleDilution = 0.0; }
 
-                rawFile.SelectInstrument(Device.MS, 1);
-
+                try {
+                    rawFile.SelectInstrument(Device.MS, 1);
+                } catch {
+                    try { rawFile.SelectInstrument(Device.UV, 1); } catch { }
+                }
                 int handle = System.Threading.Interlocked.Increment(ref _nextHandle);
                 _files[handle] = state;
                 return handle;
