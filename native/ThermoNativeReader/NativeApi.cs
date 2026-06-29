@@ -931,16 +931,23 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null)
             {
-                Console.Error.WriteLine("[native-fisher-py] Error in GetInstrumentIsTsqQuantumFile: RawFile handle is invalid or null.");
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleVial: RawFile handle is invalid or null.");
                 return -1;
             }
-            var str = _rawFile.SampleInformation.Vial ?? "";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-            int count = Math.Min(bytes.Length, length - 1);
-            for (int i = 0; i < count; i++)
-                buffer[i] = bytes[i];
-            buffer[count] = 0;
-            return count;
+            try 
+            {
+                var str = _rawFile.SampleInformation.Vial ?? "";
+                var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+                int count = Math.Min(bytes.Length, length - 1);
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, (IntPtr)buffer, count);
+                buffer[count] = 0;
+                return count;
+            } 
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleVial: " + ex.Message);
+                return -1;
+            }
         }
 
         [UnmanagedCallersOnly(EntryPoint = "get_sample_comment")]
