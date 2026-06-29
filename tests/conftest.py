@@ -17,6 +17,7 @@ def zoom_raw_file(zoom_raw_path):
     yield raw
     raw.close()
 
+
 @pytest.fixture(scope="session")
 def angiotensin_raw_file():
     path = os.path.join("test_data", "Angiotensin_AllScans.raw")
