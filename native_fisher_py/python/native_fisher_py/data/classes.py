@@ -1632,21 +1632,18 @@ class SampleInformation(CommonCoreDataObject):
 
     @property
     def barcode_status(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_barcode_status
+        return get_sample_barcode_status(self._handle)
 
     @property
     def calibration_file(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_calibration_file
+        return get_sample_calibration_file(self._handle)
 
     @property
     def calibration_level(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_calibration_level
+        return get_sample_calibration_level(self._handle)
 
     @property
     def comment(self): return get_sample_comment(self._handle)
@@ -1664,21 +1661,17 @@ class SampleInformation(CommonCoreDataObject):
 
     @property
     def istd_amount(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_istd_amount
+        return get_sample_istd_amount(self._handle)
 
     @property
     def max_user_text_column_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return len(self.user_text)
 
     @property
     def processing_method_file(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_processing_method_file
+        return get_sample_processing_method_file(self._handle)
 
     @property
     def row_number(self): return get_sample_row_number(self._handle)
@@ -1691,13 +1684,17 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def sample_type(self): return SampleType(get_sample_type(self._handle))
     @property
-    def sample_volume(self): return 0.0
+    def sample_volume(self):
+        from ..native_fisher_py_backend import get_sample_sample_volume
+        return get_sample_sample_volume(self._handle)
     @property
-    def sample_weight(self): return 0.0
+    def sample_weight(self):
+        from ..native_fisher_py_backend import get_sample_sample_weight
+        return get_sample_sample_weight(self._handle)
     @property
-    def user_text(self): return []
-    @property
-    def vial(self): return ""
+    def user_text(self):
+        from ..native_fisher_py_backend import get_sample_user_text
+        return get_sample_user_text(self._handle)
     @property
     def raw_file_name(self) -> str: return get_file_name(self._handle)
     @property

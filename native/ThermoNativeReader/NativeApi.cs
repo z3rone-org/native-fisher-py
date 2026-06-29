@@ -3377,5 +3377,178 @@ namespace ThermoNativeReader
                 return -1.0;
             }
         }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_barcode_status")]
+        public static int GetSampleBarcodeStatus(int handle)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleBarcodeStatus: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try { return (int)_rawFile.SampleInformation.BarcodeStatus; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleBarcodeStatus: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_calibration_file")]
+        public static unsafe int GetSampleCalibrationFile(int handle, byte* buffer, int bufferSize)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleCalibrationFile: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try
+            {
+                var s = _rawFile.SampleInformation.CalibrationFile;
+                if (s == null) return -1;
+                var bytes = System.Text.Encoding.UTF8.GetBytes(s);
+                if (bytes.Length >= bufferSize) return -1;
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
+                buffer[bytes.Length] = 0;
+                return bytes.Length;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleCalibrationFile: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_calibration_level")]
+        public static unsafe int GetSampleCalibrationLevel(int handle, byte* buffer, int bufferSize)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleCalibrationLevel: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try
+            {
+                var s = _rawFile.SampleInformation.CalibrationLevel;
+                if (s == null) return -1;
+                var bytes = System.Text.Encoding.UTF8.GetBytes(s);
+                if (bytes.Length >= bufferSize) return -1;
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
+                buffer[bytes.Length] = 0;
+                return bytes.Length;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleCalibrationLevel: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_istd_amount")]
+        public static double GetSampleIstdAmount(int handle)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleIstdAmount: RawFile handle is invalid or null.");
+                return -1.0;
+            }
+            try { return _rawFile.SampleInformation.IstdAmount; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleIstdAmount: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_processing_method_file")]
+        public static unsafe int GetSampleProcessingMethodFile(int handle, byte* buffer, int bufferSize)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleProcessingMethodFile: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try
+            {
+                var s = _rawFile.SampleInformation.ProcessingMethodFile;
+                if (s == null) return -1;
+                var bytes = System.Text.Encoding.UTF8.GetBytes(s);
+                if (bytes.Length >= bufferSize) return -1;
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
+                buffer[bytes.Length] = 0;
+                return bytes.Length;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleProcessingMethodFile: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_sample_volume")]
+        public static double GetSampleSampleVolume(int handle)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleSampleVolume: RawFile handle is invalid or null.");
+                return -1.0;
+            }
+            try { return _rawFile.SampleInformation.SampleVolume; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleSampleVolume: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_sample_weight")]
+        public static double GetSampleSampleWeight(int handle)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleSampleWeight: RawFile handle is invalid or null.");
+                return -1.0;
+            }
+            try { return _rawFile.SampleInformation.SampleWeight; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleSampleWeight: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_sample_user_text")]
+        public static unsafe int GetSampleUserText(int handle, byte* buffer, int bufferSize)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetSampleUserText: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try
+            {
+                var arr = _rawFile.SampleInformation.UserText;
+                if (arr == null) return -1;
+                var s = string.Join("###|###", arr);
+                var bytes = System.Text.Encoding.UTF8.GetBytes(s);
+                if (bytes.Length >= bufferSize) return -1;
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
+                buffer[bytes.Length] = 0;
+                return bytes.Length;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleUserText: " + ex.Message);
+                return -1;
+            }
+        }
     }
 }

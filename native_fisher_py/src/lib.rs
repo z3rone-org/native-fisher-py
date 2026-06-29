@@ -2084,6 +2084,104 @@ fn get_error_log_item_retention_time(handle: i32, index: i32) -> PyResult<f64> {
     }
 }
 
+#[pyfunction]
+fn get_sample_barcode_status(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_sample_barcode_status")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_barcode_status: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_calibration_file(handle: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_calibration_file")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_calibration_file: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Ok("".to_string()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_calibration_level(handle: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_calibration_level")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_calibration_level: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Ok("".to_string()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_istd_amount(handle: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_sample_istd_amount")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_istd_amount: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_processing_method_file(handle: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_processing_method_file")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_processing_method_file: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Ok("".to_string()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_sample_volume(handle: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_sample_sample_volume")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_sample_volume: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_sample_weight(handle: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_sample_sample_weight")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_sample_weight: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_user_text(handle: i32) -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 16384];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_user_text")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_user_text: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 16384);
+        if res < 0 { return Ok(Vec::new()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        if s.is_empty() { return Ok(Vec::new()); }
+        Ok(s.split("###|###").map(|x| x.to_string()).collect())
+    }
+}
+
 #[pymodule]
 fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
@@ -2257,6 +2355,14 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_x, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_y, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_barcode_status, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_calibration_file, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_calibration_level, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_istd_amount, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_processing_method_file, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_sample_volume, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_sample_weight, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_user_text, m)?)?;
     m.add_function(wrap_pyfunction!(get_error_log_items_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_error_log_item_message, m)?)?;
     m.add_function(wrap_pyfunction!(get_error_log_item_retention_time, m)?)?;
