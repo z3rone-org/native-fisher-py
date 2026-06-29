@@ -73,7 +73,7 @@ if not _IS_SPHINX:
         def get_scan_event_precursor_mass(s, i): return 0.0
         def get_scan_event_activation_type(s, i): return 0
         def get_scan_event_collision_energy(s, i): return 0.0
-        def get_scan_stats(s): return [0.0]*7
+        def get_scan_stats(s): return [0.0] * 7
         def get_scan_filter_meta_filters(s): return []
         def get_scan_filter_field_free_region(s): return 0
         def get_scan_filter_index_to_multiple_activation_index(s): return 0
@@ -135,7 +135,7 @@ else:
     def get_scan_event_precursor_mass(s, i): return 0.0
     def get_scan_event_activation_type(s, i): return 0
     def get_scan_event_collision_energy(s, i): return 0.0
-    def get_scan_stats(s): return [0.0]*7
+    def get_scan_stats(s): return [0.0] * 7
 
 
 class DataUnits(enum.Enum):
@@ -522,13 +522,49 @@ class TraceType(EnumBase):
     WavelengthRange = 41
 
 
-trace_type_names = ["MassRange", "TIC", "BasePeak", "Fragment", "SpectrumMax",
-                    "A2DChannel1", "A2DChannel2", "A2DChannel3", "A2DChannel4", "A2DChannel5", "A2DChannel6", "A2DChannel7", "A2DChannel8",
-                    "Analog1", "Analog2", "Analog3", "Analog4", "Analog5", "Analog6", "Analog7", "Analog8",
-                    "ChannelA", "ChannelB", "ChannelC", "ChannelD", "ChannelE", "ChannelF", "ChannelG", "ChannelH",
-                    "EndAllChromatogramTraces", "EndAnalogChromatogramTraces", "EndMSChromatogramTraces", "EndPCA2DChromatogramTraces", "EndPDAChromatogramTraces", "EndUVChromatogramTraces",
-                    "StartAnalogChromatogramTraces", "StartMSChromatogramTraces", "StartPCA2DChromatogramTraces", "StartPDAChromatogramTraces", "StartUVChromatogramTraces",
-                    "TotalAbsorbance", "WavelengthRange"]
+trace_type_names = [
+    "MassRange",
+    "TIC",
+    "BasePeak",
+    "Fragment",
+    "SpectrumMax",
+    "A2DChannel1",
+    "A2DChannel2",
+    "A2DChannel3",
+    "A2DChannel4",
+    "A2DChannel5",
+    "A2DChannel6",
+    "A2DChannel7",
+    "A2DChannel8",
+    "Analog1",
+    "Analog2",
+    "Analog3",
+    "Analog4",
+    "Analog5",
+    "Analog6",
+    "Analog7",
+    "Analog8",
+    "ChannelA",
+    "ChannelB",
+    "ChannelC",
+    "ChannelD",
+    "ChannelE",
+    "ChannelF",
+    "ChannelG",
+    "ChannelH",
+    "EndAllChromatogramTraces",
+    "EndAnalogChromatogramTraces",
+    "EndMSChromatogramTraces",
+    "EndPCA2DChromatogramTraces",
+    "EndPDAChromatogramTraces",
+    "EndUVChromatogramTraces",
+    "StartAnalogChromatogramTraces",
+    "StartMSChromatogramTraces",
+    "StartPCA2DChromatogramTraces",
+    "StartPDAChromatogramTraces",
+    "StartUVChromatogramTraces",
+    "TotalAbsorbance",
+    "WavelengthRange"]
 
 for i, name in enumerate(trace_type_names):
     setattr(TraceType, name, TraceType(i))
@@ -576,7 +612,8 @@ class MassAnalyzer(EnumBase):
     MassAnalyzerTQMS = 2
 
 
-for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 4, "FTMS": 5, "Sector": 6, "MassAnalyzerFTMS": 5, "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 4, "MassAnalyzerTQMS": 2}.items():
+for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 4, "FTMS": 5, "Sector": 6, "MassAnalyzerFTMS": 5,
+                  "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 4, "MassAnalyzerTQMS": 2}.items():
     inst = MassAnalyzer(val)
     inst.name = name
     setattr(MassAnalyzer, name, inst)
@@ -830,7 +867,20 @@ class SampleType(EnumBase):
     StdUpdate = 12
 
 
-for name in ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike", "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"]:
+for name in [
+    "Unknown",
+    "Blank",
+    "QC",
+    "StdBracket",
+    "SolventBlank",
+    "MatrixBlank",
+    "MatrixSpike",
+    "MatrixSpikeDuplicate",
+    "Program",
+    "StdBracketStart",
+    "StdBracketEnd",
+    "StdClear",
+        "StdUpdate"]:
     idx = ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike",
            "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"].index(name)
     ev = SampleType(idx)
@@ -984,7 +1034,31 @@ class InstrumentSelection(CommonCoreDataObject):
 
 
 class ScanStatistics(CommonCoreDataObject):
-    def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0, is_centroid_scan=False, absorbance_unit_scale=0.0, cycle_number=0, frequency=0.0, is_uniform_time=False, long_wavelength=0.0, number_of_channels=0, packet_type=0, scan_event_number=0, segment_number=0, short_wavelength=0.0, spectrum_packet_type=0, wavelength_step=0.0, scan_type=None):
+    def __init__(
+            self,
+            start_time=0.0,
+            low_mass=0.0,
+            high_mass=0.0,
+            tic=0.0,
+            base_peak_mass=0.0,
+            base_peak_intensity=0.0,
+            packet_count=0,
+            scan_number=0,
+            ms_order=0,
+            is_centroid_scan=False,
+            absorbance_unit_scale=0.0,
+            cycle_number=0,
+            frequency=0.0,
+            is_uniform_time=False,
+            long_wavelength=0.0,
+            number_of_channels=0,
+            packet_type=0,
+            scan_event_number=0,
+            segment_number=0,
+            short_wavelength=0.0,
+            spectrum_packet_type=0,
+            wavelength_step=0.0,
+            scan_type=None):
         self._start_time = start_time
         self._low_mass = low_mass
         self._high_mass = high_mass
@@ -1150,13 +1224,13 @@ class HeaderItem(CommonCoreDataObject):
                 type_val = subparts[0]
                 try:
                     self._string_length_or_precision = int(subparts[1])
-                except:
+                except BaseException:
                     pass
             else:
                 type_val = rest
             try:
                 self._data_type = GenericDataTypes(int(type_val))
-            except:
+            except BaseException:
                 self._data_type = GenericDataTypes.NULL
         else:
             self._label = data
@@ -1245,14 +1319,17 @@ class Reaction(CommonCoreDataObject):
     def first_precursor_mass(self):
         from ..native_fisher_py_backend import get_scan_event_first_precursor_mass
         return get_scan_event_first_precursor_mass(self._handle, self._scan_number, self._index)
+
     @property
     def isolation_width(self):
         from ..native_fisher_py_backend import get_scan_event_isolation_width
         return get_scan_event_isolation_width(self._handle, self._scan_number, self._index)
+
     @property
     def isolation_width_offset(self):
         from ..native_fisher_py_backend import get_scan_event_isolation_width_offset
         return get_scan_event_isolation_width_offset(self._handle, self._scan_number, self._index)
+
     @property
     def last_precursor_mass(self):
         from ..native_fisher_py_backend import get_scan_event_last_precursor_mass
@@ -2276,7 +2353,7 @@ class Range(object):
     @staticmethod
     def create(low, high): return Range(low, high)
     @staticmethod
-    def create_from_cetner_and_delta(c, d): return Range(c-d, c+d)
+    def create_from_cetner_and_delta(c, d): return Range(c - d, c + d)
 
     def equals(self, other):
         if not isinstance(other, Range):
@@ -2372,82 +2449,109 @@ class ScanDependents(CommonCoreDataObject):
 
 
 class SequenceInfo(CommonCoreDataObject):
+    def __init__(self):
+        self._column_width = []
+        self._type_to_column_position = []
+        self._bracket = 0
+        self._user_private_label = []
+        self._user_label = []
+        self._tray_configuration = ""
+
     @property
     def column_width(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("column_width")
+        return self._column_width
+
+    @column_width.setter
+    def column_width(self, value):
+        self._column_width = value
 
     @property
     def type_to_column_position(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("type_to_column_position")
+        return self._type_to_column_position
+
+    @type_to_column_position.setter
+    def type_to_column_position(self, value):
+        self._type_to_column_position = value
 
     @property
     def bracket(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("bracket")
+        return self._bracket
+
+    @bracket.setter
+    def bracket(self, value):
+        self._bracket = value
 
     @property
     def user_private_label(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("user_private_label")
+        return self._user_private_label
+
+    @user_private_label.setter
+    def user_private_label(self, value):
+        self._user_private_label = value
 
     @property
     def user_label(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("user_label")
+        return self._user_label
+
+    @user_label.setter
+    def user_label(self, value):
+        self._user_label = value
 
     @property
     def tray_configuration(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("tray_configuration")
+        return self._tray_configuration
 
-    @property
-    def user_label(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("user_label")
+    @tray_configuration.setter
+    def tray_configuration(self, value):
+        self._tray_configuration = value
 
 
 class SequenceFileWriter(CommonCoreDataObject):
     def __init__(self):
         self.samples = []
         self._info = SequenceInfo()
+        self._bracket = 0
+        self._file_error = None
+        self._file_header = None
+        self._file_name = ""
+        self._is_error = 0
+        self._tray_configuration = ""
+        self._user_column_labels = {}
 
     @property
     def bracket(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("bracket")
+        return self._bracket
+
+    @bracket.setter
+    def bracket(self, value):
+        self._bracket = value
 
     @property
     def file_error(self):
-        if _IS_SPHINX:
-            return None
-        raise NotImplementedError("file_error")
+        return self._file_error
+
+    @file_error.setter
+    def file_error(self, value):
+        self._file_error = value
 
     @property
     def file_header(self):
-        if _IS_SPHINX:
-            return None
-        raise NotImplementedError("file_header")
+        return self._file_header
+
+    @file_header.setter
+    def file_header(self, value):
+        self._file_header = value
 
     @property
     def file_name(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("file_name")
+        return self._file_name
+
+    @file_name.setter
+    def file_name(self, value):
+        self._file_name = value
 
     def get_user_column_label(self, index):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("get_user_column_label")
+        return self._user_column_labels.get(index, "")
 
     @property
     def info(self):
@@ -2459,18 +2563,24 @@ class SequenceFileWriter(CommonCoreDataObject):
 
     @property
     def is_error(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("is_error")
+        return self._is_error
 
-    def save(self, path): pass
-    def set_user_column_label(self, index, label): pass
+    @is_error.setter
+    def is_error(self, value):
+        self._is_error = value
+
+    def save(self, path): pass  # FIXME
+
+    def set_user_column_label(self, index, label):
+        self._user_column_labels[index] = label
 
     @property
     def tray_configuration(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("tray_configuration")
+        return self._tray_configuration
+
+    @tray_configuration.setter
+    def tray_configuration(self, value):
+        self._tray_configuration = value
 
 
 class ChromatogramTraceSettings(CommonCoreDataObject):
