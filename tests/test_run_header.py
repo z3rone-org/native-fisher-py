@@ -4,16 +4,17 @@ import os
 import math
 from native_fisher_py.raw_file import RawFile
 
+
 def test_run_header_ms():
     raw_path = os.path.join(os.path.dirname(__file__), "..", "test_data", "PXD006873_prec_range.raw")
     if not os.path.exists(raw_path) or os.path.getsize(raw_path) == 0:
         pytest.fail("Empty test file")
-        
+
     raw_file = RawFile(raw_path)
-    
+
     try:
         header = raw_file.run_header
-        
+
         assert header.first_spectrum == 1
         assert header.last_spectrum == 237
         assert math.isclose(header.start_time, 5.0810132, rel_tol=1e-5)
@@ -28,7 +29,7 @@ def test_run_header_ms():
         assert header.status_log_count == 119
         assert header.trailer_extra_count == 61
         assert header.tune_data_count == 1
-        
+
         with pytest.raises(NotImplementedError):
             _ = header.trailer_scan_event_count
 
@@ -41,16 +42,17 @@ def test_run_header_ms():
     finally:
         raw_file.close()
 
+
 def test_run_header_uv():
     raw_path = os.path.join(os.path.dirname(__file__), "..", "test_data", "MTBLS773_UV.raw")
     if not os.path.exists(raw_path) or os.path.getsize(raw_path) == 0:
         pytest.fail("Empty test file")
-        
+
     raw_file = RawFile(raw_path)
-    
+
     try:
         header = raw_file.run_header
-        
+
         # UV files without selected instruments should safely return fallbacks
         assert header.first_spectrum == -1
         assert header.last_spectrum == -1
@@ -66,7 +68,7 @@ def test_run_header_uv():
         assert header.status_log_count == -1
         assert header.trailer_extra_count == -1
         assert header.tune_data_count == -1
-        
+
         with pytest.raises(NotImplementedError):
             _ = header.trailer_scan_event_count
 

@@ -54,11 +54,11 @@ def test_isolation_width(raw_file):
 
     for scan_num, expected_width in width_expectations.items():
         scan_event = raw_file.get_scan_event_for_scan_number(scan_num)
-        
+
         # Test ScanEvent.get_isolation_width
         actual_width = scan_event.get_isolation_width(0)
         assert actual_width == pytest.approx(expected_width), f"Scan {scan_num} ScanEvent isolation width mismatch"
-        
+
         # Test Reaction.isolation_width
         reaction = scan_event.get_reaction(0)
         assert reaction.isolation_width == pytest.approx(expected_width), f"Scan {scan_num} Reaction isolation width mismatch"
@@ -74,7 +74,7 @@ def test_isolation_width_angiotensin(angiotensin_raw_file):
     assert reaction_3.isolation_width_offset == pytest.approx(0.0), "Scan 3 Reaction isolation width offset mismatch"
     assert reaction_3.collision_energy == pytest.approx(30.0), "Scan 3 CE mismatch"
     assert reaction_3.precursor_mass == pytest.approx(432.9000244140625)
-    
+
     # Test auxiliary Reaction properties on a standard non-range scan to ensure they fallback safely to 0.0
     # instead of raising NotImplementedError
     assert reaction_3.collision_energy_valid is True
@@ -112,14 +112,14 @@ def test_precursor_range_valid(prec_range_raw_file):
     # This AIF (All Ion Fragmentation) calibration file has a broadband scan filter string on MS2:
     # e.g., "ITMS + c NSI r d Full ms2 1500.00-3000.00"
     # Therefore, the reaction implicitly has a valid mass range instead of a center mass + isolation width.
-    
+
     scan_event = prec_range_raw_file.get_scan_event_for_scan_number(1)
     reaction = scan_event.get_reaction(0)
-    
+
     assert reaction.precursor_range_is_valid is True
     assert reaction.first_precursor_mass == pytest.approx(1500.0)
     assert reaction.last_precursor_mass == pytest.approx(3000.0)
-    
+
     # Precursor mass is usually reported as the center or fallback when a range is used
     # We mainly care that it doesn't crash and returns the range bounds correctly.
     assert reaction.collision_energy_valid is True
