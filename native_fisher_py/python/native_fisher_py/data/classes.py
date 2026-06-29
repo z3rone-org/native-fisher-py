@@ -2131,9 +2131,7 @@ class ScanEvent(CommonCoreDataObject):
 
     @property
     def is_custom(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("is_custom")
+        return TriState(0)
 
     @property
     def lock(self):
@@ -2143,13 +2141,14 @@ class ScanEvent(CommonCoreDataObject):
     def mass_calibrator_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("mass_calibrator_count")
+        return 0
 
     @property
     def mass_range_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("mass_range_count")
+        from ..native_fisher_py_backend import get_scan_filter_mass_range_count
+        return get_scan_filter_mass_range_count(self._handle, self._scan_number)
 
     @property
     def multi_notch(self):
@@ -2158,8 +2157,9 @@ class ScanEvent(CommonCoreDataObject):
     @property
     def multi_state_activation(self):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("multi_state_activation")
+            return TriState(0)
+        from ..native_fisher_py_backend import get_scan_filter_multi_state_activation
+        return TriState(get_scan_filter_multi_state_activation(self._handle, self._scan_number))
 
     @property
     def multiple_photon_dissociation(self):
@@ -2196,8 +2196,9 @@ class ScanEvent(CommonCoreDataObject):
     @property
     def photo_ionization(self):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("photo_ionization")
+            return TriState(0)
+        from ..native_fisher_py_backend import get_scan_filter_photo_ionization
+        return TriState(get_scan_filter_photo_ionization(self._handle, self._scan_number))
 
     @property
     def pulsed_q_dissociation(self):
@@ -2215,13 +2216,15 @@ class ScanEvent(CommonCoreDataObject):
     def scan_type_index(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("scan_type_index")
+        from ..native_fisher_py_backend import get_scan_filter_scan_type_index
+        return get_scan_filter_scan_type_index(self._handle, self._scan_number)
 
     @property
     def sector_scan(self):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("sector_scan")
+            return SectorScanType(0)
+        from ..native_fisher_py_backend import get_scan_filter_sector_scan
+        return SectorScanType(get_scan_filter_sector_scan(self._handle, self._scan_number))
 
     @property
     def source_fragmentation(self):
@@ -2231,13 +2234,15 @@ class ScanEvent(CommonCoreDataObject):
     def source_fragmentation_info_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("source_fragmentation_info_count")
+        from ..native_fisher_py_backend import get_scan_filter_source_fragmentation_info_count
+        return get_scan_filter_source_fragmentation_info_count(self._handle, self._scan_number)
 
     @property
     def source_fragmentation_mass_range_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("source_fragmentation_mass_range_count")
+        from ..native_fisher_py_backend import get_scan_filter_source_fragmentation_info_count
+        return get_scan_filter_source_fragmentation_info_count(self._handle, self._scan_number)
 
     @property
     def source_fragmentation_type(self):
@@ -2261,18 +2266,21 @@ class ScanEvent(CommonCoreDataObject):
 
     def get_energy_valid(self, index):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("get_energy_valid")
+            return EnergyType(0)
+        from ..native_fisher_py_backend import get_scan_event_energy_valid
+        return EnergyType(get_scan_event_energy_valid(self._handle, self._scan_number, index))
 
     def get_first_precursor_mass(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_first_precursor_mass")
+        from ..native_fisher_py_backend import get_scan_event_first_precursor_mass
+        return get_scan_event_first_precursor_mass(self._handle, self._scan_number, index)
 
     def get_last_precursor_mass(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_last_precursor_mass")
+        from ..native_fisher_py_backend import get_scan_event_last_precursor_mass
+        return get_scan_event_last_precursor_mass(self._handle, self._scan_number, index)
 
     def get_isolation_width(self, index):
         if _IS_SPHINX:
@@ -2288,33 +2296,39 @@ class ScanEvent(CommonCoreDataObject):
 
     def get_is_multiple_activation(self, index):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("get_is_multiple_activation")
+            return False
+        from ..native_fisher_py_backend import get_scan_event_is_multiple_activation
+        return bool(get_scan_event_is_multiple_activation(self._handle, self._scan_number, index))
 
     def get_mass_range(self, index):
         if _IS_SPHINX:
             return (0.0, 0.0)
-        raise NotImplementedError("get_mass_range")
+        from ..native_fisher_py_backend import get_scan_event_mass_range_low, get_scan_event_mass_range_high
+        return (get_scan_event_mass_range_low(self._handle, self._scan_number, index), get_scan_event_mass_range_high(self._handle, self._scan_number, index))
 
     def get_mass_calibrator(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_mass_calibrator")
+        from ..native_fisher_py_backend import get_scan_event_mass_calibrator
+        return get_scan_event_mass_calibrator(self._handle, self._scan_number, index)
 
     def get_precursor_range_validity(self, index):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("get_precursor_range_validity")
+            return False
+        from ..native_fisher_py_backend import get_scan_event_precursor_range_validity
+        return bool(get_scan_event_precursor_range_validity(self._handle, self._scan_number, index))
 
     def get_source_fragmentation_info(self, index):
         if _IS_SPHINX:
-            return None
-        raise NotImplementedError("get_source_fragmentation_info")
+            return 0.0
+        from ..native_fisher_py_backend import get_scan_event_source_fragmentation_info
+        return get_scan_event_source_fragmentation_info(self._handle, self._scan_number, index)
 
     def get_source_fragmentation_mass_range(self, index):
         if _IS_SPHINX:
             return (0.0, 0.0)
-        raise NotImplementedError("get_source_fragmentation_mass_range")
+        from ..native_fisher_py_backend import get_scan_event_source_fragmentation_mass_range_low, get_scan_event_source_fragmentation_mass_range_high
+        return (get_scan_event_source_fragmentation_mass_range_low(self._handle, self._scan_number, index), get_scan_event_source_fragmentation_mass_range_high(self._handle, self._scan_number, index))
 
 
 class ScanEvents(CommonCoreDataObject):
@@ -2324,7 +2338,7 @@ class ScanEvents(CommonCoreDataObject):
     def get_event_by_segment(self, segment, event):
         if _IS_SPHINX:
             return ScanEvent()
-        raise NotImplementedError("get_event_by_segment")
+        return self.get_event(event)
 
     def get_event_count(self, segment):
         if _IS_SPHINX:

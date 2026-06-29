@@ -3092,5 +3092,221 @@ namespace ThermoNativeReader
                 return -1;
             }
         }
-    }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_count")]
+        public static int GetScanFilterMassCount(int handle, int scanNumber)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassCount;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassCount: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_mass_range_count")]
+        public static int GetScanFilterMassRangeCount(int handle, int scanNumber)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassRangeCount;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassRangeCount: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_source_fragmentation_info_count")]
+        public static int GetScanFilterSourceFragmentationInfoCount(int handle, int scanNumber)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).SourceFragmentationInfoCount;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationInfoCount: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_scan_type_index")]
+        public static long GetScanFilterScanTypeIndex(int handle, int scanNumber)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                return (long)_rawFile.GetScanEventForScanNumber(scanNumber).ScanTypeIndex;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanTypeIndex: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_multi_state_activation")]
+        public static int GetScanFilterMultiStateActivation(int handle, int scanNumber)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MultiStateActivation;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiStateActivation: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_photo_ionization")]
+        public static int GetScanFilterPhotoIonization(int handle, int scanNumber)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).PhotoIonization;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterPhotoIonization: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_sector_scan")]
+        public static int GetScanFilterSectorScan(int handle, int scanNumber)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).SectorScan;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSectorScan: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_precursor_range_validity")]
+        public static int GetScanEventPrecursorRangeValidity(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetPrecursorRangeValidity(index);
+                return val ? 1 : 0;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventPrecursorRangeValidity: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_is_multiple_activation")]
+        public static int GetScanEventIsMultipleActivation(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetIsMultipleActivation(index);
+                return val ? 1 : 0;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventIsMultipleActivation: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_energy_valid")]
+        public static int GetScanEventEnergyValid(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergyValid(index);
+                return (int)val;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventEnergyValid: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_source_fragmentation_info")]
+        public static double GetScanEventSourceFragmentationInfo(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1.0;
+            try {
+                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetSourceFragmentationInfo(index);
+                return val;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventSourceFragmentationInfo: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_calibrator")]
+        public static double GetScanEventMassCalibrator(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1.0;
+            try {
+                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetMassCalibrator(index);
+                return val;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassCalibrator: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_range_low")]
+        public static double GetScanEventMassRangeLow(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1.0;
+            try {
+                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetMassRange(index);
+                return r.Low;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassRangeLow: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_mass_range_high")]
+        public static double GetScanEventMassRangeHigh(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1.0;
+            try {
+                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetMassRange(index);
+                return r.High;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassRangeHigh: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_source_fragmentation_mass_range_low")]
+        public static double GetScanEventSourceFragmentationMassRangeLow(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1.0;
+            try {
+                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetSourceFragmentationMassRange(index);
+                return r.Low;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventSourceFragmentationMassRangeLow: " + ex.Message);
+                return -1.0;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_event_source_fragmentation_mass_range_high")]
+        public static double GetScanEventSourceFragmentationMassRangeHigh(int handle, int scanNumber, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1.0;
+            try {
+                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetSourceFragmentationMassRange(index);
+                return r.High;
+            } catch (Exception ex) {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventSourceFragmentationMassRangeHigh: " + ex.Message);
+                return -1.0;
+            }
+        }    }
 }
