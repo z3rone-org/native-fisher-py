@@ -342,7 +342,7 @@ class RawFile(object):
         return ScanFilter(self._handle, scan_number)
 
     def get_scan_events(self, start, end): return []
-    def get_scan_dependents(self, scan_number, precision): return ScanDependents()
+    def get_scan_dependents(self, scan_number, ms_order=0): return ScanDependents(self._handle, scan_number, ms_order)
 
     @property
     def has_ms_data(self) -> bool:

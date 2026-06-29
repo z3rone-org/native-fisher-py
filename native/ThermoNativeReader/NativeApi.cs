@@ -1947,6 +1947,115 @@ namespace ThermoNativeReader
                 return 0;
             }
         }
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_dependents_instrument_type")]
+        public static int GetScanDependentsInstrumentType(int handle, int scanNumber, int msOrder)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var deps = _rawFile.GetScanDependents(scanNumber, msOrder);
+                return deps != null ? (int)deps.RawFileInstrumentType : -1;
+            } catch (Exception ex) { 
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanDependentsInstrumentType: " + ex.Message);
+                return -1; 
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_dependents_count")]
+        public static int GetScanDependentsCount(int handle, int scanNumber, int msOrder)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var deps = _rawFile.GetScanDependents(scanNumber, msOrder);
+                if (deps == null || deps.ScanDependentDetailArray == null) return -1;
+                return deps.ScanDependentDetailArray.Count();
+            } catch (Exception ex) { 
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanDependentsCount: " + ex.Message);
+                return -1; 
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_dependent_detail_scan_index")]
+        public static int GetScanDependentDetailScanIndex(int handle, int scanNumber, int msOrder, int detailIndex)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var deps = _rawFile.GetScanDependents(scanNumber, msOrder);
+                if (deps == null || deps.ScanDependentDetailArray == null) return -1;
+                var arr = deps.ScanDependentDetailArray.ToArray();
+                if (detailIndex < 0 || detailIndex >= arr.Length) return -1;
+                return arr[detailIndex].ScanIndex;
+            } catch (Exception ex) { 
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanDependentDetailScanIndex: " + ex.Message);
+                return -1; 
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_dependent_detail_filter_string")]
+        public static unsafe int GetScanDependentDetailFilterString(int handle, int scanNumber, int msOrder, int detailIndex, byte* buffer, int length)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var deps = _rawFile.GetScanDependents(scanNumber, msOrder);
+                if (deps == null || deps.ScanDependentDetailArray == null) return -1;
+                var arr = deps.ScanDependentDetailArray.ToArray();
+                if (detailIndex < 0 || detailIndex >= arr.Length) return -1;
+                var str = arr[detailIndex].FilterString ?? "";
+                var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+                int count = Math.Min(bytes.Length, length - 1);
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, (IntPtr)buffer, count);
+                buffer[count] = 0;
+                return count;
+            } catch (Exception ex) { 
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanDependentDetailFilterString: " + ex.Message);
+                return -1; 
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_dependent_detail_precursor_mass_array")]
+        public static unsafe int GetScanDependentDetailPrecursorMassArray(int handle, int scanNumber, int msOrder, int detailIndex, double* buffer, int length)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var deps = _rawFile.GetScanDependents(scanNumber, msOrder);
+                if (deps == null || deps.ScanDependentDetailArray == null) return -1;
+                var detArr = deps.ScanDependentDetailArray.ToArray();
+                if (detailIndex < 0 || detailIndex >= detArr.Length) return -1;
+                var arr = detArr[detailIndex].PrecursorMassArray;
+                if (arr == null) return -1;
+                int count = Math.Min(arr.Length, length);
+                System.Runtime.InteropServices.Marshal.Copy(arr, 0, (IntPtr)buffer, count);
+                return count;
+            } catch (Exception ex) { 
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanDependentDetailPrecursorMassArray: " + ex.Message);
+                return -1; 
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_dependent_detail_isolation_width_array")]
+        public static unsafe int GetScanDependentDetailIsolationWidthArray(int handle, int scanNumber, int msOrder, int detailIndex, double* buffer, int length)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null) return -1;
+            try {
+                var deps = _rawFile.GetScanDependents(scanNumber, msOrder);
+                if (deps == null || deps.ScanDependentDetailArray == null) return -1;
+                var detArr = deps.ScanDependentDetailArray.ToArray();
+                if (detailIndex < 0 || detailIndex >= detArr.Length) return -1;
+                var arr = detArr[detailIndex].IsolationWidthArray;
+                if (arr == null) return -1;
+                int count = Math.Min(arr.Length, length);
+                System.Runtime.InteropServices.Marshal.Copy(arr, 0, (IntPtr)buffer, count);
+                return count;
+            } catch (Exception ex) { 
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanDependentDetailIsolationWidthArray: " + ex.Message);
+                return -1; 
+            }
+        }
 
         [UnmanagedCallersOnly(EntryPoint = "get_scan_filter_ultra")]
         public static int GetScanFilterUltra(int handle, int scanNumber)

@@ -36,3 +36,11 @@ def prec_range_raw_file():
     raw = RawFile(path)
     yield raw
     raw.close()
+
+
+@pytest.fixture
+def orbitrap_raw_file():
+    path = os.path.join("test_data", "MS2_MS1_orbitrap.raw")
+    if not os.path.exists(path):
+        path = os.path.join("tests", path)
+    return RawFile(path)

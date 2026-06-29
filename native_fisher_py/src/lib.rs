@@ -1262,6 +1262,84 @@ fn get_scan_stats_scan_type(handle: i32, scan_number: i32) -> PyResult<Option<St
 }
 
 #[pyfunction]
+fn get_scan_dependents_instrument_type(handle: i32, scan_number: i32, ms_order: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_dependents_instrument_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependents_instrument_type: {}", e)))?;
+        Ok(func(handle, scan_number, ms_order))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependents_count(handle: i32, scan_number: i32, ms_order: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_dependents_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependents_count: {}", e)))?;
+        Ok(func(handle, scan_number, ms_order))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_scan_index(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32) -> i32> = lib.get(b"get_scan_dependent_detail_scan_index")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_scan_index: {}", e)))?;
+        Ok(func(handle, scan_number, ms_order, detail_index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_filter_string(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<Option<String>> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32, *mut u8, i32) -> i32> = lib.get(b"get_scan_dependent_detail_filter_string")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_filter_string: {}", e)))?;
+        let mut buffer = vec![0u8; 1024];
+        let len = func(handle, scan_number, ms_order, detail_index, buffer.as_mut_ptr(), buffer.len() as i32);
+        if len < 0 {
+            return Ok(None);
+        }
+        let s = String::from_utf8_lossy(&buffer[..len as usize]).into_owned();
+        Ok(Some(s))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_precursor_mass_array(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<Option<Vec<f64>>> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32, *mut f64, i32) -> i32> = lib.get(b"get_scan_dependent_detail_precursor_mass_array")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_precursor_mass_array: {}", e)))?;
+        let mut buffer = vec![0f64; 256];
+        let len = func(handle, scan_number, ms_order, detail_index, buffer.as_mut_ptr(), buffer.len() as i32);
+        if len < 0 {
+            return Ok(None);
+        }
+        buffer.truncate(len as usize);
+        Ok(Some(buffer))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_isolation_width_array(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<Option<Vec<f64>>> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32, *mut f64, i32) -> i32> = lib.get(b"get_scan_dependent_detail_isolation_width_array")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_isolation_width_array: {}", e)))?;
+        let mut buffer = vec![0f64; 256];
+        let len = func(handle, scan_number, ms_order, detail_index, buffer.as_mut_ptr(), buffer.len() as i32);
+        if len < 0 {
+            return Ok(None);
+        }
+        buffer.truncate(len as usize);
+        Ok(Some(buffer))
+    }
+}
+
+#[pyfunction]
 fn get_scan_filter_ultra(handle: i32, scan_number: i32) -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -1906,6 +1984,12 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_sample_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_vial, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_comment, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependents_instrument_type, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependents_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_scan_index, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_filter_string, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_precursor_mass_array, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_isolation_width_array, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_ultra, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_wideband, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_polarity, m)?)?;

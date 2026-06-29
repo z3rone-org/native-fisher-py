@@ -1009,14 +1009,31 @@ for cls in EnumBase.__subclasses__():
 
 
 class ScanDependentDetails(CommonCoreDataObject):
+    def __init__(self, handle, scan_number, ms_order, detail_index):
+        self._handle = handle
+        self._scan_number = scan_number
+        self._ms_order = ms_order
+        self._detail_index = detail_index
+
     @property
-    def filter_string(self): raise NotImplementedError
+    def filter_string(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_filter_string
+        return get_scan_dependent_detail_filter_string(self._handle, self._scan_number, self._ms_order, self._detail_index)
+
     @property
-    def isolation_width_array(self): raise NotImplementedError
+    def isolation_width_array(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_isolation_width_array
+        return get_scan_dependent_detail_isolation_width_array(self._handle, self._scan_number, self._ms_order, self._detail_index)
+
     @property
-    def precursor_mass_array(self): raise NotImplementedError
+    def precursor_mass_array(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_precursor_mass_array
+        return get_scan_dependent_detail_precursor_mass_array(self._handle, self._scan_number, self._ms_order, self._detail_index)
+
     @property
-    def scan_index(self): raise NotImplementedError
+    def scan_index(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_scan_index
+        return get_scan_dependent_detail_scan_index(self._handle, self._scan_number, self._ms_order, self._detail_index)
 
 
 class ErrorLogEntry(CommonCoreDataObject):
@@ -2435,17 +2452,27 @@ class FtAverageOptions(CommonCoreDataObject):
 
 
 class ScanDependents(CommonCoreDataObject):
+    def __init__(self, handle, scan_number, ms_order):
+        self._handle = handle
+        self._scan_number = scan_number
+        self._ms_order = ms_order
+
     @property
     def raw_file_instrument_type(self):
         if _IS_SPHINX:
             return 0
-        raise NotImplementedError("raw_file_instrument_type")
+        from ..native_fisher_py_backend import get_scan_dependents_instrument_type
+        return get_scan_dependents_instrument_type(self._handle, self._scan_number, self._ms_order)
 
     @property
     def scan_dependent_detail_array(self):
         if _IS_SPHINX:
             return []
-        raise NotImplementedError("scan_dependent_detail_array")
+        from ..native_fisher_py_backend import get_scan_dependents_count
+        count = get_scan_dependents_count(self._handle, self._scan_number, self._ms_order)
+        if count < 0:
+            return []
+        return [ScanDependentDetails(self._handle, self._scan_number, self._ms_order, i) for i in range(count)]
 
 
 class SequenceInfo(CommonCoreDataObject):
