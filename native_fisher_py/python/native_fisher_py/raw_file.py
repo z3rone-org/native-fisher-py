@@ -106,6 +106,11 @@ class RawFile(object):
     def scan_events(self) -> List[str]:
         return [self.get_scan_event_string_for_scan_number(i) for i in range(self.first_scan, min(self.first_scan + 10, self.last_scan + 1))]
 
+    @property
+    def method_scan_events(self):
+        from .data.classes import ScanEvents
+        return ScanEvents(self._handle)
+
     def __repr__(self):
         return f"<RawFile path='{self.path}' scans={self.number_of_scans}>"
 

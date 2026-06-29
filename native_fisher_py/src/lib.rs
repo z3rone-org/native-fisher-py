@@ -2182,6 +2182,36 @@ fn get_sample_user_text(handle: i32) -> PyResult<Vec<String>> {
     }
 }
 
+#[pyfunction]
+fn get_scan_events_segments(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_events_segments")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_events_segments: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_scan_events_count(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_events_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_events_count: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_scan_events_event_count_for_segment(handle: i32, segment: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_events_event_count_for_segment")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_events_event_count_for_segment: {}", e)))?;
+        Ok(func(handle, segment))
+    }
+}
+
 #[pymodule]
 fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
@@ -2355,6 +2385,9 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_x, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_y, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_events_segments, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_events_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_events_event_count_for_segment, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_barcode_status, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_calibration_file, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_calibration_level, m)?)?;

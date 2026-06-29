@@ -36,6 +36,6 @@ def test_metadata_from_mtbls773_uv():
         assert ai.tray_index == 0
         assert ai.vial_index == 42
         assert ai.tray_name == '1.8 ml Vial, 5 trays 40 vials each'
-        assert si.vial == ''
+        assert si.vial == 'B:2'
     finally:
         raw.close()

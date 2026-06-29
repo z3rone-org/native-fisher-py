@@ -67,6 +67,19 @@ namespace ThermoNativeReader
 
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
+        
+        private static IScanEvent ResolveScanEvent(int handle, int scanNumber)
+        {
+            var rawFile = GetFile(handle);
+            if (rawFile == null) return null;
+            if (scanNumber > 0) return rawFile.GetScanEventForScanNumber(scanNumber);
+            
+            int encoded = -scanNumber - 1;
+            int segment = encoded / 10000;
+            int eventIndex = encoded % 10000;
+            return rawFile.ScanEvents?.GetEvent(segment, eventIndex);
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "open_raw_file")]
         public static unsafe int OpenRawFile(byte* pathPtr)
         {
@@ -1045,7 +1058,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+                var scanEvent = ResolveScanEvent(handle, scanNumber);
                 return (int)scanEvent.MSOrder;
             }
             catch (Exception ex)
@@ -1066,7 +1079,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+                var scanEvent = ResolveScanEvent(handle, scanNumber);
                 return (int)scanEvent.MassAnalyzer;
             }
             catch (Exception ex)
@@ -1087,7 +1100,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+                var scanEvent = ResolveScanEvent(handle, scanNumber);
                 if (scanEvent.MSOrder == MSOrderType.Ms)
                     return 0.0;
                 return scanEvent.GetReaction(0).PrecursorMass;
@@ -1130,7 +1143,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+                var scanEvent = ResolveScanEvent(handle, scanNumber);
                 if (scanEvent == null)
                     return 0;
 
@@ -1651,7 +1664,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder;
+                return (int)ResolveScanEvent(handle, scanNumber).MSOrder;
             }
             catch (Exception ex)
             {
@@ -1671,7 +1684,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).MassCount;
+                return ResolveScanEvent(handle, scanNumber).MassCount;
             }
             catch (Exception ex)
             {
@@ -1691,7 +1704,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).PrecursorMass;
+                return ResolveScanEvent(handle, scanNumber).GetReaction(index).PrecursorMass;
             }
             catch (Exception ex)
             {
@@ -1711,7 +1724,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).CollisionEnergyValid ? 1 : 0;
+                return ResolveScanEvent(handle, scanNumber).GetReaction(index).CollisionEnergyValid ? 1 : 0;
             }
             catch (Exception ex)
             {
@@ -1731,7 +1744,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).FirstPrecursorMass;
+                return ResolveScanEvent(handle, scanNumber).GetReaction(index).FirstPrecursorMass;
             }
             catch (Exception ex)
             {
@@ -1751,7 +1764,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).LastPrecursorMass;
+                return ResolveScanEvent(handle, scanNumber).GetReaction(index).LastPrecursorMass;
             }
             catch (Exception ex)
             {
@@ -1771,7 +1784,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).MultipleActivation ? 1 : 0;
+                return ResolveScanEvent(handle, scanNumber).GetReaction(index).MultipleActivation ? 1 : 0;
             }
             catch (Exception ex)
             {
@@ -1791,7 +1804,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetReaction(index).PrecursorRangeIsValid ? 1 : 0;
+                return ResolveScanEvent(handle, scanNumber).GetReaction(index).PrecursorRangeIsValid ? 1 : 0;
             }
             catch (Exception ex)
             {
@@ -1811,7 +1824,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).GetActivation(index);
+                return (int)ResolveScanEvent(handle, scanNumber).GetActivation(index);
             }
             catch (Exception ex)
             {
@@ -1833,7 +1846,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidth(index);
+                return ResolveScanEvent(handle, scanNumber).GetIsolationWidth(index);
             }
             catch { return 0.0; }
         }
@@ -1849,7 +1862,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetIsolationWidthOffset(index);
+                return ResolveScanEvent(handle, scanNumber).GetIsolationWidthOffset(index);
             }
             catch { return 0.0; }
         }
@@ -1866,7 +1879,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergy(index);
+                return ResolveScanEvent(handle, scanNumber).GetEnergy(index);
             }
             catch (Exception ex)
             {
@@ -2068,7 +2081,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Ultra;
+                return (int)ResolveScanEvent(handle, scanNumber).Ultra;
             }
             catch (Exception ex)
             {
@@ -2088,7 +2101,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Wideband;
+                return (int)ResolveScanEvent(handle, scanNumber).Wideband;
             }
             catch (Exception ex)
             {
@@ -2108,7 +2121,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Polarity;
+                return (int)ResolveScanEvent(handle, scanNumber).Polarity;
             }
             catch (Exception ex)
             {
@@ -2128,7 +2141,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MSOrder;
+                return (int)ResolveScanEvent(handle, scanNumber).MSOrder;
             }
             catch (Exception ex)
             {
@@ -2148,7 +2161,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassAnalyzer;
+                return (int)ResolveScanEvent(handle, scanNumber).MassAnalyzer;
             }
             catch (Exception ex)
             {
@@ -2168,7 +2181,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Detector;
+                return (int)ResolveScanEvent(handle, scanNumber).Detector;
             }
             catch (Exception ex)
             {
@@ -2188,7 +2201,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanData;
+                return (int)ResolveScanEvent(handle, scanNumber).ScanData;
             }
             catch (Exception ex)
             {
@@ -2208,7 +2221,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).ScanMode;
+                return (int)ResolveScanEvent(handle, scanNumber).ScanMode;
             }
             catch (Exception ex)
             {
@@ -2228,7 +2241,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).AccurateMass;
+                return (int)ResolveScanEvent(handle, scanNumber).AccurateMass;
             }
             catch (Exception ex)
             {
@@ -2248,7 +2261,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).IonizationMode;
+                return (int)ResolveScanEvent(handle, scanNumber).IonizationMode;
             }
             catch (Exception ex)
             {
@@ -2268,7 +2281,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Lock;
+                return (int)ResolveScanEvent(handle, scanNumber).Lock;
             }
             catch (Exception ex)
             {
@@ -2288,7 +2301,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).TurboScan;
+                return (int)ResolveScanEvent(handle, scanNumber).TurboScan;
             }
             catch (Exception ex)
             {
@@ -2308,7 +2321,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Corona;
+                return (int)ResolveScanEvent(handle, scanNumber).Corona;
             }
             catch (Exception ex)
             {
@@ -2328,7 +2341,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).Dependent;
+                return (int)ResolveScanEvent(handle, scanNumber).Dependent;
             }
             catch (Exception ex)
             {
@@ -2348,7 +2361,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return _rawFile.GetScanEventForScanNumber(scanNumber).DetectorValue;
+                return ResolveScanEvent(handle, scanNumber).DetectorValue;
             }
             catch (Exception ex)
             {
@@ -2368,7 +2381,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).CompensationVoltage;
+                return (int)ResolveScanEvent(handle, scanNumber).CompensationVoltage;
             }
             catch (Exception ex)
             {
@@ -2388,7 +2401,7 @@ namespace ThermoNativeReader
             }
             try
             {
-                var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
+                var scanEvent = ResolveScanEvent(handle, scanNumber);
                 // Use reflection for properties that might not be in the base IScanEvent interface in some versions
                 var prop = scanEvent.GetType().GetProperty("CompensationVoltageValue");
                 if (prop != null)
@@ -3099,7 +3112,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassCount;
+                return (int)ResolveScanEvent(handle, scanNumber).MassCount;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassCount: " + ex.Message);
                 return -1;
@@ -3112,7 +3125,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MassRangeCount;
+                return (int)ResolveScanEvent(handle, scanNumber).MassRangeCount;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMassRangeCount: " + ex.Message);
                 return -1;
@@ -3125,7 +3138,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).SourceFragmentationInfoCount;
+                return (int)ResolveScanEvent(handle, scanNumber).SourceFragmentationInfoCount;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSourceFragmentationInfoCount: " + ex.Message);
                 return -1;
@@ -3138,7 +3151,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                return (long)_rawFile.GetScanEventForScanNumber(scanNumber).ScanTypeIndex;
+                return (long)ResolveScanEvent(handle, scanNumber).ScanTypeIndex;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterScanTypeIndex: " + ex.Message);
                 return -1;
@@ -3151,7 +3164,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).MultiStateActivation;
+                return (int)ResolveScanEvent(handle, scanNumber).MultiStateActivation;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterMultiStateActivation: " + ex.Message);
                 return -1;
@@ -3164,7 +3177,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).PhotoIonization;
+                return (int)ResolveScanEvent(handle, scanNumber).PhotoIonization;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterPhotoIonization: " + ex.Message);
                 return -1;
@@ -3177,7 +3190,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                return (int)_rawFile.GetScanEventForScanNumber(scanNumber).SectorScan;
+                return (int)ResolveScanEvent(handle, scanNumber).SectorScan;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanFilterSectorScan: " + ex.Message);
                 return -1;
@@ -3190,7 +3203,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetPrecursorRangeValidity(index);
+                var val = ResolveScanEvent(handle, scanNumber).GetPrecursorRangeValidity(index);
                 return val ? 1 : 0;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventPrecursorRangeValidity: " + ex.Message);
@@ -3204,7 +3217,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetIsMultipleActivation(index);
+                var val = ResolveScanEvent(handle, scanNumber).GetIsMultipleActivation(index);
                 return val ? 1 : 0;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventIsMultipleActivation: " + ex.Message);
@@ -3218,7 +3231,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1;
             try {
-                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetEnergyValid(index);
+                var val = ResolveScanEvent(handle, scanNumber).GetEnergyValid(index);
                 return (int)val;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventEnergyValid: " + ex.Message);
@@ -3232,7 +3245,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1.0;
             try {
-                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetSourceFragmentationInfo(index);
+                var val = ResolveScanEvent(handle, scanNumber).GetSourceFragmentationInfo(index);
                 return val;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventSourceFragmentationInfo: " + ex.Message);
@@ -3246,7 +3259,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1.0;
             try {
-                var val = _rawFile.GetScanEventForScanNumber(scanNumber).GetMassCalibrator(index);
+                var val = ResolveScanEvent(handle, scanNumber).GetMassCalibrator(index);
                 return val;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassCalibrator: " + ex.Message);
@@ -3260,7 +3273,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1.0;
             try {
-                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetMassRange(index);
+                var r = ResolveScanEvent(handle, scanNumber).GetMassRange(index);
                 return r.Low;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassRangeLow: " + ex.Message);
@@ -3274,7 +3287,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1.0;
             try {
-                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetMassRange(index);
+                var r = ResolveScanEvent(handle, scanNumber).GetMassRange(index);
                 return r.High;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventMassRangeHigh: " + ex.Message);
@@ -3288,7 +3301,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1.0;
             try {
-                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetSourceFragmentationMassRange(index);
+                var r = ResolveScanEvent(handle, scanNumber).GetSourceFragmentationMassRange(index);
                 return r.Low;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventSourceFragmentationMassRangeLow: " + ex.Message);
@@ -3302,7 +3315,7 @@ namespace ThermoNativeReader
             var _rawFile = GetFile(handle);
             if (_rawFile == null) return -1.0;
             try {
-                var r = _rawFile.GetScanEventForScanNumber(scanNumber).GetSourceFragmentationMassRange(index);
+                var r = ResolveScanEvent(handle, scanNumber).GetSourceFragmentationMassRange(index);
                 return r.High;
             } catch (Exception ex) {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventSourceFragmentationMassRangeHigh: " + ex.Message);
@@ -3547,6 +3560,57 @@ namespace ThermoNativeReader
             catch (Exception ex)
             {
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetSampleUserText: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_events_segments")]
+        public static int GetScanEventsSegments(int handle)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventsSegments: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try { return _rawFile.ScanEvents.Segments; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventsSegments: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_events_count")]
+        public static int GetScanEventsCount(int handle)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventsCount: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try { return _rawFile.ScanEvents.ScanEvents; }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventsCount: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_scan_events_event_count_for_segment")]
+        public static int GetScanEventsEventCountForSegment(int handle, int segment)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetScanEventsEventCountForSegment: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try { return _rawFile.ScanEvents.GetEventCount(segment); }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventsEventCountForSegment: " + ex.Message);
                 return -1;
             }
         }

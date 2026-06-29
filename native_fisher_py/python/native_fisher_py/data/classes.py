@@ -2061,7 +2061,7 @@ class ScanEvent(CommonCoreDataObject):
 
     @property
     def mass_analyzer(self) -> int:
-        return MassAnalyzer(get_scan_filter_mass_analyzer(self._scan_number))
+        return MassAnalyzer(get_scan_filter_mass_analyzer(self._handle, self._scan_number))
 
     @property
     def polarity(self) -> int:
@@ -2338,30 +2338,31 @@ class ScanEvent(CommonCoreDataObject):
 
 
 class ScanEvents(CommonCoreDataObject):
+    def __init__(self, handle=0):
+        self._handle = handle
+
     def get_event(self, index):
-        return ScanEvent(index + 1)
+        # We assume segment 0 for get_event, since some files don't use segments properly.
+        encoded = -(0 * 10000 + index + 1)
+        return ScanEvent(self._handle, encoded)
 
     def get_event_by_segment(self, segment, event):
-        if _IS_SPHINX:
-            return ScanEvent()
-        return self.get_event(event)
+        encoded = -(segment * 10000 + event + 1)
+        return ScanEvent(self._handle, encoded)
 
     def get_event_count(self, segment):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError("get_event_count")
+        from ..native_fisher_py_backend import get_scan_events_event_count_for_segment
+        return get_scan_events_event_count_for_segment(self._handle, segment)
 
     @property
     def scan_events(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("scan_events")
+        from ..native_fisher_py_backend import get_scan_events_count
+        return get_scan_events_count(self._handle)
 
     @property
     def segments(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError("segments")
+        from ..native_fisher_py_backend import get_scan_events_segments
+        return get_scan_events_segments(self._handle)
 
 
 class Range(object):
