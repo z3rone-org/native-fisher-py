@@ -298,7 +298,7 @@ def is_number(s: Any) -> bool:
     try:
         float(s)
         return True
-    except:
+    except BaseException:
         return False
 
 
