@@ -1037,10 +1037,19 @@ class ScanDependentDetails(CommonCoreDataObject):
 
 
 class ErrorLogEntry(CommonCoreDataObject):
+    def __init__(self, handle, index):
+        self._handle = handle
+        self._index = index
+
     @property
-    def message(self): raise NotImplementedError
+    def message(self):
+        from ..native_fisher_py_backend import get_error_log_item_message
+        return get_error_log_item_message(self._handle, self._index)
+
     @property
-    def retention_time(self): raise NotImplementedError
+    def retention_time(self):
+        from ..native_fisher_py_backend import get_error_log_item_retention_time
+        return get_error_log_item_retention_time(self._handle, self._index)
 
 
 class InstrumentSelection(CommonCoreDataObject):

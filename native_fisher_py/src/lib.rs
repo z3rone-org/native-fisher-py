@@ -2050,6 +2050,40 @@ pub fn get_scan_event_source_fragmentation_mass_range_high(handle: i32, scan_num
         Ok(func(handle, scan_number, index))
     }
 }
+#[pyfunction]
+fn get_error_log_items_count(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_error_log_items_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_error_log_items_count: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_error_log_item_message(handle: i32, index: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, *mut u8, i32) -> i32> = lib.get(b"get_error_log_item_message")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_error_log_item_message: {}", e)))?;
+        let res = func(handle, index, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_error_log_item_message failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_error_log_item_retention_time(handle: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> f64> = lib.get(b"get_error_log_item_retention_time")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_error_log_item_retention_time: {}", e)))?;
+        Ok(func(handle, index))
+    }
+}
+
 #[pymodule]
 fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
@@ -2223,6 +2257,9 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_x, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_y, m)?)?;
+    m.add_function(wrap_pyfunction!(get_error_log_items_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_error_log_item_message, m)?)?;
+    m.add_function(wrap_pyfunction!(get_error_log_item_retention_time, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }

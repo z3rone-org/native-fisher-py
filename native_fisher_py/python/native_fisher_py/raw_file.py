@@ -86,17 +86,17 @@ class RawFile(object):
     def get_instrument_methods_count(self) -> int:
         return get_instrument_method_count(self._handle)
 
-    def get_instrument_type(self): return 0
-    def get_segment_event_table(self): return []
+    def get_instrument_type(self): return 0  # FIXME: get from c#
+    def get_segment_event_table(self): return []  # FIXME: get from c#
     def has_instrument_method(self): return self.get_instrument_methods_count() > 0
 
     def is_centroid_scan_from_scan_number(self, scan_number):
         return is_centroid(self._handle, scan_number)
 
-    def refresh_view_of_file(self): pass
+    def refresh_view_of_file(self): pass  # FIXME: get from c#
     @property
-    def selected_instrument(self): return 0
-    def status_log_plottable_data(self): return []
+    def selected_instrument(self): return 0  # FIXME: get from c#
+    def status_log_plottable_data(self): return []  # FIXME: get from c#
 
     @property
     def user_label(self) -> List[str]:
@@ -349,11 +349,14 @@ class RawFile(object):
         return has_ms_data(self._handle)
 
     def get_scan_type(self, scan_number: int):
-        return ""
+        return ""  # FIXME: get from c#
+
+    def get_error_log_items_count(self):
+        return get_error_log_items_count(self._handle)
 
     def get_error_log_item(self, index: int):
         from .data.classes import ErrorLogEntry
-        return ErrorLogEntry()
+        return ErrorLogEntry(self._handle, index)
 
     def get_tune_data_header_information(self, index: int):
         return []
@@ -364,7 +367,7 @@ class RawFile(object):
 
     @property
     def instrument_methods_count(self) -> int:
-        return 0
+        return 0  # FIXME: get from c#
 
     @property
     def instrument_count(self) -> int:
@@ -396,7 +399,7 @@ class RawFile(object):
         pmz = precursor_mz if precursor_mz is not None else 0.0
         scan_number = get_ms2_scan_number_from_rt(self._handle, rt, pmz, 1.0)
         if scan_number < 1:
-            return 0, 0.0
+            return -1, -1.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
     def get_scan_event_str_from_scan_number(self, scan_number: int) -> str:

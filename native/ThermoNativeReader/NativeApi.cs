@@ -3308,5 +3308,74 @@ namespace ThermoNativeReader
                 Console.Error.WriteLine("[native-fisher-py] Exception in GetScanEventSourceFragmentationMassRangeHigh: " + ex.Message);
                 return -1.0;
             }
-        }    }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_error_log_items_count")]
+        public static int GetErrorLogItemsCount(int handle)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetErrorLogItemsCount: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try
+            {
+                return ((IRunHeader)_rawFile.RunHeader).ErrorLogCount;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetErrorLogItemsCount: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_error_log_item_message")]
+        public static unsafe int GetErrorLogItemMessage(int handle, int index, byte* buffer, int bufferSize)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetErrorLogItemMessage: RawFile handle is invalid or null.");
+                return -1;
+            }
+            try
+            {
+                var reader = (IDetectorReaderPlus)_rawFile;
+                var item = reader.GetErrorLogItem(index);
+                if (item == null || item.Message == null) return -1;
+                var bytes = System.Text.Encoding.UTF8.GetBytes(item.Message);
+                if (bytes.Length >= bufferSize) return -1;
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
+                buffer[bytes.Length] = 0;
+                return bytes.Length;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetErrorLogItemMessage: " + ex.Message);
+                return -1;
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "get_error_log_item_retention_time")]
+        public static double GetErrorLogItemRetentionTime(int handle, int index)
+        {
+            var _rawFile = GetFile(handle);
+            if (_rawFile == null)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Error in GetErrorLogItemRetentionTime: RawFile handle is invalid or null.");
+                return -1.0;
+            }
+            try
+            {
+                var reader = (IDetectorReaderPlus)_rawFile;
+                return reader.GetErrorLogItem(index).RetentionTime;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetErrorLogItemRetentionTime: " + ex.Message);
+                return -1.0;
+            }
+        }
+    }
 }
