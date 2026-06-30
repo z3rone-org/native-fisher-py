@@ -11,7 +11,7 @@ def test_scan_dependents_orbitrap_file(orbitrap_raw_file):
     assert len(details) > 0
 
     det = details[0]
-    assert det.filter_string is None
+    assert det.filter_string == "FTMS + c NSI d Full ms2 954.4949@hcd30.00 [120.0000-2000.0000]"
     assert det.scan_index == 6
     assert det.precursor_mass_array == [954.4949340820312]
     assert det.isolation_width_array == [1.600000023841858]

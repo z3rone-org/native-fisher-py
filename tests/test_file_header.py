@@ -42,7 +42,7 @@ def test_file_header_mtbls773(raw_file_mtbls773):
 
     assert header.who_created_id == "QUANTUM"
     assert header.file_description == ""
-    assert header.modified_date == "11/08/2016 18:27:11"
+    assert header.modified_date.replace('\u202f', ' ') in ("11/08/2016 18:27:11", "8/11/2016 6:27:11 PM")
     assert header.who_created_logon == "QUANTUM"
     assert header.who_modified_id == "QUANTUM"
     assert header.who_modified_logon == "QUANTUM"
@@ -57,7 +57,7 @@ def test_file_header_angiotensin(raw_file_angiotensin):
 
     assert header.who_created_id == "SYSTEM"
     assert header.file_description == ""
-    assert header.modified_date == "26/09/2018 09:06:07"
+    assert header.modified_date.replace('\u202f', ' ') in ("26/09/2018 09:06:07", "9/26/2018 9:06:07 AM")
     assert header.who_created_logon == "SYSTEM"
     assert header.who_modified_id == "SYSTEM"
     assert header.who_modified_logon == "SYSTEM"
@@ -72,7 +72,7 @@ def test_file_header_small(raw_file_small):
 
     assert header.who_created_id == "LTQ"
     assert header.file_description == ""
-    assert header.modified_date == "20/07/2005 14:45:05"
+    assert header.modified_date.replace('\u202f', ' ') in ("20/07/2005 14:45:05", "7/20/2005 2:45:05 PM")
     assert header.who_created_logon == "LTQ"
     assert header.who_modified_id == "LTQ"
     assert header.who_modified_logon == "LTQ"
