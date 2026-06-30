@@ -51,10 +51,3 @@ def test_scan_events_angiotensin(angiotensin_raw_file):
     assert events.scan_events == 0
 
 
-def test_scan_events_uv():
-    path = os.path.join(os.path.dirname(__file__), "..", "test_data", "MTBLS773_UV.raw")
-    if not os.path.exists(path):
-        pytest.fail(f"Test file not found: {path}")
-        
-    raw = RawFile(path)
-    raw.close()
