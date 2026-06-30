@@ -66,10 +66,12 @@ namespace ThermoNativeReader
             
             // Array types needed for Enum.GetValues<T> used by reflection in ThermoFisher static constructors
             var arr1 = new ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[0];
+            var arr2 = new ThermoFisher.CommonCore.Data.Business.Device[0];
         }
 
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, "ThermoFisher.CommonCore.Data.Business.Device", "ThermoFisher.CommonCore.Data")]
         
         private static IScanEvent ResolveScanEvent(int handle, int scanNumber)
         {
@@ -148,7 +150,7 @@ namespace ThermoNativeReader
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("[native-fisher-py] Exception in GetNumScans: " + ex.Message);
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetNumScans: " + ex.ToString());
                 return -1;
             }
         }
@@ -1601,7 +1603,7 @@ namespace ThermoNativeReader
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.Message);
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetStatusLogCount (fallback -1): " + ex.ToString());
                 return -1;
             }
         }
@@ -1651,7 +1653,7 @@ namespace ThermoNativeReader
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("[native-fisher-py] Exception in GetTrailerExtraCount (fallback -1): " + ex.Message);
+                Console.Error.WriteLine("[native-fisher-py] Exception in GetTrailerExtraCount (fallback -1): " + ex.ToString());
                 return -1;
             }
         }
@@ -2924,7 +2926,10 @@ namespace ThermoNativeReader
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("[native-fisher-py] Exception in SelectInstrument (ignored): " + ex.Message);
+                if (ex.GetType().Name != "NullReferenceException")
+                {
+                    Console.Error.WriteLine("[native-fisher-py] Exception in SelectInstrument (ignored): " + ex.Message);
+                }
             }
         }
 

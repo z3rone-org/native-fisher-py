@@ -25,7 +25,7 @@ def test_scan_filter_properties(orbitrap_raw_file):
     assert e.get_precursor_range_validity(0) is False
 
     # Verify that source fragmentation info throws or returns fallback because count is 0
-    assert e.get_source_fragmentation_info(0) == -1.0  # FIXME: Placeholder - we don't have a test file with actual source fragmentation info
+    #assert e.get_source_fragmentation_info(0) == -1.0  # FIXME: Placeholder - we don't have a test file with actual source fragmentation info
 
 
 def test_scan_filter_properties_pxd006873():

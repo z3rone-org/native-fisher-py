@@ -240,7 +240,6 @@ class RawFile(object):
         from .data.classes import CentroidStream
         import numpy as np
 
-        print(f"Calling get_centroid_stream with handle={self._handle}, scan={scan_number}")
         masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(
             self._handle, scan_number, 1000000)
 

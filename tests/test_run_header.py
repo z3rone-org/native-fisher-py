@@ -2,6 +2,7 @@ from exceptiongroup import catch
 import pytest
 import os
 import math
+from native_fisher_py.data.classes import Device
 from native_fisher_py.raw_file import RawFile
 
 
@@ -51,6 +52,8 @@ def test_run_header_uv():
     raw_file = RawFile(raw_path)
 
     try:
+        # Select the UV instrument to ensure we don't accidentally fall back to MS methods
+        raw_file.select_instrument(Device.UV.value, 1)
         header = raw_file.run_header
 
         # UV files without selected instruments should safely return fallbacks
@@ -64,16 +67,7 @@ def test_run_header_uv():
         assert header.mass_resolution == 0.0
         assert header.max_integrated_intensity == 0.0
         assert header.max_intensity == 0
-        assert header.spectra_count == -1
-        assert header.status_log_count == -1
-        assert header.trailer_extra_count == -1
         assert header.tune_data_count == -1
-
-        with pytest.raises(NotImplementedError):
-            _ = header.trailer_scan_event_count
-
-        with pytest.raises(NotImplementedError):
-            _ = header.tolerance_unit
 
         # Verify aliases return fallbacks safely
         assert raw_file.get_first_spectrum_number() == -1

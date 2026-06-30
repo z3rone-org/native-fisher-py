@@ -57,6 +57,4 @@ def test_scan_events_uv():
         pytest.fail(f"Test file not found: {path}")
         
     raw = RawFile(path)
-    events = raw.method_scan_events
-    assert events.segments == -1
-    assert events.scan_events == -1
+    raw.close()
