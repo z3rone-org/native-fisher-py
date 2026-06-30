@@ -63,6 +63,9 @@ namespace ThermoNativeReader
             var t = typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType);
             var t2 = typeof(ThermoFisher.CommonCore.Data.Business.CentroidStream);
             var t3 = typeof(ThermoFisher.CommonCore.Data.Interfaces.IScanFilter);
+            
+            // Array types needed for Enum.GetValues<T> used by reflection in ThermoFisher static constructors
+            var arr1 = new ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType[0];
         }
 
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ThermoFisher.CommonCore.Data.Interfaces.MetaFilterType))]
@@ -1956,7 +1959,7 @@ namespace ThermoNativeReader
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("[native-fisher-py] Warning in GetScanStatsScanType: " + ex.Message);
+                Console.Error.WriteLine("[native-fisher-py] Warning in GetScanStatsScanType: " + ex.ToString());
                 return 0;
             }
         }
