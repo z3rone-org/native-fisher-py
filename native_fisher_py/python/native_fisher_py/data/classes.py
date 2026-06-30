@@ -601,19 +601,19 @@ class MassAnalyzer(EnumBase):
     ITMS = 1
     TQMS = 2
     SQMS = 3
-    TOFMS = 4
-    FTMS = 5
+    FTMS = 4
+    TOFMS = 5
     Sector = 6
-    MassAnalyzerFTMS = 5
     MassAnalyzerITMS = 1
-    MassAnalyzerSQMS = 3
-    MassAnalyzerSector = 6
-    MassAnalyzerTOFMS = 4
     MassAnalyzerTQMS = 2
+    MassAnalyzerSQMS = 3
+    MassAnalyzerFTMS = 4
+    MassAnalyzerTOFMS = 5
+    MassAnalyzerSector = 6
 
 
-for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 4, "FTMS": 5, "Sector": 6, "MassAnalyzerFTMS": 5,
-                  "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 4, "MassAnalyzerTQMS": 2}.items():
+for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 5, "FTMS": 4, "Sector": 6, "MassAnalyzerFTMS": 4,
+                  "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 5, "MassAnalyzerTQMS": 2}.items():
     inst = MassAnalyzer(val)
     inst.name = name
     setattr(MassAnalyzer, name, inst)
@@ -805,8 +805,8 @@ class ActivationType(EnumBase):
     CollisionInducedDissociation = 1
     ElectronCaptureDissociation = 2
     ElectronTransferDissociation = 3
-    HigherEnergyCollisionalDissociation = 4
-    MultiPhotonDissociation = 5
+    MultiPhotonDissociation = 4
+    HigherEnergyCollisionalDissociation = 5
     PQD = 6
     SAactivation = 7
     UltraVioletPhotoDissociation = 8
