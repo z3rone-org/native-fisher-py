@@ -62,6 +62,12 @@ class RawFile(object):
             raise RawFileException(f"Could not open RAW file: {path}")
         self._is_open = True
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     @staticmethod
     def file_factory(path: str):
         return RawFile(path)
@@ -193,10 +199,14 @@ class RawFile(object):
 
     @property
     def is_open(self) -> bool:
+        if not hasattr(self, "_handle") or self._handle < 0:
+            return False
         return is_open(self._handle)
 
     @property
     def is_error(self) -> bool:
+        if not hasattr(self, "_handle") or self._handle < 0:
+            return True
         return is_error(self._handle)
 
     @property
