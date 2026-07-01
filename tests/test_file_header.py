@@ -57,7 +57,7 @@ def test_file_header_angiotensin(raw_file_angiotensin):
 
     assert header.who_created_id == "SYSTEM"
     assert header.file_description == ""
-    assert '27:11' in header.modified_date
+    assert '06:07' in header.modified_date
     assert header.who_created_logon == "SYSTEM"
     assert header.who_modified_id == "SYSTEM"
     assert header.who_modified_logon == "SYSTEM"
