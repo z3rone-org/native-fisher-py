@@ -90,3 +90,22 @@ maturin develop
 This project is powered by the [**Thermo Fisher Scientific RawFileReader**](https://github.com/thermofisherlsms/RawFileReader) (copyright © 2016-2026 Thermo Fisher Scientific, Inc.). All rights reserved.
 
 The `native-fisher-py` package includes the official RawFileReader libraries, which remain the property of Thermo Fisher Scientific. By using this software, you agree to the terms specified in their [license](https://github.com/thermofisherlsms/RawFileReader/blob/main/License.doc).
+
+## Releasing a New Version
+Releases are fully automated via GitHub Actions (`release.yml`), but the workflow **requires** that the git tag strictly matches the version in `native_fisher_py/Cargo.toml`.
+
+To trigger a new release and publish to PyPI:
+
+1. Update the version in `native_fisher_py/Cargo.toml`.
+2. Commit the version bump.
+3. Create and push a matching git tag:
+
+```bash
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+The GitHub Action will automatically:
+1. Verify that the git tag version matches the `Cargo.toml` version (failing otherwise).
+2. Build the native wheels across all platforms (macOS, Linux, Windows).
+3. Publish the final artifacts to PyPI.

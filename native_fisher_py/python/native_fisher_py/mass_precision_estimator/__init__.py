@@ -1,6 +1,7 @@
 class EstimatorResults:
     pass
 
+
 class PrecisionEstimate:
     def __init__(self, raw_file=None, scan_number=0):
         self.raw_file = raw_file

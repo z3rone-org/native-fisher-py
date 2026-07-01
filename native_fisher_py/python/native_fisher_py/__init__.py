@@ -1,8 +1,35 @@
+from . import raw_file as raw_file_mod
+from . import raw_file_reader as raw_file_reader_mod
+from . import net_wrapping as net_wrapping_mod
+from . import utils as utils_mod
+from . import data as data_mod
+from .raw_file import RawFile
+from .exceptions import (
+    RawFileException, CoreException, NoSelectedDeviceException, NoSelectedMsDeviceException
+)
+from .data import (
+    CommonCoreDataObject, Device, MSOrder, MassAnalyzer, TraceType,
+    InstrumentData, SampleInformation, FileHeader, FileError, ScanEvent,
+    ScanEvents, ScanFilter, RunHeader, RunHeaderEx, ScanStatistics,
+    SegmentedScan, CentroidStream, ScanDependents, ErrorLogEntry,
+    LogEntry, HeaderItem, StatusLogValues, TuneDataValues, Reaction, Scan,
+    ChromatogramSignal, MassOptions, Range,
+    FtAverageOptions, ChromatogramTraceSettings
+)
 import os
 import sys
 import platform
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("native-fisher-py")
+except PackageNotFoundError:
+    # package is not installed
+    __version__ = "unknown"
 
 # Find and initialize the native library
+
+
 def _init_native_backend():
     # Library file name based on OS
     ext = "dll" if platform.system() == "Windows" else "dylib" if platform.system() == "Darwin" else "so"
@@ -27,39 +54,23 @@ def _init_native_backend():
     # 3. Development fallback (local workspace)
     rid = "linux-x64" if platform.system() == "Linux" else \
           "osx-arm64" if platform.machine() == "arm64" else "osx-x64" if platform.system() == "Darwin" else "win-x64"
-    
-    dev_path = os.path.abspath(os.path.join(base_path, "..", "..", "..", "native", "ThermoNativeReader", "bin", "Release", "net8.0", rid, "publish", lib_name))
+
+    dev_path = os.path.abspath(os.path.join(base_path, "..", "..", "..", "native",
+                               "ThermoNativeReader", "bin", "Release", "net8.0", rid, "publish", lib_name))
     if os.path.exists(dev_path):
         from .native_fisher_py_backend import set_dylib_path
         set_dylib_path(dev_path)
         os.environ["THERMO_NATIVE_LIB"] = dev_path
 
+
 _init_native_backend()
 
-from .data import (
-    CommonCoreDataObject, Device, MSOrder, MassAnalyzer, TraceType, 
-    InstrumentData, SampleInformation, FileHeader, FileError, ScanEvent, 
-    ScanEvents, ScanFilter, RunHeader, RunHeaderEx, ScanStatistics, 
-    SegmentedScan, CentroidStream, ScanDependents, ErrorLogEntry, 
-    LogEntry, HeaderItem, StatusLogValues, TuneDataValues, Reaction, Scan,
-    ChromatogramSignal, MassOptions, Range,
-    FtAverageOptions, ChromatogramTraceSettings
-)
-from .exceptions import (
-    RawFileException, CoreException, NoSelectedDeviceException, NoSelectedMsDeviceException
-)
-from .raw_file import RawFile
-from . import data as data_mod
-from . import utils as utils_mod
-from . import net_wrapping as net_wrapping_mod
-from . import raw_file_reader as raw_file_reader_mod
 
 # Aliases for parity
 data = data_mod.data
 utils = utils_mod
 net_wrapping = net_wrapping_mod
 raw_file_reader = raw_file_reader_mod
-from . import raw_file as raw_file_mod
 raw_file = raw_file_mod
 
 # Initialize the reader submodules

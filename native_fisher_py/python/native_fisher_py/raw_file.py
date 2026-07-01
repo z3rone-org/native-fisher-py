@@ -1,17 +1,16 @@
-import os
-import threading
-_chdir_lock = threading.Lock()
-import numpy as np
-from typing import List, Tuple
-from .native_fisher_py_backend import *
+from .exceptions import RawFileException
 from .data import (
-    CommonCoreDataObject, InstrumentData, RunHeader, RunHeaderEx, SampleInformation, 
-    InstrumentSelection, FileHeader, FileError, AutoSamplerInformation, ScanEvent, 
-    ScanEvents, ScanStatistics, SegmentedScan, CentroidStream, ScanDependents, 
+    InstrumentData, RunHeader, RunHeaderEx, SampleInformation,
+    InstrumentSelection, FileHeader, FileError, AutoSamplerInformation, ScanDependents,
     MassOptions, Range, TraceType, Device, MassAnalyzerType, MsOrderType,
     ChromatogramTraceSettings, FtAverageOptions, ToleranceUnits
 )
-from .exceptions import RawFileException
+from .native_fisher_py_backend import *
+from typing import List, Tuple
+import numpy as np
+import os
+import threading
+_chdir_lock = threading.Lock()
 
 # Aliases for parity
 ToleranceUnits = ToleranceUnits
@@ -25,26 +24,31 @@ MassOptions = MassOptions
 ChromatogramTraceSettings = ChromatogramTraceSettings
 FtAverageOptions = FtAverageOptions
 Device = Device
+
+
 class RawFileReaderAdapter(object):
     @staticmethod
     def file_factory(path: str):
         return RawFile(path)
 
+
 __all__ = [
-    'RawFile', 'MsOrderType', 'MassAnalyzerType', 'Range', 
+    'RawFile', 'MsOrderType', 'MassAnalyzerType', 'Range',
     'ToleranceUnits', 'TraceType', 'np', 'RawFileException'
 ]
+
 
 class RawFile(object):
     """
     A high-level wrapper to provide a drop-in replacement for fisher_py.RawFile
     """
+
     def __init__(self, path: str):
         self._path = path
         real_path = os.path.realpath(path)
         if not os.path.isfile(real_path):
             raise FileNotFoundError(f'No raw file with path "{path}" found.')
-        
+
         dll_dir = os.path.dirname(__file__)
         with _chdir_lock:
             original_cwd = os.getcwd()
@@ -53,10 +57,16 @@ class RawFile(object):
                 self._handle = open_raw_file(real_path)
             finally:
                 os.chdir(original_cwd)
-                
+
         if getattr(self, "_handle", -1) < 0:
             raise RawFileException(f"Could not open RAW file: {path}")
         self._is_open = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     @staticmethod
     def file_factory(path: str):
@@ -75,19 +85,24 @@ class RawFile(object):
     def default_mass_options(self): return MassOptions()
     def dispose(self): self.close()
     def get_all_instrument_names_from_instrument_method(self): return []
-    def get_instrument_method(self, index): 
+
+    def get_instrument_method(self, index):
         return get_instrument_method(self._handle, index)
+
     def get_instrument_methods_count(self) -> int:
         return get_instrument_method_count(self._handle)
-    def get_instrument_type(self): return 0
-    def get_segment_event_table(self): return []
+
+    def get_instrument_type(self): return 0  # FIXME: get from c#
+    def get_segment_event_table(self): return []  # FIXME: get from c#
     def has_instrument_method(self): return self.get_instrument_methods_count() > 0
+
     def is_centroid_scan_from_scan_number(self, scan_number):
         return is_centroid(self._handle, scan_number)
-    def refresh_view_of_file(self): pass
+
+    def refresh_view_of_file(self): pass  # FIXME: get from c#
     @property
-    def selected_instrument(self): return 0
-    def status_log_plottable_data(self): return []
+    def selected_instrument(self): return 0  # FIXME: get from c#
+    def status_log_plottable_data(self): return []  # FIXME: get from c#
 
     @property
     def user_label(self) -> List[str]:
@@ -96,6 +111,11 @@ class RawFile(object):
     @property
     def scan_events(self) -> List[str]:
         return [self.get_scan_event_string_for_scan_number(i) for i in range(self.first_scan, min(self.first_scan + 10, self.last_scan + 1))]
+
+    @property
+    def method_scan_events(self):
+        from .data.classes import ScanEvents
+        return ScanEvents(self._handle)
 
     def __repr__(self):
         return f"<RawFile path='{self.path}' scans={self.number_of_scans}>"
@@ -112,9 +132,15 @@ class RawFile(object):
     def first_scan(self) -> int:
         return get_first_scan(self._handle)
 
+    def get_first_spectrum_number(self) -> int:
+        return self.first_scan
+
     @property
     def last_scan(self) -> int:
         return get_last_scan(self._handle)
+
+    def get_last_spectrum_number(self) -> int:
+        return self.last_scan
 
     @property
     def file_name(self) -> str:
@@ -173,10 +199,14 @@ class RawFile(object):
 
     @property
     def is_open(self) -> bool:
+        if not hasattr(self, "_handle") or self._handle < 0:
+            return False
         return is_open(self._handle)
 
     @property
     def is_error(self) -> bool:
+        if not hasattr(self, "_handle") or self._handle < 0:
+            return True
         return is_error(self._handle)
 
     @property
@@ -209,11 +239,12 @@ class RawFile(object):
         from .native_fisher_py_backend import get_centroid_stream
         from .data.classes import CentroidStream
         import numpy as np
-        
-        print(f"Calling get_centroid_stream with handle={self._handle}, scan={scan_number}"); masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(self._handle, scan_number, 1000000)
-        
+
+        masses, intensities, baselines, noises, charges, bp_noise, bp_res = get_centroid_stream(
+            self._handle, scan_number, 1000000)
+
         return CentroidStream(
-            masses=np.array(masses), 
+            masses=np.array(masses),
             intensities=np.array(intensities),
             baselines=np.array(baselines),
             noises=np.array(noises),
@@ -223,7 +254,7 @@ class RawFile(object):
             scan_number=scan_number
         )
 
-    def get_segmented_scan_from_scan_number(self, scan_number: int, stats = None):
+    def get_segmented_scan_from_scan_number(self, scan_number: int, stats=None):
         from .native_fisher_py_backend import get_spectrum
         from .data.classes import SegmentedScan
         masses, intensities = get_spectrum(self._handle, scan_number, 1000000)
@@ -231,8 +262,9 @@ class RawFile(object):
 
     def get_scan_stats_for_scan_number(self, scan_number: int):
         from .data.classes import ScanStatistics
-        from .native_fisher_py_backend import get_scan_stats
+        from .native_fisher_py_backend import get_scan_stats, get_scan_stats_scan_type
         data = get_scan_stats(self._handle, scan_number)
+        scan_type = get_scan_stats_scan_type(self._handle, scan_number)
         return ScanStatistics(
             start_time=data[0],
             low_mass=data[1],
@@ -241,47 +273,61 @@ class RawFile(object):
             base_peak_mass=data[4],
             base_peak_intensity=data[5],
             packet_count=int(data[6]),
-            is_centroid_scan=bool(data[7])
+            is_centroid_scan=bool(data[7]),
+            absorbance_unit_scale=data[8],
+            cycle_number=int(data[9]),
+            frequency=data[10],
+            is_uniform_time=bool(data[11]),
+            long_wavelength=data[12],
+            number_of_channels=int(data[13]),
+            packet_type=int(data[14]),
+            scan_event_number=int(data[15]),
+            segment_number=int(data[16]),
+            short_wavelength=data[17],
+            spectrum_packet_type=int(data[18]),
+            wavelength_step=data[19],
+            scan_type=scan_type
         )
 
-    def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance = None):
+    def get_chromatogram_data(self, settings, start_scan, end_scan, tolerance=None):
         from .data.classes import ChromatogramData
         if not isinstance(settings, list):
             settings = [settings]
-        
+
         all_times = []
         all_intensities = []
         all_scans = []
         for s in settings:
             trace_type = s.trace.value if hasattr(s.trace, 'value') else int(s.trace)
             filter_str = s.filter if s.filter else ""
-            
+
             starts = [float(r.low) for r in s.mass_ranges]
             ends = [float(r.high) for r in s.mass_ranges]
-            
-            times, intensities = get_chromatogram(self._handle, trace_type, filter_str, starts, ends, start_scan, end_scan, 1000000)
+
+            times, intensities = get_chromatogram(self._handle, trace_type, filter_str,
+                                                  starts, ends, start_scan, end_scan, 1000000)
             all_times.append(times)
             all_intensities.append(intensities)
-            all_scans.append([]) # Empty scans for now
-            
+            all_scans.append([])  # Empty scans for now
+
         return ChromatogramData(all_times, all_intensities, all_scans)
 
     def get_instrument_count_of_type(self, device_type):
         return get_instrument_count_of_type(self._handle, device_type)
 
-    def get_trailer_extra_information(self, scan_number): 
+    def get_trailer_extra_information(self, scan_number):
         from .data.classes import LogEntry
         labels = [h.label for h in self.get_trailer_extra_header_information()]
         return LogEntry(get_trailer_extra_values(self._handle, scan_number), labels)
 
-    def get_trailer_extra_header_information(self): 
+    def get_trailer_extra_header_information(self):
         from .data.classes import HeaderItem
         return [HeaderItem(h) for h in get_trailer_extra_header(self._handle)]
 
-    def get_trailer_extra_values(self, scan_number, formatted=False): 
+    def get_trailer_extra_values(self, scan_number, formatted=False):
         return get_trailer_extra_values(self._handle, scan_number)
 
-    def get_status_log_header_information(self): 
+    def get_status_log_header_information(self):
         from .data.classes import HeaderItem
         return [HeaderItem(h) for h in get_status_log_header(self._handle)]
 
@@ -290,34 +336,41 @@ class RawFile(object):
         labels = [h.label for h in self.get_status_log_header_information()]
         return LogEntry(get_status_log_values(self._handle, scan_number), labels)
 
-    def get_status_log_entries_count(self): 
+    def get_status_log_entries_count(self):
         return get_status_log_count(self._handle)
 
     def get_status_log_for_retention_time(self, rt):
         from .data.classes import LogEntry
         labels = [h.label for h in self.get_status_log_header_information()]
         return LogEntry(get_status_log_values_for_rt(self._handle, rt), labels)
-    def get_tune_data_count(self): 
+
+    def get_tune_data_count(self):
         return get_tune_data_count(self._handle)
+
     def get_tune_data(self, index): return None
     def get_filters(self): return get_filters(self._handle)
     def get_auto_filters(self): return []
+
     def get_filter_for_scan_number(self, scan_number):
         from .data.classes import ScanFilter
         return ScanFilter(self._handle, scan_number)
+
     def get_scan_events(self, start, end): return []
-    def get_scan_dependents(self, scan_number, precision): return ScanDependents()
+    def get_scan_dependents(self, scan_number, ms_order=0): return ScanDependents(self._handle, scan_number, ms_order)
 
     @property
     def has_ms_data(self) -> bool:
         return has_ms_data(self._handle)
 
     def get_scan_type(self, scan_number: int):
-        return ""
+        return ""  # FIXME: get from c#
+
+    def get_error_log_items_count(self):
+        return get_error_log_items_count(self._handle)
 
     def get_error_log_item(self, index: int):
         from .data.classes import ErrorLogEntry
-        return ErrorLogEntry()
+        return ErrorLogEntry(self._handle, index)
 
     def get_tune_data_header_information(self, index: int):
         return []
@@ -325,10 +378,10 @@ class RawFile(object):
     def get_tune_data_values(self, index: int):
         from .data.classes import TuneDataValues
         return TuneDataValues(self._handle)
-    
+
     @property
     def instrument_methods_count(self) -> int:
-        return 0
+        return 0  # FIXME: get from c#
 
     @property
     def instrument_count(self) -> int:
@@ -352,13 +405,15 @@ class RawFile(object):
 
     def get_ms1_scan_number_from_retention_time(self, rt: float) -> Tuple[int, float]:
         scan_number = get_ms1_scan_number_from_rt(self._handle, rt)
-        if scan_number < 1: return 0, 0.0
+        if scan_number < 1:
+            return 0, 0.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
     def get_ms2_scan_number_from_retention_time(self, rt: float, precursor_mz: float = None) -> Tuple[int, float]:
         pmz = precursor_mz if precursor_mz is not None else 0.0
         scan_number = get_ms2_scan_number_from_rt(self._handle, rt, pmz, 1.0)
-        if scan_number < 1: return 0, 0.0
+        if scan_number < 1:
+            return -1, -1.0
         return scan_number, self.retention_time_from_scan_number(scan_number)
 
     def get_scan_event_str_from_scan_number(self, scan_number: int) -> str:

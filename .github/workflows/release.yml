@@ -30,16 +30,18 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Set version from tag
+    - name: Verify version matches tag
       if: startsWith(github.ref, 'refs/tags/v')
       shell: bash
       run: |
         TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-        echo "Updating version in Cargo.toml to $TAG_VERSION"
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -i '' 's/^version = ".*"/version = "'$TAG_VERSION'"/' native_fisher_py/Cargo.toml
-        else
-          sed -i 's/^version = ".*"/version = "'$TAG_VERSION'"/' native_fisher_py/Cargo.toml
+        # Extract version from Cargo.toml
+        CARGO_VERSION=$(grep -m1 '^version =' native_fisher_py/Cargo.toml | cut -d '"' -f 2)
+        echo "Tag version: $TAG_VERSION"
+        echo "Cargo version: $CARGO_VERSION"
+        if [[ "$TAG_VERSION" != "$CARGO_VERSION" ]]; then
+          echo "Error: Tag version ($TAG_VERSION) does not match Cargo.toml version ($CARGO_VERSION)"
+          exit 1
         fi
 
     - name: Install NativeAOT Dependencies (Linux)
@@ -74,6 +76,9 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
+
+    - name: Copy README
+      run: cp README.md native_fisher_py/
 
     - name: Build wheels
       uses: PyO3/maturin-action@v1
