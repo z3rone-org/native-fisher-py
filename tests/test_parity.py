@@ -86,7 +86,7 @@ def test_behavior_parity(raw_file_path):
         if os.path.exists(gt_path):
             orig = FisherPyMock(gt_path)
         else:
-            pytest.skip("Neither fisher-py nor ground_truth.json available.")
+            pytest.fail("Neither fisher-py nor ground_truth.json available.")
 
     native = native_fisher_py.RawFile(raw_file_path)
 
@@ -120,7 +120,7 @@ def test_behavior_parity(raw_file_path):
         # 5. MS2 Retrieval
         if len(n_filter) > 0:
             rt_mid = native.total_time_min / 2
-            pmz = n_filter[len(n_filter)//2]
+            pmz = n_filter[len(n_filter) // 2]
 
             n_scan_2, n_rt2 = native.get_ms2_scan_number_from_retention_time(rt_mid, pmz)
             o_scan_2, o_rt2 = orig.get_ms2_scan_number_from_retention_time(rt_mid, pmz)

@@ -37,6 +37,9 @@ if not _IS_SPHINX:
         def get_who_created_logon(): return ""
         def get_who_modified_id(): return ""
         def get_who_modified_logon(): return ""
+        def get_number_of_times_calibrated(): return 0
+        def get_number_of_times_modified(): return 0
+        def get_revision(): return 0
         def get_sample_barcode(): return ""
         def get_sample_id(): return ""
         def get_sample_name(): return ""
@@ -70,7 +73,7 @@ if not _IS_SPHINX:
         def get_scan_event_precursor_mass(s, i): return 0.0
         def get_scan_event_activation_type(s, i): return 0
         def get_scan_event_collision_energy(s, i): return 0.0
-        def get_scan_stats(s): return [0.0]*7
+        def get_scan_stats(s): return [0.0] * 7
         def get_scan_filter_meta_filters(s): return []
         def get_scan_filter_field_free_region(s): return 0
         def get_scan_filter_index_to_multiple_activation_index(s): return 0
@@ -101,6 +104,9 @@ else:
     def get_who_created_logon(): return ""
     def get_who_modified_id(): return ""
     def get_who_modified_logon(): return ""
+    def get_number_of_times_calibrated(): return 0
+    def get_number_of_times_modified(): return 0
+    def get_revision(): return 0
     def get_sample_barcode(): return ""
     def get_sample_id(): return ""
     def get_sample_name(): return ""
@@ -129,7 +135,7 @@ else:
     def get_scan_event_precursor_mass(s, i): return 0.0
     def get_scan_event_activation_type(s, i): return 0
     def get_scan_event_collision_energy(s, i): return 0.0
-    def get_scan_stats(s): return [0.0]*7
+    def get_scan_stats(s): return [0.0] * 7
 
 
 class DataUnits(enum.Enum):
@@ -516,13 +522,49 @@ class TraceType(EnumBase):
     WavelengthRange = 41
 
 
-trace_type_names = ["MassRange", "TIC", "BasePeak", "Fragment", "SpectrumMax",
-                    "A2DChannel1", "A2DChannel2", "A2DChannel3", "A2DChannel4", "A2DChannel5", "A2DChannel6", "A2DChannel7", "A2DChannel8",
-                    "Analog1", "Analog2", "Analog3", "Analog4", "Analog5", "Analog6", "Analog7", "Analog8",
-                    "ChannelA", "ChannelB", "ChannelC", "ChannelD", "ChannelE", "ChannelF", "ChannelG", "ChannelH",
-                    "EndAllChromatogramTraces", "EndAnalogChromatogramTraces", "EndMSChromatogramTraces", "EndPCA2DChromatogramTraces", "EndPDAChromatogramTraces", "EndUVChromatogramTraces",
-                    "StartAnalogChromatogramTraces", "StartMSChromatogramTraces", "StartPCA2DChromatogramTraces", "StartPDAChromatogramTraces", "StartUVChromatogramTraces",
-                    "TotalAbsorbance", "WavelengthRange"]
+trace_type_names = [
+    "MassRange",
+    "TIC",
+    "BasePeak",
+    "Fragment",
+    "SpectrumMax",
+    "A2DChannel1",
+    "A2DChannel2",
+    "A2DChannel3",
+    "A2DChannel4",
+    "A2DChannel5",
+    "A2DChannel6",
+    "A2DChannel7",
+    "A2DChannel8",
+    "Analog1",
+    "Analog2",
+    "Analog3",
+    "Analog4",
+    "Analog5",
+    "Analog6",
+    "Analog7",
+    "Analog8",
+    "ChannelA",
+    "ChannelB",
+    "ChannelC",
+    "ChannelD",
+    "ChannelE",
+    "ChannelF",
+    "ChannelG",
+    "ChannelH",
+    "EndAllChromatogramTraces",
+    "EndAnalogChromatogramTraces",
+    "EndMSChromatogramTraces",
+    "EndPCA2DChromatogramTraces",
+    "EndPDAChromatogramTraces",
+    "EndUVChromatogramTraces",
+    "StartAnalogChromatogramTraces",
+    "StartMSChromatogramTraces",
+    "StartPCA2DChromatogramTraces",
+    "StartPDAChromatogramTraces",
+    "StartUVChromatogramTraces",
+    "TotalAbsorbance",
+    "WavelengthRange"]
 
 for i, name in enumerate(trace_type_names):
     setattr(TraceType, name, TraceType(i))
@@ -559,18 +601,19 @@ class MassAnalyzer(EnumBase):
     ITMS = 1
     TQMS = 2
     SQMS = 3
-    TOFMS = 4
-    FTMS = 5
+    FTMS = 4
+    TOFMS = 5
     Sector = 6
-    MassAnalyzerFTMS = 5
     MassAnalyzerITMS = 1
-    MassAnalyzerSQMS = 3
-    MassAnalyzerSector = 6
-    MassAnalyzerTOFMS = 4
     MassAnalyzerTQMS = 2
+    MassAnalyzerSQMS = 3
+    MassAnalyzerFTMS = 4
+    MassAnalyzerTOFMS = 5
+    MassAnalyzerSector = 6
 
 
-for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 4, "FTMS": 5, "Sector": 6, "MassAnalyzerFTMS": 5, "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 4, "MassAnalyzerTQMS": 2}.items():
+for name, val in {"Any": 0, "ITMS": 1, "TQMS": 2, "SQMS": 3, "TOFMS": 5, "FTMS": 4, "Sector": 6, "MassAnalyzerFTMS": 4,
+                  "MassAnalyzerITMS": 1, "MassAnalyzerSQMS": 3, "MassAnalyzerSector": 6, "MassAnalyzerTOFMS": 5, "MassAnalyzerTQMS": 2}.items():
     inst = MassAnalyzer(val)
     inst.name = name
     setattr(MassAnalyzer, name, inst)
@@ -762,8 +805,8 @@ class ActivationType(EnumBase):
     CollisionInducedDissociation = 1
     ElectronCaptureDissociation = 2
     ElectronTransferDissociation = 3
-    HigherEnergyCollisionalDissociation = 4
-    MultiPhotonDissociation = 5
+    MultiPhotonDissociation = 4
+    HigherEnergyCollisionalDissociation = 5
     PQD = 6
     SAactivation = 7
     UltraVioletPhotoDissociation = 8
@@ -824,7 +867,20 @@ class SampleType(EnumBase):
     StdUpdate = 12
 
 
-for name in ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike", "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"]:
+for name in [
+    "Unknown",
+    "Blank",
+    "QC",
+    "StdBracket",
+    "SolventBlank",
+    "MatrixBlank",
+    "MatrixSpike",
+    "MatrixSpikeDuplicate",
+    "Program",
+    "StdBracketStart",
+    "StdBracketEnd",
+    "StdClear",
+        "StdUpdate"]:
     idx = ["Unknown", "Blank", "QC", "StdBracket", "SolventBlank", "MatrixBlank", "MatrixSpike",
            "MatrixSpikeDuplicate", "Program", "StdBracketStart", "StdBracketEnd", "StdClear", "StdUpdate"].index(name)
     ev = SampleType(idx)
@@ -953,21 +1009,47 @@ for cls in EnumBase.__subclasses__():
 
 
 class ScanDependentDetails(CommonCoreDataObject):
+    def __init__(self, handle, scan_number, ms_order, detail_index):
+        self._handle = handle
+        self._scan_number = scan_number
+        self._ms_order = ms_order
+        self._detail_index = detail_index
+
     @property
-    def filter_string(self): raise NotImplementedError
+    def filter_string(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_filter_string
+        return get_scan_dependent_detail_filter_string(self._handle, self._scan_number, self._ms_order, self._detail_index)
+
     @property
-    def isolation_width_array(self): raise NotImplementedError
+    def isolation_width_array(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_isolation_width_array
+        return get_scan_dependent_detail_isolation_width_array(self._handle, self._scan_number, self._ms_order, self._detail_index)
+
     @property
-    def precursor_mass_array(self): raise NotImplementedError
+    def precursor_mass_array(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_precursor_mass_array
+        return get_scan_dependent_detail_precursor_mass_array(self._handle, self._scan_number, self._ms_order, self._detail_index)
+
     @property
-    def scan_index(self): raise NotImplementedError
+    def scan_index(self):
+        from ..native_fisher_py_backend import get_scan_dependent_detail_scan_index
+        return get_scan_dependent_detail_scan_index(self._handle, self._scan_number, self._ms_order, self._detail_index)
 
 
 class ErrorLogEntry(CommonCoreDataObject):
+    def __init__(self, handle, index):
+        self._handle = handle
+        self._index = index
+
     @property
-    def message(self): raise NotImplementedError
+    def message(self):
+        from ..native_fisher_py_backend import get_error_log_item_message
+        return get_error_log_item_message(self._handle, self._index)
+
     @property
-    def retention_time(self): raise NotImplementedError
+    def retention_time(self):
+        from ..native_fisher_py_backend import get_error_log_item_retention_time
+        return get_error_log_item_retention_time(self._handle, self._index)
 
 
 class InstrumentSelection(CommonCoreDataObject):
@@ -978,7 +1060,31 @@ class InstrumentSelection(CommonCoreDataObject):
 
 
 class ScanStatistics(CommonCoreDataObject):
-    def __init__(self, start_time=0.0, low_mass=0.0, high_mass=0.0, tic=0.0, base_peak_mass=0.0, base_peak_intensity=0.0, packet_count=0, scan_number=0, ms_order=0, is_centroid_scan=False):
+    def __init__(
+            self,
+            start_time=0.0,
+            low_mass=0.0,
+            high_mass=0.0,
+            tic=0.0,
+            base_peak_mass=0.0,
+            base_peak_intensity=0.0,
+            packet_count=0,
+            scan_number=0,
+            ms_order=0,
+            is_centroid_scan=False,
+            absorbance_unit_scale=0.0,
+            cycle_number=0,
+            frequency=0.0,
+            is_uniform_time=False,
+            long_wavelength=0.0,
+            number_of_channels=0,
+            packet_type=0,
+            scan_event_number=0,
+            segment_number=0,
+            short_wavelength=0.0,
+            spectrum_packet_type=0,
+            wavelength_step=0.0,
+            scan_type=None):
         self._start_time = start_time
         self._low_mass = low_mass
         self._high_mass = high_mass
@@ -989,6 +1095,19 @@ class ScanStatistics(CommonCoreDataObject):
         self._scan_number = scan_number
         self._ms_order = ms_order
         self._is_centroid_scan = bool(is_centroid_scan)
+        self._absorbance_unit_scale = absorbance_unit_scale
+        self._cycle_number = cycle_number
+        self._frequency = frequency
+        self._is_uniform_time = bool(is_uniform_time)
+        self._long_wavelength = long_wavelength
+        self._number_of_channels = number_of_channels
+        self._packet_type = packet_type
+        self._scan_event_number = scan_event_number
+        self._segment_number = segment_number
+        self._short_wavelength = short_wavelength
+        self._spectrum_packet_type = spectrum_packet_type
+        self._wavelength_step = wavelength_step
+        self._scan_type = scan_type
 
     @property
     def start_time(self): return self._start_time
@@ -1010,36 +1129,36 @@ class ScanStatistics(CommonCoreDataObject):
     def ms_order(self): return self._ms_order
 
     @property
-    def absorbance_unit_scale(self): raise NotImplementedError
+    def absorbance_unit_scale(self): return self._absorbance_unit_scale
     def clone(self): raise NotImplementedError
     def copy_to(self, other): raise NotImplementedError
     @property
-    def cycle_number(self): raise NotImplementedError
+    def cycle_number(self): return self._cycle_number
     def deep_clone(self): raise NotImplementedError
     @property
-    def frequency(self): raise NotImplementedError
+    def frequency(self): return self._frequency
     @property
     def is_centroid_scan(self): return self._is_centroid_scan
     @property
-    def is_uniform_time(self): raise NotImplementedError
+    def is_uniform_time(self): return self._is_uniform_time
     @property
-    def long_wavelength(self): raise NotImplementedError
+    def long_wavelength(self): return self._long_wavelength
     @property
-    def number_of_channels(self): raise NotImplementedError
+    def number_of_channels(self): return self._number_of_channels
     @property
-    def packet_type(self): raise NotImplementedError
+    def packet_type(self): return self._packet_type
     @property
-    def scan_event_number(self): raise NotImplementedError
+    def scan_event_number(self): return self._scan_event_number
     @property
-    def scan_type(self): raise NotImplementedError
+    def scan_type(self): return self._scan_type
     @property
-    def segment_number(self): raise NotImplementedError
+    def segment_number(self): return self._segment_number
     @property
-    def short_wavelength(self): raise NotImplementedError
+    def short_wavelength(self): return self._short_wavelength
     @property
-    def spectrum_packet_type(self): raise NotImplementedError
+    def spectrum_packet_type(self): return self._spectrum_packet_type
     @property
-    def wavelength_step(self): raise NotImplementedError
+    def wavelength_step(self): return self._wavelength_step
 
 
 class SegmentedScan(CommonCoreDataObject):
@@ -1131,13 +1250,13 @@ class HeaderItem(CommonCoreDataObject):
                 type_val = subparts[0]
                 try:
                     self._string_length_or_precision = int(subparts[1])
-                except:
+                except BaseException:
                     pass
             else:
                 type_val = rest
             try:
                 self._data_type = GenericDataTypes(int(type_val))
-            except:
+            except BaseException:
                 self._data_type = GenericDataTypes.NULL
         else:
             self._label = data
@@ -1218,23 +1337,39 @@ class Reaction(CommonCoreDataObject):
         return get_scan_event_collision_energy(self._handle, self._scan_number, self._index)
 
     @property
-    def collision_energy_valid(self): raise NotImplementedError
+    def collision_energy_valid(self):
+        from ..native_fisher_py_backend import get_scan_event_collision_energy_valid
+        return bool(get_scan_event_collision_energy_valid(self._handle, self._scan_number, self._index))
+
     @property
-    def first_precursor_mass(self): raise NotImplementedError
+    def first_precursor_mass(self):
+        from ..native_fisher_py_backend import get_scan_event_first_precursor_mass
+        return get_scan_event_first_precursor_mass(self._handle, self._scan_number, self._index)
+
     @property
     def isolation_width(self):
         from ..native_fisher_py_backend import get_scan_event_isolation_width
         return get_scan_event_isolation_width(self._handle, self._scan_number, self._index)
+
     @property
     def isolation_width_offset(self):
         from ..native_fisher_py_backend import get_scan_event_isolation_width_offset
         return get_scan_event_isolation_width_offset(self._handle, self._scan_number, self._index)
+
     @property
-    def last_precursor_mass(self): raise NotImplementedError
+    def last_precursor_mass(self):
+        from ..native_fisher_py_backend import get_scan_event_last_precursor_mass
+        return get_scan_event_last_precursor_mass(self._handle, self._scan_number, self._index)
+
     @property
-    def multiple_activation(self): raise NotImplementedError
+    def multiple_activation(self):
+        from ..native_fisher_py_backend import get_scan_event_multiple_activation
+        return bool(get_scan_event_multiple_activation(self._handle, self._scan_number, self._index))
+
     @property
-    def precursor_range_is_valid(self): raise NotImplementedError
+    def precursor_range_is_valid(self):
+        from ..native_fisher_py_backend import get_scan_event_precursor_range_is_valid
+        return bool(get_scan_event_precursor_range_is_valid(self._handle, self._scan_number, self._index))
 
 
 class Scan(CommonCoreDataObject):
@@ -1497,21 +1632,18 @@ class SampleInformation(CommonCoreDataObject):
 
     @property
     def barcode_status(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_barcode_status
+        return get_sample_barcode_status(self._handle)
 
     @property
     def calibration_file(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_calibration_file
+        return get_sample_calibration_file(self._handle)
 
     @property
     def calibration_level(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_calibration_level
+        return get_sample_calibration_level(self._handle)
 
     @property
     def comment(self): return get_sample_comment(self._handle)
@@ -1529,21 +1661,17 @@ class SampleInformation(CommonCoreDataObject):
 
     @property
     def istd_amount(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_istd_amount
+        return get_sample_istd_amount(self._handle)
 
     @property
     def max_user_text_column_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return len(self.user_text)
 
     @property
     def processing_method_file(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError
+        from ..native_fisher_py_backend import get_sample_processing_method_file
+        return get_sample_processing_method_file(self._handle)
 
     @property
     def row_number(self): return get_sample_row_number(self._handle)
@@ -1556,13 +1684,17 @@ class SampleInformation(CommonCoreDataObject):
     @property
     def sample_type(self): return SampleType(get_sample_type(self._handle))
     @property
-    def sample_volume(self): return 0.0
+    def sample_volume(self):
+        from ..native_fisher_py_backend import get_sample_sample_volume
+        return get_sample_sample_volume(self._handle)
     @property
-    def sample_weight(self): return 0.0
+    def sample_weight(self):
+        from ..native_fisher_py_backend import get_sample_sample_weight
+        return get_sample_sample_weight(self._handle)
     @property
-    def user_text(self): return []
-    @property
-    def vial(self): return ""
+    def user_text(self):
+        from ..native_fisher_py_backend import get_sample_user_text
+        return get_sample_user_text(self._handle)
     @property
     def raw_file_name(self) -> str: return get_file_name(self._handle)
     @property
@@ -1587,22 +1719,13 @@ class FileHeader(CommonCoreDataObject):
     def modified_date(self): return get_modified_date(self._handle)
 
     @property
-    def number_of_times_calibrated(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError
+    def number_of_times_calibrated(self): return get_number_of_times_calibrated(self._handle)
 
     @property
-    def number_of_times_modified(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError
+    def number_of_times_modified(self): return get_number_of_times_modified(self._handle)
 
     @property
-    def revision(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError
+    def revision(self): return get_revision(self._handle)
 
     @property
     def who_created_logon(self): return get_who_created_logon(self._handle)
@@ -1663,10 +1786,19 @@ class AutoSamplerInformation(CommonCoreDataObject):
 
 
 class RunHeader(CommonCoreDataObject):
-    def __init__(self, handle=0, raw_file=None):
-        self._handle = handle
-        self._raw_file = raw_file
-        self._handle = raw_file._handle if raw_file else 0
+    def __init__(self, raw_file=None, handle=0):
+        # Allow either raw_file or handle to be passed. raw_file takes precedence.
+        if raw_file is not None and hasattr(raw_file, "_handle"):
+            self._raw_file = raw_file
+            self._handle = raw_file._handle
+        else:
+            self._raw_file = None
+            # If the first argument was actually the RawFile but passed to handle
+            if hasattr(handle, "_handle"):
+                self._raw_file = handle
+                self._handle = handle._handle
+            else:
+                self._handle = handle
 
     @property
     def start_time(self) -> float: return get_start_time(self._handle)
@@ -1676,64 +1808,44 @@ class RunHeader(CommonCoreDataObject):
     def last_spectrum(self) -> int: return self._raw_file.last_scan if self._raw_file else 1
 
     @property
-    def end_time(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def end_time(self) -> float:
+        return get_end_time(self._handle)
 
     @property
-    def expected_runtime(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def expected_runtime(self) -> float:
+        return get_expected_runtime(self._handle)
 
     @property
-    def high_mass(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def high_mass(self) -> float:
+        return get_high_mass(self._handle)
 
     @property
-    def low_mass(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def low_mass(self) -> float:
+        return get_low_mass(self._handle)
 
     @property
-    def mass_resolution(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def mass_resolution(self) -> float:
+        return get_mass_resolution(self._handle)
 
     @property
-    def max_integrated_intensity(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def max_integrated_intensity(self) -> float:
+        return get_max_integrated_intensity(self._handle)
 
     @property
-    def max_intensity(self):
-        if _IS_SPHINX:
-            return 0.0
-        raise NotImplementedError
+    def max_intensity(self) -> int:
+        return get_max_intensity(self._handle)
 
     @property
     def spectra_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return self._raw_file.number_of_scans if self._raw_file else 0
 
     @property
     def status_log_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return get_status_log_count(self._handle)
 
     @property
     def trailer_extra_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return get_trailer_extra_count(self._handle)
 
     @property
     def trailer_scan_event_count(self):
@@ -1743,9 +1855,7 @@ class RunHeader(CommonCoreDataObject):
 
     @property
     def tune_data_count(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError
+        return get_tune_data_count(self._handle)
 
     @property
     def tolerance_unit(self):
@@ -1951,7 +2061,7 @@ class ScanEvent(CommonCoreDataObject):
 
     @property
     def mass_analyzer(self) -> int:
-        return MassAnalyzer(get_scan_filter_mass_analyzer(self._scan_number))
+        return MassAnalyzer(get_scan_filter_mass_analyzer(self._handle, self._scan_number))
 
     @property
     def polarity(self) -> int:
@@ -2027,9 +2137,7 @@ class ScanEvent(CommonCoreDataObject):
 
     @property
     def is_custom(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("is_custom")
+        return TriState(0)
 
     @property
     def lock(self):
@@ -2039,13 +2147,14 @@ class ScanEvent(CommonCoreDataObject):
     def mass_calibrator_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("mass_calibrator_count")
+        return 0
 
     @property
     def mass_range_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("mass_range_count")
+        from ..native_fisher_py_backend import get_scan_filter_mass_range_count
+        return get_scan_filter_mass_range_count(self._handle, self._scan_number)
 
     @property
     def multi_notch(self):
@@ -2054,8 +2163,9 @@ class ScanEvent(CommonCoreDataObject):
     @property
     def multi_state_activation(self):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("multi_state_activation")
+            return TriState(0)
+        from ..native_fisher_py_backend import get_scan_filter_multi_state_activation
+        return TriState(get_scan_filter_multi_state_activation(self._handle, self._scan_number))
 
     @property
     def multiple_photon_dissociation(self):
@@ -2092,8 +2202,9 @@ class ScanEvent(CommonCoreDataObject):
     @property
     def photo_ionization(self):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("photo_ionization")
+            return TriState(0)
+        from ..native_fisher_py_backend import get_scan_filter_photo_ionization
+        return TriState(get_scan_filter_photo_ionization(self._handle, self._scan_number))
 
     @property
     def pulsed_q_dissociation(self):
@@ -2111,13 +2222,15 @@ class ScanEvent(CommonCoreDataObject):
     def scan_type_index(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("scan_type_index")
+        from ..native_fisher_py_backend import get_scan_filter_scan_type_index
+        return get_scan_filter_scan_type_index(self._handle, self._scan_number)
 
     @property
     def sector_scan(self):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("sector_scan")
+            return SectorScanType(0)
+        from ..native_fisher_py_backend import get_scan_filter_sector_scan
+        return SectorScanType(get_scan_filter_sector_scan(self._handle, self._scan_number))
 
     @property
     def source_fragmentation(self):
@@ -2127,13 +2240,15 @@ class ScanEvent(CommonCoreDataObject):
     def source_fragmentation_info_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("source_fragmentation_info_count")
+        from ..native_fisher_py_backend import get_scan_filter_source_fragmentation_info_count
+        return get_scan_filter_source_fragmentation_info_count(self._handle, self._scan_number)
 
     @property
     def source_fragmentation_mass_range_count(self):
         if _IS_SPHINX:
             return -1
-        raise NotImplementedError("source_fragmentation_mass_range_count")
+        from ..native_fisher_py_backend import get_scan_filter_source_fragmentation_info_count
+        return get_scan_filter_source_fragmentation_info_count(self._handle, self._scan_number)
 
     @property
     def source_fragmentation_type(self):
@@ -2157,18 +2272,21 @@ class ScanEvent(CommonCoreDataObject):
 
     def get_energy_valid(self, index):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("get_energy_valid")
+            return EnergyType(0)
+        from ..native_fisher_py_backend import get_scan_event_energy_valid
+        return EnergyType(get_scan_event_energy_valid(self._handle, self._scan_number, index))
 
     def get_first_precursor_mass(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_first_precursor_mass")
+        from ..native_fisher_py_backend import get_scan_event_first_precursor_mass
+        return get_scan_event_first_precursor_mass(self._handle, self._scan_number, index)
 
     def get_last_precursor_mass(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_last_precursor_mass")
+        from ..native_fisher_py_backend import get_scan_event_last_precursor_mass
+        return get_scan_event_last_precursor_mass(self._handle, self._scan_number, index)
 
     def get_isolation_width(self, index):
         if _IS_SPHINX:
@@ -2184,60 +2302,67 @@ class ScanEvent(CommonCoreDataObject):
 
     def get_is_multiple_activation(self, index):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("get_is_multiple_activation")
+            return False
+        from ..native_fisher_py_backend import get_scan_event_is_multiple_activation
+        return bool(get_scan_event_is_multiple_activation(self._handle, self._scan_number, index))
 
     def get_mass_range(self, index):
         if _IS_SPHINX:
             return (0.0, 0.0)
-        raise NotImplementedError("get_mass_range")
+        from ..native_fisher_py_backend import get_scan_event_mass_range_low, get_scan_event_mass_range_high
+        return (get_scan_event_mass_range_low(self._handle, self._scan_number, index), get_scan_event_mass_range_high(self._handle, self._scan_number, index))
 
     def get_mass_calibrator(self, index):
         if _IS_SPHINX:
             return 0.0
-        raise NotImplementedError("get_mass_calibrator")
+        from ..native_fisher_py_backend import get_scan_event_mass_calibrator
+        return get_scan_event_mass_calibrator(self._handle, self._scan_number, index)
 
     def get_precursor_range_validity(self, index):
         if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("get_precursor_range_validity")
+            return False
+        from ..native_fisher_py_backend import get_scan_event_precursor_range_validity
+        return bool(get_scan_event_precursor_range_validity(self._handle, self._scan_number, index))
 
     def get_source_fragmentation_info(self, index):
         if _IS_SPHINX:
-            return None
-        raise NotImplementedError("get_source_fragmentation_info")
+            return 0.0
+        from ..native_fisher_py_backend import get_scan_event_source_fragmentation_info
+        return get_scan_event_source_fragmentation_info(self._handle, self._scan_number, index)
 
     def get_source_fragmentation_mass_range(self, index):
         if _IS_SPHINX:
             return (0.0, 0.0)
-        raise NotImplementedError("get_source_fragmentation_mass_range")
+        from ..native_fisher_py_backend import get_scan_event_source_fragmentation_mass_range_low, get_scan_event_source_fragmentation_mass_range_high
+        return (get_scan_event_source_fragmentation_mass_range_low(self._handle, self._scan_number, index), get_scan_event_source_fragmentation_mass_range_high(self._handle, self._scan_number, index))
 
 
 class ScanEvents(CommonCoreDataObject):
+    def __init__(self, handle=0):
+        self._handle = handle
+
     def get_event(self, index):
-        return ScanEvent(index + 1)
+        # We assume segment 0 for get_event, since some files don't use segments properly.
+        encoded = -(0 * 10000 + index + 1)
+        return ScanEvent(self._handle, encoded)
 
     def get_event_by_segment(self, segment, event):
-        if _IS_SPHINX:
-            return ScanEvent()
-        raise NotImplementedError("get_event_by_segment")
+        encoded = -(segment * 10000 + event + 1)
+        return ScanEvent(self._handle, encoded)
 
     def get_event_count(self, segment):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError("get_event_count")
+        from ..native_fisher_py_backend import get_scan_events_event_count_for_segment
+        return get_scan_events_event_count_for_segment(self._handle, segment)
 
     @property
     def scan_events(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("scan_events")
+        from ..native_fisher_py_backend import get_scan_events_count
+        return get_scan_events_count(self._handle)
 
     @property
     def segments(self):
-        if _IS_SPHINX:
-            return -1
-        raise NotImplementedError("segments")
+        from ..native_fisher_py_backend import get_scan_events_segments
+        return get_scan_events_segments(self._handle)
 
 
 class Range(object):
@@ -2266,7 +2391,7 @@ class Range(object):
     @staticmethod
     def create(low, high): return Range(low, high)
     @staticmethod
-    def create_from_cetner_and_delta(c, d): return Range(c-d, c+d)
+    def create_from_cetner_and_delta(c, d): return Range(c - d, c + d)
 
     def equals(self, other):
         if not isinstance(other, Range):
@@ -2348,96 +2473,133 @@ class FtAverageOptions(CommonCoreDataObject):
 
 
 class ScanDependents(CommonCoreDataObject):
+    def __init__(self, handle, scan_number, ms_order):
+        self._handle = handle
+        self._scan_number = scan_number
+        self._ms_order = ms_order
+
     @property
     def raw_file_instrument_type(self):
         if _IS_SPHINX:
             return 0
-        raise NotImplementedError("raw_file_instrument_type")
+        from ..native_fisher_py_backend import get_scan_dependents_instrument_type
+        return get_scan_dependents_instrument_type(self._handle, self._scan_number, self._ms_order)
 
     @property
     def scan_dependent_detail_array(self):
         if _IS_SPHINX:
             return []
-        raise NotImplementedError("scan_dependent_detail_array")
+        from ..native_fisher_py_backend import get_scan_dependents_count
+        count = get_scan_dependents_count(self._handle, self._scan_number, self._ms_order)
+        if count < 0:
+            return []
+        return [ScanDependentDetails(self._handle, self._scan_number, self._ms_order, i) for i in range(count)]
 
 
 class SequenceInfo(CommonCoreDataObject):
+    def __init__(self):
+        self._column_width = []
+        self._type_to_column_position = []
+        self._bracket = 0
+        self._user_private_label = []
+        self._user_label = []
+        self._tray_configuration = ""
+
     @property
     def column_width(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("column_width")
+        return self._column_width
+
+    @column_width.setter
+    def column_width(self, value):
+        self._column_width = value
 
     @property
     def type_to_column_position(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("type_to_column_position")
+        return self._type_to_column_position
+
+    @type_to_column_position.setter
+    def type_to_column_position(self, value):
+        self._type_to_column_position = value
 
     @property
     def bracket(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("bracket")
+        return self._bracket
+
+    @bracket.setter
+    def bracket(self, value):
+        self._bracket = value
 
     @property
     def user_private_label(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("user_private_label")
+        return self._user_private_label
+
+    @user_private_label.setter
+    def user_private_label(self, value):
+        self._user_private_label = value
 
     @property
     def user_label(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("user_label")
+        return self._user_label
+
+    @user_label.setter
+    def user_label(self, value):
+        self._user_label = value
 
     @property
     def tray_configuration(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("tray_configuration")
+        return self._tray_configuration
 
-    @property
-    def user_label(self):
-        if _IS_SPHINX:
-            return []
-        raise NotImplementedError("user_label")
+    @tray_configuration.setter
+    def tray_configuration(self, value):
+        self._tray_configuration = value
 
 
 class SequenceFileWriter(CommonCoreDataObject):
     def __init__(self):
         self.samples = []
         self._info = SequenceInfo()
+        self._bracket = 0
+        self._file_error = None
+        self._file_header = None
+        self._file_name = ""
+        self._is_error = 0
+        self._tray_configuration = ""
+        self._user_column_labels = {}
 
     @property
     def bracket(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("bracket")
+        return self._bracket
+
+    @bracket.setter
+    def bracket(self, value):
+        self._bracket = value
 
     @property
     def file_error(self):
-        if _IS_SPHINX:
-            return None
-        raise NotImplementedError("file_error")
+        return self._file_error
+
+    @file_error.setter
+    def file_error(self, value):
+        self._file_error = value
 
     @property
     def file_header(self):
-        if _IS_SPHINX:
-            return None
-        raise NotImplementedError("file_header")
+        return self._file_header
+
+    @file_header.setter
+    def file_header(self, value):
+        self._file_header = value
 
     @property
     def file_name(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("file_name")
+        return self._file_name
+
+    @file_name.setter
+    def file_name(self, value):
+        self._file_name = value
 
     def get_user_column_label(self, index):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("get_user_column_label")
+        return self._user_column_labels.get(index, "")
 
     @property
     def info(self):
@@ -2449,18 +2611,24 @@ class SequenceFileWriter(CommonCoreDataObject):
 
     @property
     def is_error(self):
-        if _IS_SPHINX:
-            return 0
-        raise NotImplementedError("is_error")
+        return self._is_error
 
-    def save(self, path): pass
-    def set_user_column_label(self, index, label): pass
+    @is_error.setter
+    def is_error(self, value):
+        self._is_error = value
+
+    def save(self, path): pass  # FIXME
+
+    def set_user_column_label(self, index, label):
+        self._user_column_labels[index] = label
 
     @property
     def tray_configuration(self):
-        if _IS_SPHINX:
-            return ""
-        raise NotImplementedError("tray_configuration")
+        return self._tray_configuration
+
+    @tray_configuration.setter
+    def tray_configuration(self, value):
+        self._tray_configuration = value
 
 
 class ChromatogramTraceSettings(CommonCoreDataObject):

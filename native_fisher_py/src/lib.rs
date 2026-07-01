@@ -1143,6 +1143,56 @@ fn get_scan_event_precursor_mass(handle: i32, scan_number: i32, index: i32) -> P
 }
 
 #[pyfunction]
+fn get_scan_event_collision_energy_valid(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_collision_energy_valid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_collision_energy_valid: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_first_precursor_mass(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_first_precursor_mass")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_first_precursor_mass: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_last_precursor_mass(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_last_precursor_mass")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_last_precursor_mass: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_multiple_activation(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_multiple_activation")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_multiple_activation: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_event_precursor_range_is_valid(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_precursor_range_is_valid")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_precursor_range_is_valid: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
 fn get_scan_event_activation_type(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
     let lib = get_lib()?;
     unsafe {
@@ -1186,13 +1236,106 @@ fn get_scan_event_collision_energy(handle: i32, scan_number: i32, index: i32) ->
 #[pyfunction]
 fn get_scan_stats(handle: i32, scan_number: i32) -> PyResult<Vec<f64>> {
     let lib = get_lib()?;
-    let mut data = vec![0.0f64; 8];
+    let mut data = vec![0.0f64; 20];
     unsafe {
         let func: Symbol<unsafe extern "C" fn(i32, i32, *mut f64) -> i32> = lib.get(b"get_scan_stats")
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_stats: {}", e)))?;
         let res = func(handle, scan_number, data.as_mut_ptr());
         if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_scan_stats failed")); }
         Ok(data)
+    }
+}
+
+#[pyfunction]
+fn get_scan_stats_scan_type(handle: i32, scan_number: i32) -> PyResult<Option<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 1024];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, *mut u8, i32) -> i32> = lib.get(b"get_scan_stats_scan_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_stats_scan_type: {}", e)))?;
+        let res = func(handle, scan_number, buffer.as_mut_ptr(), buffer.len() as i32);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_scan_stats_scan_type failed")); }
+        if res == 0 { return Ok(None); }
+        let s = String::from_utf8_lossy(&buffer[..res as usize]).into_owned();
+        Ok(Some(s))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependents_instrument_type(handle: i32, scan_number: i32, ms_order: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_dependents_instrument_type")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependents_instrument_type: {}", e)))?;
+        Ok(func(handle, scan_number, ms_order))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependents_count(handle: i32, scan_number: i32, ms_order: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_dependents_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependents_count: {}", e)))?;
+        Ok(func(handle, scan_number, ms_order))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_scan_index(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32) -> i32> = lib.get(b"get_scan_dependent_detail_scan_index")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_scan_index: {}", e)))?;
+        Ok(func(handle, scan_number, ms_order, detail_index))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_filter_string(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<Option<String>> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32, *mut u8, i32) -> i32> = lib.get(b"get_scan_dependent_detail_filter_string")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_filter_string: {}", e)))?;
+        let mut buffer = vec![0u8; 1024];
+        let len = func(handle, scan_number, ms_order, detail_index, buffer.as_mut_ptr(), buffer.len() as i32);
+        if len < 0 {
+            return Ok(None);
+        }
+        let s = String::from_utf8_lossy(&buffer[..len as usize]).into_owned();
+        Ok(Some(s))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_precursor_mass_array(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<Option<Vec<f64>>> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32, *mut f64, i32) -> i32> = lib.get(b"get_scan_dependent_detail_precursor_mass_array")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_precursor_mass_array: {}", e)))?;
+        let mut buffer = vec![0f64; 256];
+        let len = func(handle, scan_number, ms_order, detail_index, buffer.as_mut_ptr(), buffer.len() as i32);
+        if len < 0 {
+            return Ok(None);
+        }
+        buffer.truncate(len as usize);
+        Ok(Some(buffer))
+    }
+}
+
+#[pyfunction]
+fn get_scan_dependent_detail_isolation_width_array(handle: i32, scan_number: i32, ms_order: i32, detail_index: i32) -> PyResult<Option<Vec<f64>>> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32, i32, *mut f64, i32) -> i32> = lib.get(b"get_scan_dependent_detail_isolation_width_array")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_dependent_detail_isolation_width_array: {}", e)))?;
+        let mut buffer = vec![0f64; 256];
+        let len = func(handle, scan_number, ms_order, detail_index, buffer.as_mut_ptr(), buffer.len() as i32);
+        if len < 0 {
+            return Ok(None);
+        }
+        buffer.truncate(len as usize);
+        Ok(Some(buffer))
     }
 }
 
@@ -1429,6 +1572,36 @@ fn get_who_modified_logon(handle: i32) -> PyResult<String> {
         if actual_len < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_who_modified_logon failed")); }
         let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
         Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_number_of_times_calibrated(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_number_of_times_calibrated")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_number_of_times_calibrated: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_number_of_times_modified(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_number_of_times_modified")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_number_of_times_modified: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_revision(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_revision")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_revision: {}", e)))?;
+        Ok(func(handle))
     }
 }
 
@@ -1717,6 +1890,328 @@ fn get_sample_injection_volume(handle: i32) -> PyResult<f64> {
     }
 }
 
+
+#[pyfunction]
+pub fn get_scan_filter_mass_count(handle: i32, scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_filter_mass_count\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_mass_count: {}", e)))?;
+        Ok(func(handle, scan_number))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_filter_mass_range_count(handle: i32, scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_filter_mass_range_count\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_mass_range_count: {}", e)))?;
+        Ok(func(handle, scan_number))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_filter_source_fragmentation_info_count(handle: i32, scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_filter_source_fragmentation_info_count\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_source_fragmentation_info_count: {}", e)))?;
+        Ok(func(handle, scan_number))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_filter_scan_type_index(handle: i32, scan_number: i32) -> PyResult<i64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i64> = lib.get(b"get_scan_filter_scan_type_index\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_scan_type_index: {}", e)))?;
+        Ok(func(handle, scan_number))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_filter_multi_state_activation(handle: i32, scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_filter_multi_state_activation\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_multi_state_activation: {}", e)))?;
+        Ok(func(handle, scan_number))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_filter_photo_ionization(handle: i32, scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_filter_photo_ionization\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_photo_ionization: {}", e)))?;
+        Ok(func(handle, scan_number))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_filter_sector_scan(handle: i32, scan_number: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_filter_sector_scan\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_filter_sector_scan: {}", e)))?;
+        Ok(func(handle, scan_number))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_precursor_range_validity(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_precursor_range_validity\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_precursor_range_validity: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_is_multiple_activation(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_is_multiple_activation\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_is_multiple_activation: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_energy_valid(handle: i32, scan_number: i32, index: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> i32> = lib.get(b"get_scan_event_energy_valid\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_energy_valid: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_source_fragmentation_info(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_source_fragmentation_info\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_source_fragmentation_info: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_mass_calibrator(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_mass_calibrator\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_mass_calibrator: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_mass_range_low(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_mass_range_low\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_mass_range_low: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_mass_range_high(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_mass_range_high\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_mass_range_high: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_source_fragmentation_mass_range_low(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_source_fragmentation_mass_range_low\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_source_fragmentation_mass_range_low: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+
+#[pyfunction]
+pub fn get_scan_event_source_fragmentation_mass_range_high(handle: i32, scan_number: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, i32) -> f64> = lib.get(b"get_scan_event_source_fragmentation_mass_range_high\0")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_event_source_fragmentation_mass_range_high: {}", e)))?;
+        Ok(func(handle, scan_number, index))
+    }
+}
+#[pyfunction]
+fn get_error_log_items_count(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_error_log_items_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_error_log_items_count: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_error_log_item_message(handle: i32, index: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, *mut u8, i32) -> i32> = lib.get(b"get_error_log_item_message")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_error_log_item_message: {}", e)))?;
+        let res = func(handle, index, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_error_log_item_message failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_error_log_item_retention_time(handle: i32, index: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> f64> = lib.get(b"get_error_log_item_retention_time")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_error_log_item_retention_time: {}", e)))?;
+        Ok(func(handle, index))
+    }
+}
+
+#[pyfunction]
+fn get_sample_barcode_status(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_sample_barcode_status")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_barcode_status: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_calibration_file(handle: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_calibration_file")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_calibration_file: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Ok("".to_string()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_calibration_level(handle: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_calibration_level")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_calibration_level: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Ok("".to_string()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_istd_amount(handle: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_sample_istd_amount")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_istd_amount: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_processing_method_file(handle: i32) -> PyResult<String> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_processing_method_file")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_processing_method_file: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Ok("".to_string()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        Ok(String::from_utf8_lossy(&buffer[..end]).into_owned())
+    }
+}
+
+#[pyfunction]
+fn get_sample_sample_volume(handle: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_sample_sample_volume")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_sample_volume: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_sample_weight(handle: i32) -> PyResult<f64> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> f64> = lib.get(b"get_sample_sample_weight")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_sample_weight: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_sample_user_text(handle: i32) -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 16384];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, *mut u8, i32) -> i32> = lib.get(b"get_sample_user_text")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_sample_user_text: {}", e)))?;
+        let res = func(handle, buffer.as_mut_ptr(), 16384);
+        if res < 0 { return Ok(Vec::new()); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        if s.is_empty() { return Ok(Vec::new()); }
+        Ok(s.split("###|###").map(|x| x.to_string()).collect())
+    }
+}
+
+#[pyfunction]
+fn get_scan_events_segments(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_events_segments")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_events_segments: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_scan_events_count(handle: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32) -> i32> = lib.get(b"get_scan_events_count")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_events_count: {}", e)))?;
+        Ok(func(handle))
+    }
+}
+
+#[pyfunction]
+fn get_scan_events_event_count_for_segment(handle: i32, segment: i32) -> PyResult<i32> {
+    let lib = get_lib()?;
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"get_scan_events_event_count_for_segment")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_scan_events_event_count_for_segment: {}", e)))?;
+        Ok(func(handle, segment))
+    }
+}
+
 #[pymodule]
 fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(open_raw_file, m)?)?;
@@ -1780,11 +2275,33 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_scan_event_ms_order, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_mass_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_precursor_mass, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_collision_energy_valid, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_first_precursor_mass, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_last_precursor_mass, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_mass_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_mass_range_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_source_fragmentation_info_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_scan_type_index, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_multi_state_activation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_photo_ionization, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_filter_sector_scan, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_precursor_range_validity, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_is_multiple_activation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_energy_valid, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_source_fragmentation_info, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_mass_calibrator, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_mass_range_low, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_mass_range_high, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_source_fragmentation_mass_range_low, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_source_fragmentation_mass_range_high, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_multiple_activation, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_event_precursor_range_is_valid, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_activation_type, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_isolation_width, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_isolation_width_offset, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_collision_energy, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_stats_scan_type, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_axis_label_x, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_axis_label_y, m)?)?;
     m.add_function(wrap_pyfunction!(get_instrument_flags, m)?)?;
@@ -1797,11 +2314,20 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_who_created_logon, m)?)?;
     m.add_function(wrap_pyfunction!(get_who_modified_id, m)?)?;
     m.add_function(wrap_pyfunction!(get_who_modified_logon, m)?)?;
+    m.add_function(wrap_pyfunction!(get_number_of_times_calibrated, m)?)?;
+    m.add_function(wrap_pyfunction!(get_number_of_times_modified, m)?)?;
+    m.add_function(wrap_pyfunction!(get_revision, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_barcode, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_id, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_name, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_vial, m)?)?;
     m.add_function(wrap_pyfunction!(get_sample_comment, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependents_instrument_type, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependents_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_scan_index, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_filter_string, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_precursor_mass_array, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_dependent_detail_isolation_width_array, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_ultra, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_wideband, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_filter_polarity, m)?)?;
@@ -1859,6 +2385,20 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_x, m)?)?;
     m.add_function(wrap_pyfunction!(get_autosampler_vials_per_tray_y, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_events_segments, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_events_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_scan_events_event_count_for_segment, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_barcode_status, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_calibration_file, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_calibration_level, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_istd_amount, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_processing_method_file, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_sample_volume, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_sample_weight, m)?)?;
+    m.add_function(wrap_pyfunction!(get_sample_user_text, m)?)?;
+    m.add_function(wrap_pyfunction!(get_error_log_items_count, m)?)?;
+    m.add_function(wrap_pyfunction!(get_error_log_item_message, m)?)?;
+    m.add_function(wrap_pyfunction!(get_error_log_item_retention_time, m)?)?;
     m.add_function(wrap_pyfunction!(close_raw_file, m)?)?;
     Ok(())
 }

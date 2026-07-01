@@ -41,6 +41,7 @@ def test_is_centroid_scan(zoom_raw_file):
         is_c = zoom_raw_file.is_centroid_scan_from_scan_number(i)
         assert isinstance(is_c, bool)
 
+
 def test_centroid_stream_angiotensin(angiotensin_raw_file):
     # Scan 1: 526 peaks
     cs_1 = angiotensin_raw_file.get_centroid_stream(1, False)
@@ -48,12 +49,12 @@ def test_centroid_stream_angiotensin(angiotensin_raw_file):
     assert cs_1.length == 526
     assert cs_1.base_peak_mass == pytest.approx(432.9000244140625)
     assert cs_1.base_peak_intensity == pytest.approx(447502208.0)
-    
+
     # Scan 2: 39 peaks
     cs_2 = angiotensin_raw_file.get_centroid_stream(2, False)
     assert cs_2 is not None
     assert cs_2.length == 39
-    
+
     # Scan 3: 313 peaks
     cs_3 = angiotensin_raw_file.get_centroid_stream(3, False)
     assert cs_3 is not None
