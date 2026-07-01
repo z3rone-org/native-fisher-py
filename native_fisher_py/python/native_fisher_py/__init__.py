@@ -19,6 +19,13 @@ from .data import (
 import os
 import sys
 import platform
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("native-fisher-py")
+except PackageNotFoundError:
+    # package is not installed
+    __version__ = "unknown"
 
 # Find and initialize the native library
 
