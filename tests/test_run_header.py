@@ -1,4 +1,3 @@
-from exceptiongroup import catch
 import pytest
 import os
 import math
