@@ -218,7 +218,7 @@ namespace ThermoNativeReader
                 }
                 if (scan.Positions.Length == 0)
                 {
-                    return -5;
+                    return 0;
                 }
 
                 int count = Math.Min(scan.Positions.Length, maxLength);
