@@ -216,10 +216,6 @@ namespace ThermoNativeReader
                 {
                     return -4;
                 }
-                if (scan.Positions.Length == 0)
-                {
-                    return 0;
-                }
 
                 int count = Math.Min(scan.Positions.Length, maxLength);
                 for (int i = 0; i < count; i++)
