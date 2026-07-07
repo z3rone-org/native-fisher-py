@@ -60,6 +60,13 @@ class RawFile(object):
 
         if getattr(self, "_handle", -1) < 0:
             raise RawFileException(f"Could not open RAW file: {path}")
+            
+        # Try to select the primary MS instrument to avoid NoSelectedDeviceException
+        try:
+            self.select_instrument(0, 1)  # Device.MS.value = 0
+        except Exception:
+            pass
+            
         self._is_open = True
 
     def __enter__(self):
