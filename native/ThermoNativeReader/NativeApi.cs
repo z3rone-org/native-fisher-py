@@ -1329,10 +1329,10 @@ namespace ThermoNativeReader
 
                 var data = _rawFile.GetChromatogramData(new[] { settings }, startScan, endScan);
 
-                if (data == null || data.PositionsArray == null || data.PositionsArray.Length == 0)
+                if (data == null || data.PositionsArray == null)
                 {
-                    // Console.WriteLine($"GetChromatogramData returned no results for type={traceType}, filter='{filter}', range={startScan}-{endScan}");
-                    return 0;
+                    Console.WriteLine($"GetChromatogramData returned no results for type={traceType}, filter='{filter}', range={startScan}-{endScan}");
+                    return -2;
                 }
 
                 int count = Math.Min(data.PositionsArray[0].Length, maxLength);
@@ -1346,7 +1346,7 @@ namespace ThermoNativeReader
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in get_chromatogram: {ex}");
-                return -1;
+                return -3;
             }
         }
 
