@@ -11,6 +11,7 @@ classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: Free Threading",
 ]
 license = { text = "MIT" }
 dynamic = ["version"]
