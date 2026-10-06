@@ -1491,6 +1491,21 @@ fn get_trailer_extra_values(handle: i32, scan_number: i32) -> PyResult<Vec<Strin
 }
 
 #[pyfunction]
+fn get_trailer_extra_labels(handle: i32, scan_number: i32) -> PyResult<Vec<String>> {
+    let lib = get_lib()?;
+    let mut buffer = vec![0u8; 8192];
+    unsafe {
+        let func: Symbol<unsafe extern "C" fn(i32, i32, *mut u8, i32) -> i32> = lib.get(b"get_trailer_extra_labels")
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("get function get_trailer_extra_labels: {}", e)))?;
+        let res = func(handle, scan_number, buffer.as_mut_ptr(), 8192);
+        if res < 0 { return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("get_trailer_extra_labels failed")); }
+        let end = buffer.iter().position(|&b| b == 0).unwrap_or(buffer.len());
+        let s = String::from_utf8_lossy(&buffer[..end]);
+        Ok(s.split('|').map(|x| x.to_string()).collect())
+    }
+}
+
+#[pyfunction]
 fn get_trailer_extra_header(handle: i32) -> PyResult<Vec<String>> {
     let lib = get_lib()?;
     let mut buffer = vec![0u8; 8192];
@@ -2270,6 +2285,7 @@ fn native_fisher_py_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_status_log_values_for_rt, m)?)?;
     m.add_function(wrap_pyfunction!(get_status_log_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_trailer_extra_values, m)?)?;
+    m.add_function(wrap_pyfunction!(get_trailer_extra_labels, m)?)?;
     m.add_function(wrap_pyfunction!(get_trailer_extra_count, m)?)?;
     m.add_function(wrap_pyfunction!(get_trailer_extra_header, m)?)?;
     m.add_function(wrap_pyfunction!(get_scan_event_ms_order, m)?)?;

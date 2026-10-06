@@ -162,7 +162,7 @@ class ScanFilter(CommonCoreDataObject):
 
     def __str__(self):
         from . import get_scan_filter_string
-        return get_scan_filter_string(self._scan_number)
+        return get_scan_filter_string(self._handle, self._scan_number)
 
     @property
     def name(self):

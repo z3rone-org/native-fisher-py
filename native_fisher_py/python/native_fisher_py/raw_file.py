@@ -60,13 +60,13 @@ class RawFile(object):
 
         if getattr(self, "_handle", -1) < 0:
             raise RawFileException(f"Could not open RAW file: {path}")
-            
+
         # Try to select the primary MS instrument to avoid NoSelectedDeviceException
         try:
             self.select_instrument(0, 1)  # Device.MS.value = 0
         except Exception:
             pass
-            
+
         self._is_open = True
 
     def __enter__(self):
@@ -324,7 +324,7 @@ class RawFile(object):
 
     def get_trailer_extra_information(self, scan_number):
         from .data.classes import LogEntry
-        labels = [h.label for h in self.get_trailer_extra_header_information()]
+        labels = get_trailer_extra_labels(self._handle, scan_number)
         return LogEntry(get_trailer_extra_values(self._handle, scan_number), labels)
 
     def get_trailer_extra_header_information(self):
